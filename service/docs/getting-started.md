@@ -11,7 +11,7 @@ There are some pre-installed tools to help with [OKAPI integration](okapi-integr
 ## Prerequisites
 This starter project uses [Postgres](https://www.postgresql.org/) to fit with the rest of the FOLIO project. You will need to install postgres and create a databse for this (and other) modules to use:
 There are 3 databases defined in the starter config,
-* foliodev;
+* olfdev;
 * olftest;
 * and olf.
 
