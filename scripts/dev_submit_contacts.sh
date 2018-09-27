@@ -1,4 +1,5 @@
 #!/bin/sh
+set -vx
 
 
 if [ -f ~/folio_privates.sh ]
@@ -29,22 +30,26 @@ echo Running
 echo Create an internal contact
 
 # Create an internal contact
-INTERNAL_CONTACT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DTrial+Agreement+LR+003" | jq -r ".[0].id" | tr -d '\r'`
+INTERNAL_CONTACT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/contacts -d '
 {
-  lastName: "Doe"
-  firstName: "Jane"
-  role: "Agreement owner"
+  lastName: "Doe",
+  firstName: "Jane",
+  role: "Agreement owner",
+  owner: "'"$OWNER_ID"'"
 }
 ' | jq -r ".id" | tr -d '\r'`
 
 echo Create another internal contact
 
 # Create another internal contact
-INTERNAL_CONTACT_ID2=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/sas -d '
+OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DDraft+Agreement+LR+004" | jq -r ".[0].id" | tr -d '\r'`
+INTERNAL_CONTACT_ID2=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/contacts -d '
 {
-  lastName: "Ray"
-  firstName: "Basil"
-  role: "Subject specialist"
+  lastName: "Ray",
+  firstName: "Basil",
+  role: "Subject specialist",
+  owner: "'"$OWNER_ID"'" 
 }
 
 ' | jq -r ".id" | tr -d '\r'`
