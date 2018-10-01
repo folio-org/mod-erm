@@ -27,7 +27,7 @@ public class InternalContact implements MultiTenant<InternalContact>{
   }
 
   static constraints = {
-	  id(nullable:false, blank:false);
+// 	  id(nullable:true, blank:false);
 	  owner(nullable:false, blank:false);
 	  user(nullable:true, blank:false);
 	  lastName(nullable:true, blank:false);
