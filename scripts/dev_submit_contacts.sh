@@ -27,15 +27,31 @@ fi
 
 echo Running
 
+ROLE_OWNER_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "Role",
+  value: "AgreementOwner",
+  label: "Agreement owner"
+}
+' | jq -r ".id" | tr -d '\r'`
+
+ROLE_SUBJECTSPEC_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
+{
+  category: "Role",
+  value: "SubjectSpecialist",
+  label: "Subject specialist"
+}
+' | jq -r ".id" | tr -d '\r'`
+
 echo Create an internal contact
 
 # Create an internal contact
-OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DTrial+Agreement+LR+003" | jq -r ".[0].id" | tr -d '\r'`
+OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DTrial+Agreement+LR+001" | jq -r ".[0].id" | tr -d '\r'`
 INTERNAL_CONTACT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/contacts -d '
 {
   lastName: "Doe",
   firstName: "Jane",
-  role: "Agreement owner",
+  role: { id: "'"$ROLE_OWNER_RDV"'" },
   owner: "'"$OWNER_ID"'"
 }
 ' | jq -r ".id" | tr -d '\r'`
@@ -43,12 +59,12 @@ INTERNAL_CONTACT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appl
 echo Create another internal contact
 
 # Create another internal contact
-OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DDraft+Agreement+LR+004" | jq -r ".[0].id" | tr -d '\r'`
+OWNER_ID=`curl --header "X-Okapi-Tenant: diku" -X GET "http://localhost:8080/erm/sas?filters=name%3D%3DDraft+Agreement+LR+002" | jq -r ".[0].id" | tr -d '\r'`
 INTERNAL_CONTACT_ID2=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/contacts -d '
 {
   lastName: "Ray",
   firstName: "Basil",
-  role: "Subject specialist",
+  role: { id: "'"$ROLE_SUBJECTSPEC_RDV"'" },
   owner: "'"$OWNER_ID"'" 
 }
 

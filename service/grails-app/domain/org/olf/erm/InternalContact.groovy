@@ -1,6 +1,7 @@
 package org.olf.erm
 import org.olf.general.Org
 import org.olf.general.RefdataValue
+import org.olf.general.refdata.Defaults
 import grails.gorm.MultiTenant
 
 public class InternalContact implements MultiTenant<InternalContact>{
@@ -9,7 +10,9 @@ public class InternalContact implements MultiTenant<InternalContact>{
 	String user
 	String lastName
 	String firstName
-	String role
+//	String role
+	@Defaults(['Agreement owner', 'Subject specialist']) // Defaults to create for this property.
+	RefdataValue role
 	
 	static belongsTo = [
 		owner: SubscriptionAgreement
@@ -27,7 +30,6 @@ public class InternalContact implements MultiTenant<InternalContact>{
   }
 
   static constraints = {
-// 	  id(nullable:true, blank:false);
 	  owner(nullable:false, blank:false);
 	  user(nullable:true, blank:false);
 	  lastName(nullable:true, blank:false);
