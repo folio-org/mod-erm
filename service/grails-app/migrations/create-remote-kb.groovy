@@ -588,6 +588,28 @@ databaseChangeLog = {
         }
     }
 
+    changeSet(author: "ianibbo (generated)", id: "1527414162857-19d") {
+        createTable(tableName: "po_line_proxy") {
+            column(name: "pop_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_version", type: "BIGINT") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_owner", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "pop_label", type: "VARCHAR(255)")
+
+            column(name: "pop_po_line_id", type: "VARCHAR(36)")
+        }
+    }
+
+
+
     changeSet(author: "ianibbo (generated)", id: "1527414162857-20") {
         addPrimaryKey(columnNames: "ent_id", constraintName: "entitlementPK", tableName: "entitlement")
     }
@@ -751,42 +773,10 @@ databaseChangeLog = {
     changeSet(author: "ianibbo (generated)", id: "1527414162857-59") {
       grailsChange {
         change {
-          def cmd = "CREATE VIEW ${database.defaultSchemaName}.all_electronic_resources (id, type, pkg_id, ti_id, name ) as ( select pkg_id, 'pkg', pkg_id, null, pkg_name from ${database.defaultSchemaName}.package ) UNION ( select ti_id, 'title', null, ti_id, ti_title from ${database.defaultSchemaName}.title_instance )".toString()
+          def cmd = "CREATE VIEW ${database.defaultSchemaName}.all_electronic_resources (id, type, pkg_id, ti_id, name ) as ( select pkg_id, 'pkg', pkg_id, null, pkg_name from ${database.defaultSchemaName}.package ) UNION ( select ti_id, 'title', null, ti_id, ti_title from ${database.defaultSchemaName}.title_instance, ${database.defaultSchemaName}.refdata_value where rdv_id=ti_medium_fk and rdv_value = 'electronic' )".toString()
           sql.execute(cmd);
         }
       }
     }
-
-    changeSet(author: "malzer (generated)", id: "1527414162857-60") {
-        createTable(tableName: "internal_contact") {
-            column(name: "ic_id", type: "VARCHAR(36)") {
-                constraints(nullable: "false")
-            }
-
-            column(name: "ic_version", type: "BIGINT") {
-                constraints(nullable: "false")
-            }
-
-            column(name: "ic_owner_fk", type: "VARCHAR(36)") {
-                constraints(nullable: "false")
-            }
-
-            column(name: "ic_user_fk", type: "VARCHAR(255)")
-
-            column(name: "ic_last_name", type: "VARCHAR(255)")
-
-            column(name: "ic_first_name", type: "VARCHAR(255)")
-
-            column(name: "ic_role", type: "VARCHAR(255)")
-
-        }
-    }
-
-    changeSet(author: "malzer (generated)", id: "1527414162857-61") {
-        addPrimaryKey(columnNames: "ic_id", constraintName: "internal_contactPK", tableName: "internal_contact")
-    }
-
-    changeSet(author: "malzer (generated)", id: "1527414162857-62") {
-        addForeignKeyConstraint(baseColumnNames: "ic_owner_fk", baseTableName: "internal_contact", constraintName: "FK7p34rfl5q8gij3717gpkxq4yt", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
-    }
 }
+
