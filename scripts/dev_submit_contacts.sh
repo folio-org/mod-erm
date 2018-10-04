@@ -27,23 +27,6 @@ fi
 
 echo Running
 
-<<<<<<< HEAD
-ROLE_OWNER_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
-{
-  category: "Role",
-  value: "AgreementOwner",
-  label: "Agreement owner"
-}
-' | jq -r ".id" | tr -d '\r'`
-
-ROLE_SUBJECTSPEC_RDV=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: application/json" -X POST http://localhost:8080/erm/refdataValues/lookupOrCreate -d '
-{
-  category: "Role",
-  value: "SubjectSpecialist",
-  label: "Subject specialist"
-}
-' | jq -r ".id" | tr -d '\r'`
-=======
 # Grab all values available for property "role" against the "InternalContact" model.
 ROLE_REFDATA=`curl -SsL -XGET -H 'X-OKAPI-TENANT: diku'  http://localhost:8080/erm/refdataValues/InternalContact/role`
 
@@ -51,7 +34,6 @@ ROLE_REFDATA=`curl -SsL -XGET -H 'X-OKAPI-TENANT: diku'  http://localhost:8080/e
 ROLE_OWNER_RDV=`echo $ROLE_REFDATA | jq -r '.[] | select(.label=="Agreement Owner") | .id'`
 
 ROLE_SUBJECTSPEC_RDV=`echo $ROLE_REFDATA | jq -r '.[] | select(.label=="Subject Specialist") | .id'`
->>>>>>> master
 
 echo Create an internal contact
 
