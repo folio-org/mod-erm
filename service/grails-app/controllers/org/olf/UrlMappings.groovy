@@ -52,6 +52,12 @@ class UrlMappings {
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
 
-    "/erm/eresources" ( resources:'eresource' )
+    "/erm/resource" ( resources:'resource' ) {
+      collection {
+        "/electronic" ( action:'electronic' )
+      }
+      "/entitlementOptions" ( action:'entitlementOptions' )
+      "/entitlements" ( action:'entitlements' )
+    }
   }
 }
