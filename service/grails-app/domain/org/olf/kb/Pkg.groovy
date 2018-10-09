@@ -17,7 +17,13 @@ public class Pkg extends ErmResource implements MultiTenant<Pkg> {
   Platform nominalPlatform
   Org vendor
   
-  
+  static hasMany = [
+    contentItems: PackageContentItem
+  ]
+
+  static mappedBy = [ 
+    contentItems: 'pkg'
+  ]
 
   static mapping = {
                 table 'package'
