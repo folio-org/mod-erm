@@ -21,7 +21,7 @@ import grails.gorm.MultiTenant
  *
  */
 public class Entitlement implements MultiTenant<Entitlement> {
-  private static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
+  public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
   String id
 

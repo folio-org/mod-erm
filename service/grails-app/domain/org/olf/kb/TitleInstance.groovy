@@ -58,14 +58,4 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
     identifiers: 'title',
     platformInstances: 'titleInstance'
   ]
-
-
-  /**
-   * Return the list of entitlements that grant us access to this title.
-   */
-  @Transient
-  List<Entitlement> getEntitlements() {
-    List<Entitlement> result = Entitlement.executeQuery('select ent '+ENTITLEMENTS_QUERY,[title:this],[max:20, offset:0])
-    result
-  }
 }
