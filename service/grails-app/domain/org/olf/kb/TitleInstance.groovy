@@ -13,22 +13,6 @@ import grails.gorm.MultiTenant
  */
 public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
 
-  private static final String ENTITLEMENTS_QUERY = '''
-  from Entitlement as ent 
-    where exists ( select pci.id 
-                 from PackageContentItem as pci
-                 where pci.pti.titleInstance = :title 
-                 and ent.resource = pci.pkg )
-     or exists ( select pci.id 
-                 from PackageContentItem as pci
-                 where pci.pti.titleInstance = :title
-                 and ent.resource = pci )
-     or exists ( select pti.id 
-                 from PlatformTitleInstance as pti
-                 where pti.titleInstance = :title
-                 and ent.resource = pti )
-'''
-
   // For grouping sibling title instances together - EG Print and Electronic editions of the same thing
   Work work
   
