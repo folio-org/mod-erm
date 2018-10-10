@@ -52,7 +52,7 @@ class UrlMappings {
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
 
-    "/erm/resource" ( resources:'resource' ) {
+    "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save']) {
       collection {
         "/electronic" ( action:'electronic' )
       }
