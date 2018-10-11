@@ -38,7 +38,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
 
-  @Defaults(['Draft', 'Requested', 'In negotiation',  'Rejected', 'Active', 'Cancelled'])
+  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Cancelled'])
   RefdataValue agreementStatus
 
   @CategoryId('Global.Yes_No')
@@ -63,8 +63,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   ]
 
   static mappedBy = [
-    items:'owner',
-    historyLines:'owner',
+    items: 'owner',
+    historyLines: 'owner',
     contacts: 'owner'
   ]
 

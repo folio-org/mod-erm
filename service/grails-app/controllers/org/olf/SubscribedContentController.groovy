@@ -66,18 +66,11 @@ where exists ( select pci.id
    */
   def index() {
     def result = [:]
-    def query_params = [:]
     def meta_params = [max:10]
 
-    def additional_criteria = null;
 
-    if ( params.q ) {
-      additional_criteria = ' and ti.title like :title'
-      query_params['title'] = params.q
-    }
-
-    result.results = (List<TitleInstance>) TitleInstance.executeQuery('select ti '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params)
-    result.total = TitleInstance.executeQuery('select count(ti.id) '+TITLES_QUERY+(additional_criteria?:''), query_params,meta_params).get(0)
+    result.results = (List<TitleInstance>) TitleInstance.entitled.list(meta_params)
+    result.total = result.results.getTotalCount()
     result.pageSize=100
     result.totalPages=1
     result.meta=[:]

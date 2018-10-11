@@ -70,8 +70,9 @@ public class Entitlement implements MultiTenant<Entitlement> {
   static constraints = {
         owner(nullable:true,  blank:false)
      resource(nullable:false, blank:false, validator: { val, inst ->
-       if (!Entitlement.ALLOWED_RESOURCES.contains(val.class)) {
-         ['allowedTypes', "${val.class.name}", "entitlement", "resource"]
+       Class c = Hibernate.getClass(val)
+       if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+         ['allowedTypes', "${c.name}", "entitlement", "resource"]
        }
      })
       enabled(nullable:true,  blank:false)
