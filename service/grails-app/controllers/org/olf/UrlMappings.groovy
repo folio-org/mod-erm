@@ -18,7 +18,11 @@ class UrlMappings {
 //       "/addToAgreement"(action:'addToAgreement')
     }
 
-    '/erm/titles'(resources: 'title')
+    '/erm/titles'(resources: 'title') {
+      collection {
+        "/entitled" (action: 'entitled')
+      }
+    }
 
     '/erm/packages'(resources: 'package')
 
