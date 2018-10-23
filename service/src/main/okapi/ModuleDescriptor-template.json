@@ -3,8 +3,8 @@
   "name": "${info.app.name}",
   "provides": [
     {
-      "id": "${info.app.name}",
-      "version": "${info.app.minorVersion}",
+      "id": "olf-erm",
+      "version": "1.0",
       "handlers" : [
         {
           "methods": ["GET", "POST"],
