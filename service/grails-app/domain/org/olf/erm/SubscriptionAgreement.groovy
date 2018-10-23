@@ -5,6 +5,7 @@ import org.olf.general.RefdataValue
 import org.olf.general.refdata.CategoryId
 import org.olf.general.refdata.Defaults
 import com.k_int.web.toolkit.databinding.BindImmutably
+import com.k_int.web.toolkit.tags.Tag
 import grails.gorm.MultiTenant
 
 /**
@@ -55,11 +56,15 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   
   @BindImmutably
   Set<Entitlement> items
-
+  
+  @BindImmutably
+  Set<Tag> tags
+  
   static hasMany = [
     items:Entitlement,
     historyLines: SAEventHistory,
-    contacts: InternalContact
+    contacts: InternalContact,
+    tags: Tag
   ]
 
   static mappedBy = [
