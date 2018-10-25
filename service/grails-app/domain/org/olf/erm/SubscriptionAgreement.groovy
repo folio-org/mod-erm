@@ -54,11 +54,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Org vendor
   
-  @BindImmutably
+//  @BindImmutably
   Set<Entitlement> items
-  
-  @BindImmutably
-  Set<Tag> tags
   
   static hasMany = [
     items:Entitlement,
@@ -92,7 +89,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
                   vendor column:'sa_vendor_fk'
-                   items cascade: 'all-delete-orphan'
   }
 
   static constraints = {

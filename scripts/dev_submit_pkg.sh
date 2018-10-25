@@ -74,7 +74,9 @@ TRIAL_AGREEMENT_ID=`curl --header "X-Okapi-Tenant: diku" -H "Content-Type: appli
     }
   ],
   tags: [
-    {value: "Some Test"}
+    {value: "Legacy"},
+    "Other value",
+    "legacy"
   ]
 }
 ' | jq -r ".id" | tr -d '\r'`
