@@ -75,7 +75,8 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     items: 'owner',
     historyLines: 'owner',
     contacts: 'owner',
-    orgs: 'owner'
+    orgs: 'owner',
+    linkedLicenses: 'owner'
   ]
 
   static mapping = {
@@ -131,7 +132,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             
-            int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.licenseType.value == 'controlling' })?.size()) ?: 0)
+            int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status.value == 'controlling' })?.size()) ?: 0)
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
   }
