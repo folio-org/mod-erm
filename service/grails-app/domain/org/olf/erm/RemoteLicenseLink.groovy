@@ -10,12 +10,15 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status
-  
   String note
+  
+  
+  static belongsTo = [ owner: SubscriptionAgreement ]
   
   static mapping = {
          status column:'rll_status'
            note column:'rll_note', type: 'text'
+          owner column:'rll_owner'
   }
   
   static constraints = {
@@ -26,4 +29,5 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   @Override
   public String remoteUri() {
     return 'licenses/licenses';
-  }}
+  }
+}
