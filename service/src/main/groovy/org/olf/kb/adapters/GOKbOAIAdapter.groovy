@@ -112,7 +112,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
   private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache) {
 
     def result = [:]
-    result.new_cursor = cursor;
+    result.new_cursor = (cursor && cursor.trim() != '' ? cursor : '0');
     result.count = 0;
 
     // log.debug("GOKbOAIAdapter::processPage(${cursor},...");
@@ -135,7 +135,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         cache.onPackageChange(source_name, json_package_description);
       }
 
-      if ( result.new_cursor && result.new_cursor.trim() != "" && datestamp > result.new_cursor ) {
+      if ( datestamp > result.new_cursor ) {
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
         SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         Date parsed_datestamp = sdf.parse(result.new_cursor);
