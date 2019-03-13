@@ -113,7 +113,7 @@ def includes = [
 ]
 
 bootRun {
-  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1536m', '-Xmx1536m'])
+  jvmArgs(['-Dspring.output.ansi.enabled=always', '-server', '-Xms1024m', '-Xmx1024m'])
   addResources = true
   String springProfilesActive = 'spring.profiles.active'
   systemProperty springProfilesActive, System.getProperty(springProfilesActive)
@@ -297,6 +297,6 @@ task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
 }
 
 jacocoTestReport {
-    executionData integrationTest, test
+  executionData integrationTest, test
 }
 
