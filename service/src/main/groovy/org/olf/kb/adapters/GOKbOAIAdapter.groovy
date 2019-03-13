@@ -135,7 +135,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater {
         cache.onPackageChange(source_name, json_package_description);
       }
 
-      if ( datestamp > result.new_cursor ) {
+      if ( result.new_cursor && result.new_cursor.trim() != "" && datestamp > result.new_cursor ) {
         // Because OAI uses >= we want to nudge up the cursor timestamp by 1s (2019-02-06T11:19:20Z)
         SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ")
         Date parsed_datestamp = sdf.parse(result.new_cursor);
