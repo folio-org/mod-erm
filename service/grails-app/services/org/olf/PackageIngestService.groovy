@@ -25,7 +25,7 @@ public class PackageIngestService {
   private boolean PROXY_MISSING_PLATFORM = true;
 
   def titleInstanceResolverService
-  def coverageExtenderService
+  def coverageService
 
   // dependentModuleProxyService is a service which hides the fact that we might be dependent upon other
   // services for our reference data. In this class - vendors are erm Org entries, but in folio these are
@@ -166,12 +166,12 @@ public class PackageIngestService {
                 if ( pc.coverage ) {
     
                   // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
-                  // to the list of mpas that coverageExtenderService.extend expects
+                  // to the list of mpas that coverageService.extend expects
                   List cov = pc.coverage instanceof List ? pc.coverage : [ pc.coverage ]
     
-                  coverageExtenderService.extend(pti, cov, 'pti');
-                  coverageExtenderService.extend(pci, cov, 'pci');
-                  coverageExtenderService.extend(title, cov, 'ti');
+                  coverageService.extend(pti, cov, 'pti');
+                  coverageService.extend(pci, cov, 'pci');
+                  coverageService.extend(title, cov, 'ti');
                 }
     
                 // Save needed either way

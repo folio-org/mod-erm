@@ -11,7 +11,7 @@ import org.olf.kb.CoverageStatement
  * This service works at the module level, it's often called without a tenant context.
  */
 @Transactional
-public class CoverageExtenderService {
+public class CoverageService {
 
   /**
    * Given a list of coverage statements, check that we already record the extents of the coverage
