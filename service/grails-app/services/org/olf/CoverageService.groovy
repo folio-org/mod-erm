@@ -21,7 +21,7 @@ public class CoverageService {
    * @param coverage_statements The array of coverage statements [ [ startDate:YYYY-MM-DD, startVolume:...], [ stateDate:....
    */
   public void extend(final ErmResource title, final List<CoverageStatement> coverage_statements) {
-    log.debug("Extend coverage statements on ${title} with ${coverage_statements}");
+    log.debug("Extend coverage statements on ${title} with ${coverage_statements}")
 
     coverage_statements.each { CoverageStatement cs ->
       // Do we already have any coverage statements for this item that overlap in any way with the coverage supplied?
@@ -29,7 +29,7 @@ public class CoverageService {
       final List<CoverageStatement> existing_coverage = CoverageStatement.executeQuery("select cs from CoverageStatement as cs where cs.resource = :t and ( ( :start between cs.startDate and cs.endDate ) OR ( :end between cs.startDate and cs.endDate ) OR ( :start <= cs.startDate AND cs.endDate is null ) ) ".toString(),[t:title, start:cs.startDate, end: cs.endDate]);
 
       if ( existing_coverage.size() > 0 ) {
-        log.warn("Located existing coverage, determin extend or create additional");
+        log.warn("Located existing coverage, determin extend or create additional")
 
         boolean new_coverage_is_already_subsumed = false
         existing_coverage.each { final CoverageStatement existing_cs ->
