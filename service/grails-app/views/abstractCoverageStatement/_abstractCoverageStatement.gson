@@ -8,7 +8,7 @@ import groovy.transform.*
 AbstractCoverageStatement abstractCoverageStatement
 
 json {
-  id abstractCoverageStatement.id
+  id abstractCoverageStatement.getAt('id')
   startDate abstractCoverageStatement.startDate
   
   if (abstractCoverageStatement.endDate) {
