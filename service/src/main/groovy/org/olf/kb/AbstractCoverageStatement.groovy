@@ -4,9 +4,7 @@ import java.time.LocalDate
 import org.olf.erm.Entitlement
 
 abstract class AbstractCoverageStatement {
-  String id
 
-  // MUST Be in format yyyy-mm-dd
   LocalDate startDate
   LocalDate endDate
   
@@ -17,11 +15,11 @@ abstract class AbstractCoverageStatement {
   
   static constraints = {
     startDate(nullable:true);
-    endDate(nullable:true, blank:false);
-    startVolume(nullable:true, blank:false);
-    startIssue(nullable:true, blank:false);
-    endVolume(nullable:true, blank:false);
-    endIssue(nullable:true, blank:false);
+    endDate(nullable:true, blank:false)
+    startVolume(nullable:true, blank:false)
+    startIssue(nullable:true, blank:false)
+    endVolume(nullable:true, blank:false)
+    endIssue(nullable:true, blank:false)
   }
 
 

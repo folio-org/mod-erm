@@ -10,6 +10,7 @@ import grails.gorm.MultiTenant
  */
 public class HoldingsCoverage extends AbstractCoverageStatement implements MultiTenant<HoldingsCoverage> {
   
+  String id
   Entitlement entitlement
 
   static mapping = {
