@@ -5,6 +5,8 @@ import org.olf.erm.Entitlement
 
 abstract class AbstractCoverageStatement {
 
+  String id
+  
   LocalDate startDate
   LocalDate endDate
   
@@ -14,7 +16,7 @@ abstract class AbstractCoverageStatement {
   String endIssue
   
   static constraints = {
-    startDate(nullable:true);
+    startDate(nullable:true)
     endDate(nullable:true, blank:false)
     startVolume(nullable:true, blank:false)
     startIssue(nullable:true, blank:false)
