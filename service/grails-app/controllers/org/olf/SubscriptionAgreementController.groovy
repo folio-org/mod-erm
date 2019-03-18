@@ -48,15 +48,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           }
         }
         
-        def pkgs = new DetachedCriteria(Pkg).build {
-          createAlias 'entitlements', 'pkg_ent'
-            eq 'pkg_ent.owner.id', subscriptionAgreementId
-          
-          projections {
-            property ('id')
-          }
-        }
-        
         def pcis = new DetachedCriteria(PackageContentItem).build {
             
           'in' 'pkg.id', new DetachedCriteria(Pkg).build {
