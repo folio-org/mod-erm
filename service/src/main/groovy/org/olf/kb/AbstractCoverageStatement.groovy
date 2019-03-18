@@ -4,7 +4,7 @@ import java.time.LocalDate
 import org.olf.erm.Entitlement
 
 abstract class AbstractCoverageStatement {
-  
+
   LocalDate startDate
   LocalDate endDate
   
