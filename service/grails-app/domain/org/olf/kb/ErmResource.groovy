@@ -22,7 +22,7 @@ public class ErmResource implements MultiTenant<ErmResource> {
   Date lastUpdated
   
   static hasMany = [
-    coverageStatements: CoverageStatement,
+    coverage: CoverageStatement,
     entitlements: Entitlement
   ]
 
