@@ -24,11 +24,11 @@ json {
   }
   
   if (abstractCoverageStatement.endVolume) {
-    startVolume abstractCoverageStatement.endVolume
+    endVolume abstractCoverageStatement.endVolume
   }
   
   if (abstractCoverageStatement.endIssue) {
-    startIssue abstractCoverageStatement.endIssue
+    endIssue abstractCoverageStatement.endIssue
   }
   
   // Add the custom summary option
