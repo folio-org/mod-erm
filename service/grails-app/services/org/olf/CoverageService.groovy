@@ -53,6 +53,12 @@ public class CoverageService {
     statements
   }
   
+  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final Map resultsMap, final String agreementId) {
+    final List<ErmResource> resources = resultsMap?.get('results')
+    
+    resources ? lookupCoverageOverrides(resources, agreementId) : [:]
+  }
+  
   public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId) {
     
     if (!resources || resources.size() < 1) return [:]
