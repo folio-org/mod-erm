@@ -8,7 +8,8 @@ import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
 import org.olf.kb.Pkg
-
+import org.springframework.web.context.request.RequestAttributes
+import org.springframework.web.context.request.RequestContextHolder
 import grails.gorm.transactions.Transactional
 
 /**
@@ -30,6 +31,19 @@ public class CoverageService {
     // Just trim the long dates. Crude but should work for standards
     if (dateStr.length() > 10) dateStr = dateStr.substring(0, 10)
     LocalDate.parse(dateStr)
+  }
+  
+  private addToRequestIfPresent () {
+    RequestAttributes rAtt = RequestContextHolder.getRequestAttributes()
+    if (rAtt) {
+      final def params = rAtt.params
+      final String params
+      
+      final String key = "${controllerName}.${actionName}.customCoverage"
+      final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute(key) ?: [:]
+      current.putAll(statements)
+      request.setAttribute(key, current)
+    }
   }
   
   public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId) {
@@ -73,10 +87,11 @@ public class CoverageService {
       // Add the coverage from the entitlement. Call collect to create a copy of the collection.
       [ "${it[2] ?: it[1]}" : ent.coverage.collect() ]
     }
-    
-    final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute("${this.class.name}.customCoverage") ?: [:]
+
+    final String key = "${controllerName}.${actionName}.customCoverage"
+    final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute(key) ?: [:]
     current.putAll(statements)
-    request.setAttribute("${this.class.name}.customCoverage", current)
+    request.setAttribute(key, current)
     
     statements
   }
