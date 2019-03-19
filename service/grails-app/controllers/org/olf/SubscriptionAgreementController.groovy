@@ -5,6 +5,7 @@ import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.Pkg
+import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
 
 import com.k_int.okapi.OkapiTenantAwareController
@@ -12,7 +13,6 @@ import com.k_int.okapi.OkapiTenantAwareController
 import grails.gorm.multitenancy.CurrentTenant
 import grails.orm.HibernateCriteriaBuilder
 import groovy.util.logging.Slf4j
-import javax.persistence.criteria.JoinType
 import grails.gorm.DetachedCriteria
 
 
@@ -38,18 +38,18 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 
       // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
       // to talk through with steve about how this should work.
-
       final def results = doTheLookup (ErmResource) {
         or {
-          'in' 'id', new DetachedCriteria(ErmResource).build {
-            createAlias 'entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
-            
-            projections {
-              property ('id')
-            }
+          
+          // Direct relation...
+          and {
+            createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
+            ne 'class', Pkg
+            eq 'direct_ent.owner.id', subscriptionAgreementId
           }
           
+          
+          // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
         
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
