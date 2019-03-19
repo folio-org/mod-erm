@@ -41,11 +41,17 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       final def results = doTheLookup (ErmResource) {
         or {
           
-          // Direct relation...
-          and {
-            createAlias 'entitlements', 'direct_ent', JoinType.LEFT_OUTER_JOIN
-            ne 'class', Pkg
-            eq 'direct_ent.owner.id', subscriptionAgreementId
+          // Direct relations...
+          // Use a sub query to avoid multiple entries per item.
+          'in' 'id', new DetachedCriteria(ErmResource).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              ne 'class', Pkg
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+            
+            projections {
+              property ('id')
+            }
           }
           
           
