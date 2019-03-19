@@ -37,44 +37,48 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       //
       // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
       // to talk through with steve about how this should work.
-      if (SubscriptionAgreement.read(subscriptionAgreementId)?.items?.size() ?: 0 > 0) {
         
-        def ptis = new DetachedCriteria(PlatformTitleInstance).build {
-          createAlias 'entitlements', 'pti_ent'
-            eq 'pti_ent.owner.id', subscriptionAgreementId
-          
-          projections {
-            property ('id')
-          }
-        }
+      def ptis = new DetachedCriteria(PlatformTitleInstance).build {
+        createAlias 'entitlements', 'pti_ent'
+          eq 'pti_ent.owner.id', subscriptionAgreementId
         
-        def pcis = new DetachedCriteria(PackageContentItem).build {
-            
-          'in' 'pkg.id', new DetachedCriteria(Pkg).build {
-            createAlias 'entitlements', 'pkg_ent'
-              eq 'pkg_ent.owner.id', subscriptionAgreementId
-            
-            projections {
-              property ('id')
-            }
-          }
-            
-          projections {
-            property ('id')
-          }
+        projections {
+          property ('id')
         }
-        
-        // Dedupe in a way that means pagination still works.
-        respond doTheLookup (ErmResource) {
-          or {
-            'in' 'id', ptis
-            'in' 'id', pcis
-          }
-        }
-        return
       }
       
+      def pcis = new DetachedCriteria(PackageContentItem).build {
+//        final def pkgs = new DetachedCriteria(Pkg, 'packages').build {
+//          createAlias 'entitlements', 'pkg_ent'
+//            eq 'pkg_ent.owner.id', subscriptionAgreementId
+//          
+//          projections {
+//            property ('id')
+//            property ('pkg_ent.id')
+//          }
+//        }
+        
+        createAlias 'pkg.entitlements', 'pkg_ent'
+          eq 'pkg_ent.owner.id', subscriptionAgreementId
+        
+//        'in' 'pkg.id', pkgs.select('id')
+          
+        projections {
+          property ('id')
+          property ('pkg_ent.id')
+        }
+      }
+      
+      // Dedupe in a way that means pagination still works.
+      respond doTheLookup (ErmResource) {
+        or {
+          'in' 'id', ptis.select('id')
+          'in' 'id', pcis.select('id')
+        }
+      }
+      return
     }
+      
   }
 
 }
