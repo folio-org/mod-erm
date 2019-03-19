@@ -46,6 +46,8 @@ public class Entitlement implements MultiTenant<Entitlement> {
   String authority
   String reference
   String label
+  
+  Set<HoldingsCoverage> coverage = []
 
   static belongsTo = [
     owner:SubscriptionAgreement

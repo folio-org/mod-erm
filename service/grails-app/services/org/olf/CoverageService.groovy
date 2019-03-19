@@ -1,18 +1,19 @@
 package org.olf
 
-import org.grails.plugins.converters.LocalDateConverter
+import java.time.LocalDate
+
+import org.hibernate.sql.JoinType
+import org.olf.erm.Entitlement
+import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.ErmResource
-import org.springframework.format.datetime.joda.LocalDateParser
+import org.olf.kb.Pkg
 
 import grails.gorm.transactions.Transactional
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
-@Transactional
 public class CoverageService {
   
   private LocalDate ensureLocalDate ( final def dateObject ) {
@@ -30,6 +31,55 @@ public class CoverageService {
     if (dateStr.length() > 10) dateStr = dateStr.substring(0, 10)
     LocalDate.parse(dateStr)
   }
+  
+  public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId) {
+    
+    if (!resources || resources.size() < 1) return [:]
+    
+    // Grab the resources
+    final List statementQuery = Entitlement.createCriteria().list {
+      
+      createAlias 'resource', 'ermResource'
+      createAlias 'ermResource.contentItems', 'pcis', JoinType.LEFT_OUTER_JOIN
+      eq 'owner.id', agreementId
+      
+      or {
+        
+        final Set<String> ids = resources.collect{ it.id }
+        
+        // Linked to package.
+        'in' 'resource.id', ids
+        
+        and {
+          eq 'ermResource.class', Pkg
+          'in' 'pcis.id', ids
+        }
+      }
+      
+      projections {
+        property ('id')
+        property ('resource.id')
+        property ('pcis.id')
+      }
+    }
+    
+    Entitlement ent
+    final Map<String, Set<AbstractCoverageStatement>> statements = statementQuery.collectEntries {
+      if (!ent || ent.id != it[0]) {
+        // Change the entitlement.
+        ent = Entitlement.read (it[0])
+      }
+      
+      // Add the coverage from the entitlement. Call collect to create a copy of the collection.
+      [ "${it[2] ?: it[1]}" : ent.coverage.collect() ]
+    }
+    
+    final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute("${this.class.name}.customCoverage") ?: [:]
+    current.putAll(statements)
+    request.setAttribute("${this.class.name}.customCoverage", current)
+    
+    statements
+  }
 
   /**
    * Given a list of coverage statements, check that we already record the extents of the coverage
@@ -41,6 +91,7 @@ public class CoverageService {
    * @param title The title (org.olf.kb.TitleInstance, org.olf.kb.PlatformTitleInstance, org.olf.kb.PackageContentItem, etc) we are talking about
    * @param coverage_statements The array of coverage statements [ [ startDate:YYYY-MM-DD, startVolume:...], [ stateDate:....
    */
+  @Transactional
   public void extend(final ErmResource title, final List<Map> coverage_statements) {
     log.debug("Extend coverage statements on ${title} with ${coverage_statements}")
 

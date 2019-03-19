@@ -25,57 +25,54 @@ import grails.gorm.DetachedCriteria
 @CurrentTenant
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
+  CoverageService coverageService
+  
   SubscriptionAgreementController() {
     super(SubscriptionAgreement)
   }
   
-  def resources (String subscriptionAgreementId) {
+  def resources () {
     
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     if (subscriptionAgreementId) {
-      // The in clause below will freak out is the subquery returns an empty list. So we should test for
-      // the entitlements list being empty first.
-      //
+
       // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
       // to talk through with steve about how this should work.
-        
-      def ptis = new DetachedCriteria(PlatformTitleInstance).build {
-        createAlias 'entitlements', 'pti_ent'
-          eq 'pti_ent.owner.id', subscriptionAgreementId
-        
-        projections {
-          property ('id')
-        }
-      }
-      
-      def pcis = new DetachedCriteria(PackageContentItem).build {
-//        final def pkgs = new DetachedCriteria(Pkg, 'packages').build {
-//          createAlias 'entitlements', 'pkg_ent'
-//            eq 'pkg_ent.owner.id', subscriptionAgreementId
-//          
-//          projections {
-//            property ('id')
-//            property ('pkg_ent.id')
-//          }
-//        }
-        
-        createAlias 'pkg.entitlements', 'pkg_ent'
-          eq 'pkg_ent.owner.id', subscriptionAgreementId
-        
-//        'in' 'pkg.id', pkgs.select('id')
-          
-        projections {
-          property ('id')
-          property ('pkg_ent.id')
-        }
-      }
-      
-      // Dedupe in a way that means pagination still works.
-      respond doTheLookup (ErmResource) {
+
+      final def results = doTheLookup (ErmResource) {
         or {
-          'in' 'id', ptis.select('id')
-          'in' 'id', pcis.select('id')
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+            createAlias 'entitlements', 'pti_ent'
+              eq 'pti_ent.owner.id', subscriptionAgreementId
+            
+            projections {
+              property ('id')
+            }
+          }
+          
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+        
+            'in' 'pkg.id', new DetachedCriteria(Pkg).build {
+              createAlias 'entitlements', 'pkg_ent'
+                eq 'pkg_ent.owner.id', subscriptionAgreementId
+                
+                projections {
+                  property ('id')
+                }
+            }
+            
+            projections {
+              property ('id')
+            }
+          }
         }
+        
+        readOnly (true)
       }
+      
+      coverageService.lookupCoverageOverrides(results, "${subscriptionAgreementId}")
+      
+      respond results
       return
     }
       
