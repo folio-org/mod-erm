@@ -70,6 +70,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
         readOnly (true)
       }
       
+      // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
       coverageService.lookupCoverageOverrides(results, "${subscriptionAgreementId}")
       
       respond results

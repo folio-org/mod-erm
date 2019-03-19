@@ -1,7 +1,8 @@
 package org.olf
 
 import java.time.LocalDate
-
+import javax.servlet.http.HttpServletRequest
+import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
 import org.olf.kb.AbstractCoverageStatement
@@ -33,17 +34,23 @@ public class CoverageService {
     LocalDate.parse(dateStr)
   }
   
-  private addToRequestIfPresent () {
-    RequestAttributes rAtt = RequestContextHolder.getRequestAttributes()
-    if (rAtt) {
-      final def params = rAtt.params
-      final String params
-      
-      final String key = "${controllerName}.${actionName}.customCoverage"
-      final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute(key) ?: [:]
-      current.putAll(statements)
-      request.setAttribute(key, current)
+  private Map<String, Set<AbstractCoverageStatement>> addToRequestIfPresent (statements) {
+    
+    if (statements) {
+      GrailsWebRequest rAtt = (GrailsWebRequest)RequestContextHolder.getRequestAttributes()
+      if (rAtt) {
+        final String controllerName = rAtt.controllerName
+        final String actionName = rAtt.actionName
+        final HttpServletRequest request = rAtt.request
+        
+        final String key = "${controllerName}.${actionName}.customCoverage"
+        final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute(key) ?: [:]
+        current.putAll(statements)
+        request.setAttribute(key, current)
+      }
     }
+    
+    statements
   }
   
   public Map<String, List<AbstractCoverageStatement>> lookupCoverageOverrides (final List<ErmResource> resources, final String agreementId) {
@@ -88,12 +95,8 @@ public class CoverageService {
       [ "${it[2] ?: it[1]}" : ent.coverage.collect() ]
     }
 
-    final String key = "${controllerName}.${actionName}.customCoverage"
-    final Map<String, Set<AbstractCoverageStatement>> current = request.getAttribute(key) ?: [:]
-    current.putAll(statements)
-    request.setAttribute(key, current)
-    
-    statements
+    // Add to the request (if there is one) and return.
+    addToRequestIfPresent (statements)
   }
 
   /**
