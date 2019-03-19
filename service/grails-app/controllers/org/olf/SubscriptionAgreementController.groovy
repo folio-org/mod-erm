@@ -41,9 +41,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 
       final def results = doTheLookup (ErmResource) {
         or {
-          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
-            createAlias 'entitlements', 'pti_ent'
-              eq 'pti_ent.owner.id', subscriptionAgreementId
+          'in' 'id', new DetachedCriteria(ErmResource).build {
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
             
             projections {
               property ('id')
