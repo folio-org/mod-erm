@@ -18,10 +18,10 @@ abstract class AbstractCoverageStatement {
     "v${startVolume?:'*'}/i${startIssue?:'*'}/${startDate} - v${endVolume?:'*'}/i${endIssue?:'*'}/${endDate?:'*'}".toString()
   }
   
-  public static final Closure STATEMENT_START_VALIDATOR = { AbstractCoverageStatement statement ->
+  public static final Closure STATEMENT_START_VALIDATOR = { LocalDate startDate, AbstractCoverageStatement statement ->
     
     // Check start date is before end date.
-    if (statement.endDate && statement.startDate > statement.endDate) {
+    if (statement.endDate && startDate > statement.endDate) {
       return [ 'coveragestatement.start.after.end', statement.endDate]
     }
   }
