@@ -18,6 +18,14 @@ abstract class AbstractCoverageStatement {
     "v${startVolume?:'*'}/i${startIssue?:'*'}/${startDate} - v${endVolume?:'*'}/i${endIssue?:'*'}/${endDate?:'*'}".toString()
   }
   
+  public static final Closure STATEMENT_START_VALIDATOR = { AbstractCoverageStatement statement ->
+    
+    // Check start date is before end date.
+    if (statement.endDate && statement.startDate > statement.endDate) {
+      return [ 'coveragestatement.start.after.end' ]
+    }
+  }
+  
   public static final Closure STATEMENT_COLLECTION_VALIDATOR = { Collection<AbstractCoverageStatement> coverage_statements ->
             
     // Validate coverage statements. We check all points in one iteration for efficiency.
@@ -27,11 +35,6 @@ abstract class AbstractCoverageStatement {
       
       for (int i=0; i<coverage_statements.size(); i++) {
         final AbstractCoverageStatement statement = coverage_statements[i]
-        
-        // Check start date is before end date.
-        if (statement.endDate && statement.startDate > statement.endDate) {
-          return [ 'coveragestatement.start.after.end' ]
-        }
         
         seenOpenEnded = (statement.endDate == null)
         
