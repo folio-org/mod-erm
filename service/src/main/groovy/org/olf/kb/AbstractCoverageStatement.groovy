@@ -54,8 +54,8 @@ abstract class AbstractCoverageStatement {
           final boolean overlapping =
 
             // Start-dates or end-dates can not be equal.
-            statement.startDate == compareTo.startDate ||
-            statement.endDate == compareTo.endDate ||
+            statement.startDate == compareTo.startDate || statement.startDate == compareTo.endDate ||
+            statement.endDate == compareTo.endDate || statement.endDate == compareTo.startDate ||
 
             // statement starts within compareTo range
             (statement.startDate > compareTo.startDate &&
