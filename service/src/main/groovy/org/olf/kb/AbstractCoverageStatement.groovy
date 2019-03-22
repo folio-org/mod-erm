@@ -22,7 +22,7 @@ abstract class AbstractCoverageStatement {
     
     // Check start date is before end date.
     if (statement.endDate && statement.startDate > statement.endDate) {
-      return [ 'coveragestatement.start.after.end' ]
+      return [ 'coveragestatement.start.after.end', statement.endDate]
     }
   }
   
