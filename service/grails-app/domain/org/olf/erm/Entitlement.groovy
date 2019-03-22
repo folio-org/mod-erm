@@ -3,7 +3,6 @@ package org.olf.erm
 import javax.persistence.Transient
 
 import org.hibernate.Hibernate
-import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -103,44 +102,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
             }
           })
           
-          coverage (validator: { Collection<AbstractCoverageStatement> coverage_statements, inst ->
-           
-            switch (coverage_statements) {
-              
-              case {((it?.findAll({ AbstractCoverageStatement statement -> statement.endDate == null })?.size()) ?: 0) > 1} :
-                return [ 'only.one.open.coveragestatement' ]
-                break
-              case {
-                  boolean overlapping = false
-                  if (it) {
-                    for (int i=0; !overlapping && i<it.size(); i++) {
-                      final AbstractCoverageStatement statement = it[i]
-
-                      for (int j=(i+1); !overlapping && j<it.size(); j++) {
-                        // Don't compare to self
-                        final AbstractCoverageStatement compareTo = it[j]
-                        // Start-dates or end-dates can not be equal. 
-                        overlapping = 
-                          statement.startDate == compareTo.startDate ||
-                          statement.endDate == compareTo.endDate ||
-                          
-                          // statement starts within compareTo range
-                          (statement.startDate > compareTo.startDate &&
-                            (compareTo.endDate == null || statement.startDate < compareTo.endDate)) ||
-                          
-                          // compareTo starts within statement range
-                          (compareTo.startDate > statement.startDate &&
-                            (statement.endDate == null || compareTo.startDate < statement.endDate))
-                      }
-                    }
-                  }
-                } :
-                break
-              default:
-                // valid
-                return true
-            }
-          })
+          coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR)
           
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             
