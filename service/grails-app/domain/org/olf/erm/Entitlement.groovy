@@ -3,6 +3,7 @@ package org.olf.erm
 import javax.persistence.Transient
 
 import org.hibernate.Hibernate
+import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -89,18 +90,38 @@ public class Entitlement implements MultiTenant<Entitlement> {
   }
 
   static constraints = {
-        owner(nullable:true,  blank:false)
+            owner(nullable:true,  blank:false)
 
-     // Now that resources can be internally or externally defined, the internal resource link CAN be null,
-     // but if it is, there should be authorty, reference and label properties.
-     resource(nullable:true, blank:false, validator: { val, inst ->
-       if ( val ) {
-         Class c = Hibernate.getClass(val)
-         if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
-           ['allowedTypes', "${c.name}", "entitlement", "resource"]
-         }
-       }
-     })
+          // Now that resources can be internally or externally defined, the internal resource link CAN be null,
+          // but if it is, there should be authorty, reference and label properties.
+          resource (nullable:true, validator: { val, inst ->
+            if ( val ) {
+              Class c = Hibernate.getClass(val)
+              if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+                ['allowedTypes', "${c.name}", "entitlement", "resource"]
+              }
+            }
+          })
+          
+          coverage (validator: { Collection<AbstractCoverageStatement> coverage_statements, inst ->
+           
+            switch (coverage_statements) {
+              
+              case {((it?.findAll({ AbstractCoverageStatement statement -> statement.endDate == null })?.size()) ?: 0) > 1} :
+                return [ 'only.one.open.coveragestatement' ]
+                break
+                
+              default:
+                // valid
+                return true
+            }
+          })
+          
+          linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
+            
+            int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status?.value == 'controlling' })?.size()) ?: 0)
+            ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
+          })
 
               type(nullable:true,  blank:false)
            enabled(nullable:true,  blank:false)
