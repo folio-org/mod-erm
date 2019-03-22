@@ -103,12 +103,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
           })
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR)
-          
-          linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
-            
-            int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status?.value == 'controlling' })?.size()) ?: 0)
-            ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
-          })
 
               type(nullable:true,  blank:false)
            enabled(nullable:true,  blank:false)
