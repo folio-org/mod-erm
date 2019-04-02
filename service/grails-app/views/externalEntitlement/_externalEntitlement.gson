@@ -1,12 +1,11 @@
 package externalEntitlement;
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
+
 import org.olf.erm.ExternalEntitlement
 
 import groovy.transform.*
 import groovyx.net.http.HttpException
-import java.util.concurrent.ExecutionException
-import java.util.concurrent.Future
-
-inherits template: "/entitlement/entitlement"
 
 @Field ExternalEntitlement externalEntitlement
 final String objectProperty = 'reference_object'
@@ -17,7 +16,6 @@ if(externalEntitlement.respondsTo(objectProperty)){
     if (remoteObjValue instanceof Future) {
       remoteObjValue = (remoteObjValue as Future)?.get()
     }
-    System.out.println("remoteObjValue is ${remoteObjValue.class.name}" )
   } catch (ExecutionException e) {
     
     if (e.cause instanceof HttpException) {
@@ -32,7 +30,12 @@ if(externalEntitlement.respondsTo(objectProperty)){
 json {
   'type' 'external'
   'authority' externalEntitlement.getAuthority()
-  'reference' externalEntitlement.getReference()
+  'reference' externalEntitlement.getReference()  
+  'explanation' externalEntitlement.getExplanation()
+  'startDate' externalEntitlement.getActiveFrom()
+  'endDate' externalEntitlement.getActiveTo()
+  'contentUpdated' externalEntitlement.getContentUpdated()
+  'haveAccess' externalEntitlement.getHaveAccess()
   
   if (remoteObjValue) {
     call( objectProperty, remoteObjValue )
