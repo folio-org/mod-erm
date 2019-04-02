@@ -1,0 +1,40 @@
+package externalEntitlement;
+import org.olf.erm.ExternalEntitlement
+
+import groovy.transform.*
+import groovyx.net.http.HttpException
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
+
+inherits template: "/entitlement/entitlement"
+
+@Field ExternalEntitlement externalEntitlement
+final String objectProperty = 'reference_object'
+def remoteObjValue
+if(externalEntitlement.respondsTo(objectProperty)){
+  try {
+    remoteObjValue = externalEntitlement.invokeMethod(objectProperty, null)
+    if (remoteObjValue instanceof Future) {
+      remoteObjValue = (remoteObjValue as Future)?.get()
+    }
+    System.out.println("remoteObjValue is ${remoteObjValue.class.name}" )
+  } catch (ExecutionException e) {
+    
+    if (e.cause instanceof HttpException) {
+      HttpException httpEx = e.cause as HttpException
+      remoteObjValue = [error: httpEx.statusCode, message: httpEx.message ]
+    } else {
+      remoteObjValue = [error: e.class.name, message: e.message]
+    }
+  }
+}
+
+json {
+  'type' 'external'
+  'authority' externalEntitlement.getAuthority()
+  'reference' externalEntitlement.getReference()
+  
+  if (remoteObjValue) {
+    call( objectProperty, remoteObjValue )
+  }
+}
