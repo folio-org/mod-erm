@@ -8,8 +8,11 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
+import com.k_int.web.toolkit.databinding.BindUsingWhenRef
+
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
+import grails.web.databinding.DataBindingUtils
 
 
 /**
@@ -20,6 +23,36 @@ import grails.gorm.MultiTenant
  * without perhaps knowing which agreement controls that right.
  *
  */
+@BindUsingWhenRef({ obj, propName, source ->
+  
+  // Initialize the data var as the property from the binding source.
+  def data = source
+  
+  // If the data is asking for null binding then ensure we return here.
+  if (data == null) {
+    return null
+  }
+  
+  final String type = data.type?.toLowerCase()
+  
+  def match
+  if (data.id) {
+    match = type == 'external' ? ExternalEntitlement.findByIdAndOwner(data.id, obj) : Entitlement.findByIdAndOwner(data.id, obj)
+    if (!match) {
+      // Not found should return null
+      return null
+    }
+  } 
+
+  if (!match) {
+    match = type == 'external' ? new ExternalEntitlement() : new Entitlement()
+    System.out.println "Using type ${type} mapped to class ${match.class.name}"
+  }
+  
+  DataBindingUtils.bindObjectToInstance(match, data)
+  match.save(failOnError:true)
+  match
+})
 public class Entitlement implements MultiTenant<Entitlement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
