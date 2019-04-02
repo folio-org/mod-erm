@@ -36,17 +36,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   Date contentUpdated
 
-  // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
-  String type
-
-  // These three properties allow us to create an entitlement which is externally defined. An externally defined
-  // entitlement does not link to a resource in the tenant database, but instead will use API calls to define
-  // the contents of a package. An example would be Authority:'eHoldings', reference: '301-3707', label 'Bentham science complete
-  // as defined in EKB'
-  String authority
-  String reference
-  String label
-
   static belongsTo = [
     owner:SubscriptionAgreement
   ]
@@ -76,16 +65,14 @@ public class Entitlement implements MultiTenant<Entitlement> {
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
              resource column: 'ent_resource_fk'
-                 type column: 'ent_type'
               enabled column: 'ent_enabled'
        contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
-            authority column: 'ent_authority'
-            reference column: 'ent_reference'
-                label column: 'ent_label'
              coverage cascade: 'all-delete-orphan'
-
+             
+             // This repurposes the column added previously.
+             descriminator column: 'ent_type', value: null
   }
 
   static constraints = {
@@ -103,15 +90,10 @@ public class Entitlement implements MultiTenant<Entitlement> {
           })
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
-
-              type(nullable:true,  blank:false)
            enabled(nullable:true,  blank:false)
     contentUpdated(nullable:true,  blank:false)
         activeFrom(nullable:true,  blank:false)
           activeTo(nullable:true,  blank:false)
-         authority(nullable:true,  blank:false)
-         reference(nullable:true,  blank:false)
-             label(nullable:true,  blank:false)
   }
   
   @Transient
