@@ -46,7 +46,6 @@ import grails.web.databinding.DataBindingUtils
 
   if (!match) {
     match = type == 'external' ? new ExternalEntitlement() : new Entitlement()
-    System.out.println "Using type ${type} mapped to class ${match.class.name}"
   }
   
   DataBindingUtils.bindObjectToInstance(match, data)
