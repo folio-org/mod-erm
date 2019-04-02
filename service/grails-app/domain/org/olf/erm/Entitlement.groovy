@@ -72,7 +72,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
              coverage cascade: 'all-delete-orphan'
              
              // This repurposes the column added previously.
-             descriminator column: 'ent_type', value: null
+             discriminator column: 'ent_type', value: 'null'
   }
 
   static constraints = {
