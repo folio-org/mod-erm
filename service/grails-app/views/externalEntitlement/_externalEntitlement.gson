@@ -28,6 +28,7 @@ if(externalEntitlement.respondsTo(objectProperty)){
 }
 
 json {
+  'id' externalEntitlement.id
   'type' 'external'
   'authority' externalEntitlement.getAuthority()
   'reference' externalEntitlement.getReference()  
