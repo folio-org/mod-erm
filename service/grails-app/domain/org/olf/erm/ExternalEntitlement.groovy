@@ -14,7 +14,7 @@ class ExternalEntitlement extends Entitlement implements MultiTenant<ExternalEnt
   String authority
   
   @OkapiLookup(
-    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/titles" }/${obj.reference}',
+    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
     converter = {
       def map = [
         label: it.data?.attributes?.name,
@@ -35,7 +35,7 @@ class ExternalEntitlement extends Entitlement implements MultiTenant<ExternalEnt
             reference column: 'ent_reference'
                 
          // Keeps the previous data correct.
-         discriminator value: 'external'
+         discriminator 'external'
   }
   
   static constraints = {
