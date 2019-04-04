@@ -71,7 +71,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
       // Merge external coverages.
       final boolean isPackage = theType?.toLowerCase() == 'package'
       delegate.metaClass.external_customCoverage = false
-      final def custCoverage = it.data?.attributes?.getAt("customCoverage{isPackage ? '' : 's'}")
+      final def custCoverage = it.data?.attributes?.get("customCoverage{isPackage ? '' : 's'}")
       if (custCoverage) {
         custCoverage.each { Map <String, String> coverageEntry ->
           if (isPackage) {
