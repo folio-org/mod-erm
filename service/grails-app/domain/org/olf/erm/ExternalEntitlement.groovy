@@ -16,9 +16,13 @@ class ExternalEntitlement extends Entitlement implements MultiTenant<ExternalEnt
   @OkapiLookup(
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
     converter = {
+      
+      final String theType = it.data?.attributes?.publicationType ?:
+         it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
+      
       def map = [
         label: it.data?.attributes?.name,
-        type: (it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})),
+        type: (theType),
         provider: it.data?.attributes?.providerName
       ]
       def count = it.data?.attributes?.titleCount
