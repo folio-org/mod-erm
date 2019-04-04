@@ -11,8 +11,11 @@ import org.olf.kb.PlatformTitleInstance
 import com.k_int.web.toolkit.databinding.BindUsingWhenRef
 
 import grails.databinding.BindInitializer
+import grails.databinding.SimpleMapDataBindingSource
 import grails.gorm.MultiTenant
+import grails.util.GrailsNameUtils
 import grails.web.databinding.DataBindingUtils
+import groovy.util.logging.Slf4j
 
 
 /**
@@ -24,35 +27,48 @@ import grails.web.databinding.DataBindingUtils
  *
  */
 @BindUsingWhenRef({ obj, propName, source ->
+  Entitlement.bindEntitlement(obj, propName, source)
+})
+@Slf4j
+public class Entitlement implements MultiTenant<Entitlement> {
   
-  // Initialize the data var as the property from the binding source.
-  def data = source
-  
-  // If the data is asking for null binding then ensure we return here.
-  if (data == null) {
-    return null
-  }
-  
-  final String type = data.type?.toLowerCase()
-  
-  def match
-  if (data.id) {
-    match = type == 'external' ? ExternalEntitlement.findByIdAndOwner(data.id, obj) : Entitlement.findByIdAndOwner(data.id, obj)
-    if (!match) {
-      // Not found should return null
+  protected static Entitlement bindEntitlement (obj, propName, source) {
+    
+    if (source[propName] instanceof Entitlement) {
+      // Property access.
+      obj[propName] = source[propName]
+      return obj[propName]
+    }
+    
+    log.debug "bindEntitlement ${source} to ${obj.class}.${propName}"
+    // If the data is asking for null binding then ensure we return here.
+    if (source == null) {
       return null
     }
-  } 
-
-  if (!match) {
-    match = type == 'external' ? new ExternalEntitlement() : new Entitlement()
+    
+    final String type = source.getAt('type')?.toLowerCase()
+    final Serializable id = source.getAt('id')
+    def match
+    if (id) {
+      match = type == 'external' ? ExternalEntitlement.get(id) : Entitlement.get(id) 
+      if (!match) {
+        // Not found should return null
+        return null
+      }
+    } else {
+      
+    }
+  
+    if (!match && !id) {
+      match = type == 'external' ? new ExternalEntitlement() : new Entitlement()
+    }
+  
+    DataBindingUtils.bindObjectToInstance(match, source)
+    match.save(failOnError:true, flush:true)
+    match
   }
   
-  DataBindingUtils.bindObjectToInstance(match, data)
-  match.save(failOnError:true)
-  match
-})
-public class Entitlement implements MultiTenant<Entitlement> {
+  
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
   String id
