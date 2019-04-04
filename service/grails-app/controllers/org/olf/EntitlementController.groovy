@@ -1,7 +1,6 @@
 package org.olf
 
 import org.olf.erm.Entitlement
-import org.olf.erm.ExternalEntitlement
 
 import com.k_int.okapi.OkapiTenantAwareController
 
@@ -21,7 +20,7 @@ class EntitlementController extends OkapiTenantAwareController<EntitlementContro
   }
   
   def external() {
-    ExternalEntitlement ent = new ExternalEntitlement ()
+    Entitlement ent = new Entitlement (type: 'external')
     ent.properties = params
     
     // Ensure we have uppercase reference.
