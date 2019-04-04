@@ -53,7 +53,10 @@ public class Entitlement implements MultiTenant<Entitlement> {
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
     converter = {
       // delegate, owner and thisObject should be the instance of Entitlement
-      log.debug "Converter called with delegate: ${delegate} and it: ${it}"
+      final Entitlement outerEntitlement = delegate
+      
+      log.debug "Converter called with delegate: ${outerEntitlement} and it: ${it}"
+      
       final String theType = it.data?.attributes?.publicationType ?:
          it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
       
@@ -70,24 +73,34 @@ public class Entitlement implements MultiTenant<Entitlement> {
       
       // Merge external coverages.
       final boolean isPackage = theType?.toLowerCase() == 'package'
-      delegate.metaClass.external_customCoverage = false
-      final def custCoverage = it.data?.attributes?.get("customCoverage{isPackage ? '' : 's'}")
+      
+      log.debug "${isPackage ? 'Is' : 'Is not'} Package"
+      
+      outerEntitlement.metaClass.external_customCoverage = false
+      
+      final def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
       if (custCoverage) {
+      
+        log.debug "Found custom coverage."
         custCoverage.each { Map <String, String> coverageEntry ->
           if (isPackage) {
             if (coverageEntry.beginCoverage && coverageEntry.endCoverage) {
-              delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
-              delegate.metaClass.external_customCoverage = true
+              
+              log.debug "Adding custom package coverage."
+              outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+              outerEntitlement.metaClass.external_customCoverage = true
             }
           } else {
-            delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
-            delegate.metaClass.external_customCoverage = true
+            log.debug "Adding custom title coverage."
+            outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+            outerEntitlement.metaClass.external_customCoverage = true
           }
         }
         
       } else if (!isPackage) {
+        log.debug "Adding managed title coverage."
         it.data?.attributes?.managedCoverages?.each { Map <String, String> coverageEntry ->
-          delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+          outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
         }
       }
       
