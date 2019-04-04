@@ -20,8 +20,11 @@ class EntitlementController extends OkapiTenantAwareController<EntitlementContro
   }
   
   def external() {
-    Entitlement ent = new Entitlement (type: 'external')
+    Entitlement ent = new Entitlement ()
     ent.properties = params
+    
+    // Force external type.
+    ent.type 'external'
     
     // Ensure we have uppercase reference.
     ent.authority = ent.authority?.toUpperCase()
