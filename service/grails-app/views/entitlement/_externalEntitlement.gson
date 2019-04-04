@@ -39,11 +39,12 @@ json {
   'contentUpdated' entitlement.getContentUpdated()
   'haveAccess' entitlement.getHaveAccess()
   
+  if (entitlement.hasProperty('external_customCoverage')) {
+    'customCoverage' entitlement.getAt('external_customCoverage')
+  }
+  
   if (entitlement.coverage) {
     'coverage' g.render (entitlement.coverage)
-    if (entitlement.hasProperty('external_customCoverage')) { 
-      'customCoverage' entitlement.getAt('external_customCoverage')
-    }
   }
   
   if (remoteObjValue) {
