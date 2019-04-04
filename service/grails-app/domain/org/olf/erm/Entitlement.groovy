@@ -13,6 +13,8 @@ import com.k_int.okapi.remote_resources.OkapiLookup
 
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
+import groovy.util.logging.Slf4j
+import java.time.LocalDate
 
 
 /**
@@ -23,6 +25,7 @@ import grails.gorm.MultiTenant
  * without perhaps knowing which agreement controls that right.
  *
  */
+@Slf4j
 public class Entitlement implements MultiTenant<Entitlement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
@@ -50,7 +53,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
     converter = {
       // delegate, owner and thisObject should be the instance of Entitlement
-      
+      log.debug "Converter called with delegate: ${delegate} and it: ${it}"
       final String theType = it.data?.attributes?.publicationType ?:
          it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
       
@@ -59,27 +62,32 @@ public class Entitlement implements MultiTenant<Entitlement> {
         type: (theType),
         provider: it.data?.attributes?.providerName
       ]
+      
       def count = it.data?.attributes?.titleCount
       if (count) {
         map.titleCount = count
       }
       
-      // Merge coverages.
-      final def custCoverage = it.data?.customCoverages
+      // Merge external coverages.
+      final boolean isPackage = theType?.toLowerCase() == 'package'
+      delegate.metaClass.external_customCoverage = false
+      final def custCoverage = it.data?.attributes?.getAt("customCoverage{isPackage ? '' : 's'}")
       if (custCoverage) {
         custCoverage.each { Map <String, String> coverageEntry ->
-          if (theType?.toLowerCase() == 'package') {
+          if (isPackage) {
             if (coverageEntry.beginCoverage && coverageEntry.endCoverage) {
-              delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage)
+              delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+              delegate.metaClass.external_customCoverage = true
             }
           } else {
-            delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage ?: null)
+            delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
+            delegate.metaClass.external_customCoverage = true
           }
         }
         
-      } else if (theType?.toLowerCase() != 'package') {
-        it.data?.managedCoverages?.each { Map <String, String> coverageEntry ->
-          delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage ?: null)
+      } else if (!isPackage) {
+        it.data?.attributes?.managedCoverages?.each { Map <String, String> coverageEntry ->
+          delegate.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
         }
       }
       
