@@ -1,9 +1,10 @@
 package org.olf.erm
 
+import java.time.LocalDate
+
 import javax.persistence.Transient
 
 import org.hibernate.Hibernate
-import org.junit.After
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -14,7 +15,6 @@ import com.k_int.okapi.remote_resources.OkapiLookup
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
-import java.time.LocalDate
 
 
 /**
