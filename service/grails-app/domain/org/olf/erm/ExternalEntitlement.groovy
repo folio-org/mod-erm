@@ -33,7 +33,7 @@ class ExternalEntitlement extends Entitlement implements MultiTenant<ExternalEnt
   static mapping = {
             authority column: 'ent_authority'
             reference column: 'ent_reference'
-                
+            
          // Keeps the previous data correct.
          discriminator 'external'
   }
