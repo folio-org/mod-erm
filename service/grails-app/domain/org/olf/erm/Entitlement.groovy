@@ -3,6 +3,7 @@ package org.olf.erm
 import javax.persistence.Transient
 
 import org.hibernate.Hibernate
+import org.junit.After
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -48,6 +49,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
   @OkapiLookup(
     value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
     converter = {
+      // delegate, owner and thisObject should be the instance of Entitlement
       
       final String theType = it.data?.attributes?.publicationType ?:
          it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
@@ -61,6 +63,26 @@ public class Entitlement implements MultiTenant<Entitlement> {
       if (count) {
         map.titleCount = count
       }
+      
+      // Merge coverages.
+      final def custCoverage = it.data?.customCoverages
+      if (custCoverage) {
+        custCoverage.each { Map <String, String> coverageEntry ->
+          if (theType?.toLowerCase() == 'package') {
+            if (coverageEntry.beginCoverage && coverageEntry.endCoverage) {
+              delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage)
+            }
+          } else {
+            delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage ?: null)
+          }
+        }
+        
+      } else if (theType?.toLowerCase() != 'package') {
+        it.data?.managedCoverages?.each { Map <String, String> coverageEntry ->
+          delegate.coverage << new HoldingsCoverage (startDate: coverageEntry.beginCoverage, endDate: coverageEntry.endCoverage ?: null)
+        }
+      }
+      
       map
     }
   )
@@ -75,10 +97,24 @@ public class Entitlement implements MultiTenant<Entitlement> {
     poLines: POLineProxy
   ]
 
+  Set<HoldingsCoverage> coverage = []
+  
   static mappedBy = [
     coverage: 'entitlement',
     poLines: 'owner'
   ]
+  
+  // We should 
+  def beforeValidate() {
+    this.type = this.type?.toLowerCase()
+    this.authority = this.authority?.toUpperCase()
+    
+    if (this.type == 'external') {
+      // Clear the coverage.
+      this.coverage = []
+    }
+  }
+  
 
   // Allow users to individually switch on or off this content item. If null, should default to the agreement
   // enabled setting. The activeFrom and activeTo dates determine if a content item is "live" or not. This flag
