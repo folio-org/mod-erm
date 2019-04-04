@@ -1,11 +1,10 @@
 import groovy.transform.*
 import org.olf.erm.Entitlement
-import org.olf.erm.ExternalEntitlement
 
 @Field Entitlement entitlement
 
-if (entitlement instanceof ExternalEntitlement) {
-  json g.render(entitlement as ExternalEntitlement)
+if (entitlement.type == 'external') {
+  json tmpl."externalEntitlement"(entitlement)
 } else {
 
   json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
