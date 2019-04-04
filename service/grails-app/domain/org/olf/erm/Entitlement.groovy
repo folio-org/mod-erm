@@ -8,14 +8,10 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
-import com.k_int.web.toolkit.databinding.BindUsingWhenRef
+import com.k_int.okapi.remote_resources.OkapiLookup
 
 import grails.databinding.BindInitializer
-import grails.databinding.SimpleMapDataBindingSource
 import grails.gorm.MultiTenant
-import grails.util.GrailsNameUtils
-import grails.web.databinding.DataBindingUtils
-import groovy.util.logging.Slf4j
 
 
 /**
@@ -26,49 +22,7 @@ import groovy.util.logging.Slf4j
  * without perhaps knowing which agreement controls that right.
  *
  */
-@BindUsingWhenRef({ obj, propName, source ->
-  Entitlement.bindEntitlement(obj, propName, source)
-})
-@Slf4j
 public class Entitlement implements MultiTenant<Entitlement> {
-  
-  protected static Entitlement bindEntitlement (obj, propName, source) {
-    
-    if (source[propName] instanceof Entitlement) {
-      // Property access.
-      obj[propName] = source[propName]
-      return obj[propName]
-    }
-    
-    log.debug "bindEntitlement ${source} to ${obj.class}.${propName}"
-    // If the data is asking for null binding then ensure we return here.
-    if (source == null) {
-      return null
-    }
-    
-    final String type = source.getAt('type')?.toLowerCase()
-    final Serializable id = source.getAt('id')
-    def match
-    if (id) {
-      match = type == 'external' ? ExternalEntitlement.get(id) : Entitlement.get(id) 
-      if (!match) {
-        // Not found should return null
-        return null
-      }
-    } else {
-      
-    }
-  
-    if (!match && !id) {
-      match = type == 'external' ? new ExternalEntitlement() : new Entitlement()
-    }
-  
-    DataBindingUtils.bindObjectToInstance(match, source)
-    match.save(failOnError:true, flush:true)
-    match
-  }
-  
-  
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
 
   String id
@@ -83,6 +37,34 @@ public class Entitlement implements MultiTenant<Entitlement> {
   Date activeTo
 
   Date contentUpdated
+
+  // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
+  String type
+
+  // These three properties allow us to create an entitlement which is externally defined. An externally defined
+  // entitlement does not link to a resource in the tenant database, but instead will use API calls to define its contents
+  String authority
+  
+  @OkapiLookup(
+    value = '${obj.authority?.toLowerCase() == "ekb-package" ? "/eholdings/packages" : "/eholdings/resources" }/${obj.reference}',
+    converter = {
+      
+      final String theType = it.data?.attributes?.publicationType ?:
+         it.data?.type?.replaceAll(/^\s*([\S])(.*?)s?\s*$/, {match, String firstChar, String nonePlural -> "${firstChar.toUpperCase()}${nonePlural}"})
+      
+      def map = [
+        label: it.data?.attributes?.name,
+        type: (theType),
+        provider: it.data?.attributes?.providerName
+      ]
+      def count = it.data?.attributes?.titleCount
+      if (count) {
+        map.titleCount = count
+      }
+      map
+    }
+  )
+  String reference
 
   static belongsTo = [
     owner:SubscriptionAgreement
@@ -106,42 +88,76 @@ public class Entitlement implements MultiTenant<Entitlement> {
     Boolean.TRUE // Default this value to true when binding.
   })
   Boolean enabled
-  
 
   static mapping = {
                    id column: 'ent_id', generator: 'uuid', length:36
               version column: 'ent_version'
                 owner column: 'ent_owner_fk'
              resource column: 'ent_resource_fk'
+                 type column: 'ent_type'
               enabled column: 'ent_enabled'
        contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
+            authority column: 'ent_authority'
+            reference column: 'ent_reference'
              coverage cascade: 'all-delete-orphan'
-             
-             // This repurposes the column added previously.
-             discriminator column: 'ent_type', value: 'null'
   }
 
   static constraints = {
             owner(nullable:true,  blank:false)
 
           // Now that resources can be internally or externally defined, the internal resource link CAN be null,
-          // but if it is, there should be authorty, reference and label properties.
+          // but if it is, there should be authorty, and reference properties.
           resource (nullable:true, validator: { val, inst ->
-            if ( val ) {
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have null internal resource reference.
+              return val != null ? ['externalEntitlement.resource.not.null'] : true
+              
+            } else if ( val ) {
               Class c = Hibernate.getClass(val)
               if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
                 ['allowedTypes', "${c.name}", "entitlement", "resource"]
               }
+            } else {
+              
+              // Resource is null but type is internal.
+              return ['entitlement.resource.is.null']
             }
           })
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
-           enabled(nullable:true,  blank:false)
-    contentUpdated(nullable:true,  blank:false)
-        activeFrom(nullable:true,  blank:false)
-          activeTo(nullable:true,  blank:false)
+
+              type(nullable:true, blank:false)
+           enabled(nullable:true, blank:false)
+    contentUpdated(nullable:true, blank:false)
+        activeFrom(nullable:true, blank:false)
+          activeTo(nullable:true, blank:false)
+          
+         authority(nullable:true, blank:false, validator: { val, inst ->
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have authority.
+              return val == null ? ['externalEntitlement.authority.is.null'] : true
+              
+            } else {
+              // Resource is null but type is internal.
+              return val != null ? ['externalEntitlement.authority.not.null'] : true
+            }
+          })
+         
+         reference (nullable:true, blank:false, validator: { val, inst ->
+            
+            if (inst.type?.toLowerCase() == 'external') {
+              // External resource should have authority.
+              return val == null ? ['externalEntitlement.reference.is.null'] : true
+              
+            } else {
+              // Resource is null but type is internal.
+              return val != null ?  ['externalEntitlement.reference.not.null'] : true
+            }
+          })
   }
   
   @Transient
