@@ -77,15 +77,19 @@ public class Entitlement implements MultiTenant<Entitlement> {
       log.debug "${isPackage ? 'Is' : 'Is not'} Package"
       outerEntitlement.metaClass.external_customCoverage = false
       
-      final def custCoverage =  it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
+      final def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
+      
+      log.debug "Custom Coverage: ${custCoverage}"
       if (custCoverage) {
         
+        log.debug "Found custom coverage."
         // Simply ensure a collection.
-        if (!Collection.isAssignableFrom(custCoverage.class)) {
+        if (!(custCoverage instanceof Collection)) {
+          log.debug "Found single custom coverage entry turn into a collection."
           custCoverage = [custCoverage]
+          log.debug "...${custCoverage}"
         }
         
-        log.debug "Found custom coverage."
         custCoverage.each { Map <String, String> coverageEntry ->
           if (isPackage) {
             if (coverageEntry.beginCoverage && coverageEntry.endCoverage) {
@@ -102,7 +106,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
         }
         
       } else if (!isPackage) {
-        log.debug "Adding managed title coverage."
+        log.debug "Adding managed title coverages."
         it.data?.attributes?.managedCoverages?.each { Map <String, String> coverageEntry ->
           outerEntitlement.coverage << new HoldingsCoverage (startDate: LocalDate.parse(coverageEntry.beginCoverage), endDate: coverageEntry.endCoverage ? LocalDate.parse(coverageEntry.endCoverage): null)
         }
