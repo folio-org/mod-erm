@@ -75,12 +75,16 @@ public class Entitlement implements MultiTenant<Entitlement> {
       final boolean isPackage = theType?.toLowerCase() == 'package'
       
       log.debug "${isPackage ? 'Is' : 'Is not'} Package"
-      
       outerEntitlement.metaClass.external_customCoverage = false
       
-      final def custCoverage = it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
+      final def custCoverage =  it.data?.attributes?.getAt("customCoverage${isPackage ? '' : 's'}")
       if (custCoverage) {
-      
+        
+        // Simply ensure a collection.
+        if (!Collection.isAssignableFrom(custCoverage.class)) {
+          custCoverage = [custCoverage]
+        }
+        
         log.debug "Found custom coverage."
         custCoverage.each { Map <String, String> coverageEntry ->
           if (isPackage) {
