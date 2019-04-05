@@ -41,6 +41,10 @@ logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', WARN)
 //logger("org.hibernate.type.descriptor.sql.BasicBinder", TRACE)
 
 
+//logger("org.hibernate.SQL", DEBUG)
+//logger("org.hibernate.type.descriptor.sql.BasicBinder", TRACE)
+
+
 // Uncomment below logging for output of OKAPI client http.
 logger ('com.k_int.okapi.OkapiClient', DEBUG)
 //logger 'groovy.net.http.JavaHttpBuilder', DEBUG
