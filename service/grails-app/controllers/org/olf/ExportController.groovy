@@ -27,22 +27,21 @@ class ExportController extends OkapiTenantAwareController<TitleInstance> {
   ExportService exportService
 	
   /**
-   * main index method (just a place holder)
+   * main index method (by default, return titles as json)
    */
   def index() {
       log.debug("ExportController::index");
-      def result = ['ExportController':'index']
-      respond(result, status:200)
+	  def results = exportService.titles()
+	  respond results 
   }
 
   /*
-   * kbart export
+   * kbart export (placeholder)
    */
   def kbart() {
       log.debug("ExportController::kbart"); 
-	  def results = exportService.kbart()
-	  // println results as JSON
-	  respond results
+	  def result = ['ExportController':'kbart']
+	  respond result
   }
 
 }
