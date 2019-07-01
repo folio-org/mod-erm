@@ -16,9 +16,14 @@ import org.olf.erm.*
 @Transactional
 public class ExportService { 
 	
-  private List<TitleInstance> kbart() { 
+  private List<TitleInstance> titles() { 
+	  List<TitleInstance> titles = TitleInstance.entitled.list()
+	  return titles 
+  }
+  
+  private String kbart() {
 	  /*
-	   The JSON should include:
+	   The exportshould include:
 	  
 	  Agreement name (desirable, not required)
 	  Agreement ID (desirable, not required)
@@ -30,20 +35,8 @@ public class ExportService {
 	  E-resource type
 	  Platform
 	  Package
-	  */ 
+	  */
 	  
-	  List<TitleInstance> titles = TitleInstance.createCriteria().list { 
-		  createAlias ('platformInstances', 'pi') 
-		  createAlias ('pi.packageOccurences', 'pi_po', JoinType.LEFT_OUTER_JOIN)
-		  createAlias ('pi_po.pkg', 'pi_po_pkg', JoinType.LEFT_OUTER_JOIN)
-		  or {
-			isNotEmpty 'pi.entitlements'
-			isNotEmpty 'pi_po.entitlements'
-			isNotEmpty 'pi_po_pkg.entitlements'
-		  }
-	  }
-	  
-	  return titles
-  } 
+  }
 
 }
