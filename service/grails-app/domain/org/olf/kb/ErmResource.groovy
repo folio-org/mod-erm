@@ -4,6 +4,7 @@ import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
+import java.time.LocalDate
 
 /**
  * an ErmResource - Superclass
@@ -18,8 +19,8 @@ public class ErmResource implements MultiTenant<ErmResource> {
   RefdataValue type
   RefdataValue subType
 
-  Date dateCreated
-  Date lastUpdated
+  LocalDate dateCreated
+  LocalDate lastUpdated
   
   static hasMany = [
     coverage: CoverageStatement,
