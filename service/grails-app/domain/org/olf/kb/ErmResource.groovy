@@ -19,8 +19,8 @@ public class ErmResource implements MultiTenant<ErmResource> {
   RefdataValue type
   RefdataValue subType
 
-  LocalDate dateCreated
-  LocalDate lastUpdated
+  Date dateCreated
+  Date lastUpdated
   
   static hasMany = [
     coverage: CoverageStatement,
