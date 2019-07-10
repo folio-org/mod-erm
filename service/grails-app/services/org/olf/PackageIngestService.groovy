@@ -33,7 +33,7 @@ public class PackageIngestService {
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
 
-  private void logEvent(String message, String detail) {
+  private void addLogEntry (String message, String detail) {
     new LogEntry( 
       message: message, 
       detail: detail,
@@ -189,13 +189,13 @@ public class PackageIngestService {
               else {
                 String message = "[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}"
                 log.error(message)
-                logEvent(message, null)
+                addLogEntry(message, null)
               }
             }
             catch ( Exception e ) {
               String message = "[${result.titleCount}] problem"
               log.error(message,e)
-              logEvent(message, e.getMessage())
+              addLogEntry(message, e.getMessage())
             }
           }
           else {
