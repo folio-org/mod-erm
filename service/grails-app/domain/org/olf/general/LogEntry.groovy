@@ -12,11 +12,11 @@ class LogEntry implements MultiTenant<LogEntry> {
   String detail
 
   static mapping = {
-              id column: 'el_id', generator: 'uuid2', length:36
-         message column: 'el_message'
-     dateCreated column: 'el_datecreated'
-          origin column: 'el_origin'
-          detail column: 'el_detail'
+              id column: 'le_id', generator: 'uuid2', length:36
+         message column: 'le_message'
+     dateCreated column: 'le_datecreated'
+          origin column: 'le_origin'
+          detail column: 'le_detail'
   }
   static constraints = {
          message(nullable:true, blank:false)

@@ -9,6 +9,5 @@ databaseChangeLog = {
   include file: 'update-mod-agreements-1-7.groovy'
   include file: 'suppl-docs.groovy'
   include file: 'add-file-upload.groovy'
-  include file: 'add-event-log.groovy'
   include file: 'update-mod-agreements-1-8.groovy'
 }
