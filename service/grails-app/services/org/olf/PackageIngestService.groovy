@@ -6,6 +6,7 @@ import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
+import org.olf.general.Log
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
@@ -31,6 +32,14 @@ public class PackageIngestService {
   // managed by the vendors app. If we are running in folio mode, this service hides the detail of
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
+
+  private void logEvent(String message, String detail) {
+    new Log( 
+      message: message, 
+      detail: detail,
+      origin: this.getClass().getSimpleName()
+    ).save(flush: true, failOnError:false)
+  }
 
   public Map upsertPackage(Map package_data) {
     return upsertPackage(package_data,'LOCAL')
@@ -178,11 +187,15 @@ public class PackageIngestService {
                 pci.save(flush:true, failOnError:true)
               }
               else {
-                log.error("[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}")
+                String message = "[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}"
+                log.error(message)
+                logEvent(message, null)
               }
             }
             catch ( Exception e ) {
-              log.error("[${result.titleCount}] problem",e)
+              String message = "[${result.titleCount}] problem"
+              log.error(message,e)
+              logEvent(message, e.getMessage())
             }
           }
           else {
@@ -191,7 +204,9 @@ public class PackageIngestService {
         }
       }
       catch ( Exception e ) {
-        log.error("Problem with line ${pc} in package load. Ignoring this row",e)
+        String message = "Problem with line ${pc} in package load. Ignoring this row"
+        logEvent(message, e.getMessage())
+        log.error(message,e)
       }
 
       // {
