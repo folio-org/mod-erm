@@ -1,12 +1,12 @@
 package org.olf
 
+import org.olf.general.jobs.LogEntry
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.Platform
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
-import org.olf.general.LogEntry
 
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
