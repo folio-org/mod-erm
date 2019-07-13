@@ -35,7 +35,7 @@ public class PackageIngestService {
 
   private void addLogEntry (String message, String detail) {
     new LogEntry( 
-      message: message, 
+      message: message,
       detail: detail,
       origin: this.getClass().getName()
     ).save(flush: true, failOnError:false)

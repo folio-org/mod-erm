@@ -1,5 +1,6 @@
 package org.olf.general.jobs
 
+import java.time.Instant
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
@@ -7,32 +8,36 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 import javax.annotation.PostConstruct
-
-import org.grails.datastore.mapping.engine.event.PostInsertEvent
-import org.grails.datastore.mapping.multitenancy.MultiTenantCapableDatastore
-import org.grails.orm.hibernate.HibernateDatastore
-
+import org.olf.KbHarvestService
+import com.k_int.okapi.OkapiTenantAdminService
+import com.k_int.web.toolkit.refdata.Defaults
+import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.events.EventPublisher
-import grails.events.annotation.Subscriber
+import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
 
 @Slf4j
 class JobRunnerService implements EventPublisher {
   int globalConcurrentJobs = 3 // We need to be careful to not completely tie up all our resource
-  
   private ExecutorService executorSvc
+  
+  OkapiTenantAdminService okapiTenantAdminService
+  KbHarvestService kbHarvestService
   
   @PostConstruct
   void init() {
     // Set up the Executor
     executorSvc = Executors.newFixedThreadPool(globalConcurrentJobs)
     
+    // SO: This is not ideal. We don't want to limit jobs globally to 1 ideally. It should be 
+    // 1 per tenant, but that will involve implementing custom handling for the queue and executor.
+    // While we only have 1 tenant, this will suffice.
     new ThreadPoolExecutor(
-      3,  // Core pool Idle threads.
-      3, // 100 threads max.
-      1000, // 1 second wait.
+      1, // Core pool Idle threads.
+      1, // Treads max.
+      1000, // Millisecond wait.
       TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
-      new LinkedBlockingQueue<Runnable>() // Use a synchronous queue
+      new LinkedBlockingQueue<Runnable>() // Blocking queue
     )
     
     // Get the list of jobs from all tenants that were interrupted by app termination and
@@ -45,36 +50,100 @@ class JobRunnerService implements EventPublisher {
     notify('jobs:job_runner_ready')
   }
   
-  @Subscriber
-  void onPostInsert(PostInsertEvent event) {
-    log.info 'onPostInsert()'
-    if (PersistentJob.class.isAssignableFrom(event.entity.javaClass)) {
-      final def source = event.source
-      HibernateDatastore k
-      if (MultiTenantCapableDatastore.class.isAssignableFrom(source.class)) {
-        MultiTenantCapableDatastore mt_source = source
-        // Rasie job created event.
-        notify('jobs:job_created')
-      }
+//  @Subscriber('gorm:postInsert')
+//  void onPostInsert(PostInsertEvent event) {
+//    log.info 'onPostInsert()'
+//    if (PersistentJob.class.isAssignableFrom(event.entity.javaClass)) {
+//      final def source = event.source
+//      HibernateDatastore k
+//      if (MultiTenantCapableDatastore.class.isAssignableFrom(source.class)) {
+//        MultiTenantCapableDatastore mt_source = source
+//        // Rasie job created event.
+//        notify('jobs:job_created')
+//      }
+//    }
+//  }
+  
+//  @Subscriber('jobs:job_created')
+  void handleNewJob(final String jobId, final String tenantId) {
+    // Attempt to append to queue.
+    log.info 'onJobCreated()'
+    enqueueJob(jobId, tenantId)
+  }
+  
+  void setInterruptedJobsState() {
+    RefdataValue inProgress = PersistentJob.lookupStatus('In progress')
+    PersistentJob.findAllByStatus(inProgress).each { PersistentJob j ->
+      j.interrupted()
     }
   }
   
-  @Subscriber
-  void onJobCreated(final String jobId, final String tenantId) {
-    // Attempt to append to queue.
-    log.info 'onJobCreated()'
-    enqueueJob()
-  }
-  
-  void getInterruptedJobs() {
-    
-  }
-  
   void populateJobQueue() {
+    final Map<Instant, List<String>> queue_order = new TreeMap<Instant, List<String>>()
+        
+    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
+      log.debug "Perform trigger sync for tenant schema ${tenant_schema_id}"
+      final String tid = tenant_schema_id as String
+      Tenants.withId(tenant_schema_id) {
+        setInterruptedJobsState()
+        
+        // Now load all queued jobs.
+        RefdataValue queued = PersistentJob.lookupStatus('Queued')
+        PersistentJob.findAllByStatus(queued).each { PersistentJob j ->
+          queue_order.put(j.dateCreated, [j.id, tid])
+        }
+      }
+    }
     
+    // Enqueue each job.
+    (queue_order.keySet() as List).reverse().each { Instant created ->
+      def ids = queue_order[created]
+      enqueueJob(ids[0], ids[1])
+    }
   }
   
-  void enqueueJob() {
+  void enqueueJob(final String jobId, final String tenantId) {
     
+    // Use me within nested closures to ensure we are talking about this service.
+    def me = this
+    
+    Tenants.withId(tenantId) {
+      PersistentJob job = PersistentJob.load(jobId)
+      Runnable work = job.getWork()
+      if (Closure.isAssignableFrom(work.class)) {
+        // Change the delegate to this class so we can control access to beans.
+        Closure workC = work as Closure
+        workC.setDelegate(me)
+        workC.setResolveStrategy(Closure.DELEGATE_FIRST)
+        
+        // Also pass in the current tenant id.
+        work = workC.curry(tenantId)
+      }
+      
+      // We should wrap the work in a closure so we can ensure tenant id is set
+      // as well as setting the job status on execution
+      final Runnable currentWork = work
+      work = { final String tid, final String jid, final Runnable wrk ->
+        Tenants.withId(tid) {
+          PersistentJob.withNewSession {
+            PersistentJob.get(jid).begin()
+          }
+          
+          try {
+            wrk()
+            PersistentJob.withNewSession {
+              PersistentJob.get(jid).end()
+            }
+          } catch (Exception e) {
+            PersistentJob.withNewSession {
+              PersistentJob.get(jid).fail()
+            }
+          }
+        }
+      }.curry(tenantId, jobId, work)
+      
+      // Execute the work asynchronously.
+      executorSvc.execute(work)
+    }
   }  
 }

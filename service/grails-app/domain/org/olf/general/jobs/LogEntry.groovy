@@ -23,7 +23,7 @@ class LogEntry implements MultiTenant<LogEntry> {
   def beforeValidate() {
     if (!type) {
       // Default to error.
-      setTypeFromString('Error')
+      setTypeFromString('Info')
     }
   }
   

@@ -4,8 +4,11 @@ import java.time.Instant
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.events.EventPublisher
 import grails.gorm.MultiTenant
 import grails.gorm.dirty.checking.DirtyCheck
+import grails.gorm.multitenancy.Tenants
+import grails.util.Holders
 
 @DirtyCheck
 abstract class PersistentJob implements MultiTenant<PersistentJob> {
@@ -22,15 +25,8 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   Instant started
   Instant ended
   
-  @Defaults(['Successful import', 'Partial import', 'Failed import'])
+  @Defaults(['Success', 'Partial success', 'Failure', 'Interrupted'])
   RefdataValue result
-  
-  def beforeValidate() {
-    // Set default status here.
-    if (!status) {
-      setStatusFromString('Queued')
-    }
-  }
   
   static hasMany = [
     logEntries: LogEntry
@@ -58,6 +54,48 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
          started (nullable:true)
            ended (nullable:true)
           result (nullable:true)
+  }
+  
+  def afterInsert () {
+    // Ugly work around events being raised on multi-tenant GORM entities not finding subscribers
+    // from the root context.
+    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
+    jrs.handleNewJob(this.id, Tenants.currentId())
+  }
+  
+  List<LogEntry> getErrorEntries() {
+    RefdataValue errorType = LogEntry.lookupType('Error')
+    LogEntry.findAllByType (errorType)
+  }
+  
+  void begin () {
+    this.started = Instant.now()
+    this.statusFromString = 'In progress'
+    this.save(failOnError: true)
+  }
+  
+  void end () {
+    this.ended = Instant.now()
+    this.statusFromString = 'Ended'
+    if (!result) {
+      // If errors then set to partial.
+      if (getErrorEntries()) {
+        this.resultFromString = 'Partial success'
+      } else {
+        this.resultFromString = 'Success'
+      }
+    }
+    this.save( failOnError: true, flush:true )
+  }
+  
+  void fail() {
+    this.resultFromString = 'Failure'
+    end()
+  }
+  
+  void interrupted() {
+    this.resultFromString = 'Interrupted'
+    end()
   }
   
   abstract Runnable getWork()

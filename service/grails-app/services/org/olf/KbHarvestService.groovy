@@ -4,11 +4,13 @@ import static grails.async.Promises.*
 import static groovy.transform.TypeCheckingMode.SKIP
 
 import java.text.SimpleDateFormat
+import java.time.Instant
 
+import org.olf.general.jobs.PackageIngestJob
 import org.olf.kb.RemoteKB
 import org.springframework.scheduling.annotation.Scheduled
 
-import com.k_int.okapi.OkapiTenantAdminService;
+import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.okapi.OkapiTenantResolver
 
 import grails.events.annotation.Subscriber
@@ -37,26 +39,43 @@ class KbHarvestService {
   public void onDataloadSample (final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
     log.debug "Perform trigger sync for new tenant ${tenantId} via data load event"
     final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenantId)
-    Tenants.withId(schemaName, this.&triggerCacheUpdate)
+    triggerUpdateForTenant(schemaName)
   }
   
   @Subscriber('okapi:tenant_enabled')
   public void onTenantEnabled (final String tenant_id) {
     log.debug "Perform trigger sync for new tenant ${tenant_id} via new tenant event"
     final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenant_id)
-    
-    Tenants.withId(schemaName, this.&triggerCacheUpdate) 
+    triggerUpdateForTenant(schemaName)
+  }
+  
+  @CompileStatic(SKIP)
+  private synchronized void triggerUpdateForTenant(final String tenant_schema_id) {
+    Tenants.withId(tenant_schema_id) {
+      
+      PackageIngestJob job = PackageIngestJob.findByStatusInList([
+        PackageIngestJob.lookupStatus('Queued'),
+        PackageIngestJob.lookupStatus('In progress')
+      ])
+      
+      if (!job) {
+        job = new PackageIngestJob(name: "Scheduled Ingest Job ${Instant.now()}")
+        job.setStatusFromString('Queued')
+        job.save(failOnError: true, flush: true)
+      } else {
+        log.debug('Harvester already running or scheduled. Ignore.')
+      }
+    }
   }
 
-  @Scheduled(fixedDelay = 3600000L, initialDelay = 3600000L) // Run task every hour
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 5000L) // Run task every hour
   void triggerSync() {
-    log.debug "Running scheduled KB sync for all tenants :{}", new SimpleDateFormat("dd/M/yyyy hh:mm:ss").format(new Date())
+    log.debug "Running scheduled KB sync for all tenants :{}", Instant.now()
 
     // ToDo: Don't think this will work for newly added tenants - need to investigate.
-    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_id ->
-      log.debug "Perform trigger sync for tenant ${tenant_id}"
-      
-      Tenants.withId(tenant_id, this.&triggerCacheUpdate)
+    okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
+      log.debug "Perform trigger sync for tenant schema ${tenant_schema_id}"
+      triggerUpdateForTenant(tenant_schema_id as String)
     }
   }
   
