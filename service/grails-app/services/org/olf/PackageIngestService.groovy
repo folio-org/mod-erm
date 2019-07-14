@@ -61,7 +61,7 @@ public class PackageIngestService {
       // Look up which remote kb via the name
       RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
                                                                        rectype: new Long(1),
-                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true)
+                                                                       active:Boolean.TRUE).save(failOnError:true)
 
 
       result.updateTime = System.currentTimeMillis()
@@ -88,7 +88,7 @@ public class PackageIngestService {
                              source: package_data.header.packageSource,
                           reference: package_data.header.packageSlug,
                            remoteKb: kb,
-                             vendor: vendor).save(flush:true, failOnError:true)
+                             vendor: vendor).save(failOnError:true)
       }
       result.packageId = pkg.id
     }
@@ -134,7 +134,7 @@ public class PackageIngestService {
                 if ( pti == null ) 
                   pti = new PlatformTitleInstance(titleInstance:title, 
                                                   platform:platform,
-                                                  url:pc.url).save(flush:true, failOnError:true)
+                                                  url:pc.url).save(failOnError:true)
     
     
                 // Lookup or create a package content item record for this title on this platform in this package
@@ -154,7 +154,7 @@ public class PackageIngestService {
                                                accessStart:null,
                                                accessEnd:null, 
                                                addedTimestamp:result.updateTime,
-                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
+                                               lastSeenTimestamp:result.updateTime).save(failOnError:true)
                 }
                 else {
                   // Note that we have seen the package content item now - so we don't delete it at the end.
@@ -178,7 +178,7 @@ public class PackageIngestService {
                 }
     
                 // Save needed either way
-                pci.save(flush:true, failOnError:true)
+                pci.save(failOnError:true)
               }
               else {
                 String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
@@ -252,7 +252,7 @@ public class PackageIngestService {
           try {
             log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
             removal_candidate.removedTimestamp = result.updateTime
-            removal_candidate.save(flush:true, failOnError:true)
+            removal_candidate.save(failOnError:true)
           } catch ( Exception e ) {
             log.error("Problem with line ${removal_candidate} in package load. Ignoring this row",e)
           }
