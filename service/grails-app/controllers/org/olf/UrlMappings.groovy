@@ -74,6 +74,8 @@ class UrlMappings {
 
     "/erm/knowledgebase" ( controller:'kb', action:'index')
     "/erm/knowledgebase/$action" ( controller:'kb' )
+    
+    "/erm/jobs" ( resources:'persistentJob', excludes: ['delete', 'update', 'patch', 'save'])
 
 
      // This is the URL path used by the eresources screen.
