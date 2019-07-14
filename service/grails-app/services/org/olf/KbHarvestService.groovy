@@ -42,12 +42,12 @@ class KbHarvestService {
     triggerUpdateForTenant(schemaName)
   }
   
-  @Subscriber('okapi:tenant_enabled')
-  public void onTenantEnabled (final String tenant_id) {
-    log.debug "Perform trigger sync for new tenant ${tenant_id} via new tenant event"
-    final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenant_id)
-    triggerUpdateForTenant(schemaName)
-  }
+//  @Subscriber('okapi:tenant_enabled')
+//  public void onTenantEnabled (final String tenant_id) {
+//    log.debug "Perform trigger sync for new tenant ${tenant_id} via new tenant event"
+//    final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenant_id)
+//    triggerUpdateForTenant(schemaName)
+//  }
   
   @CompileStatic(SKIP)
   private synchronized void triggerUpdateForTenant(final String tenant_schema_id) {
@@ -68,7 +68,7 @@ class KbHarvestService {
     }
   }
 
-  @Scheduled(fixedDelay = 3600000L, initialDelay = 5000L) // Run task every hour
+  @Scheduled(fixedDelay = 3600000L, initialDelay = 1000L) // Run task every hour
   void triggerSync() {
     log.debug "Running scheduled KB sync for all tenants :{}", Instant.now()
 

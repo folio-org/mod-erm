@@ -55,7 +55,7 @@ databaseChangeLog = {
         constraints(nullable: "false")
       }
 
-      column(name: "le_message", type: "VARCHAR(255)")
+      column(name: "le_message", type: "CLOB")
 
       column(name: "le_origin", type: "VARCHAR(255)")
 

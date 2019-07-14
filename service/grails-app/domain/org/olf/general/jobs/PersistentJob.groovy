@@ -1,6 +1,6 @@
 package org.olf.general.jobs
 import java.time.Instant
-
+import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -18,20 +18,22 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   String id
   String name
   
+  @CategoryId('PersistentJob.Status') // Workaround for a bug in toolkit creating a category for each extension even when not specified.
   @Defaults(['Queued', 'In progress', 'Ended'])
   RefdataValue status
+  
   List<LogEntry> logEntries
   Instant dateCreated
   Instant started
   Instant ended
   
+  @CategoryId('PersistentJob.Result') // Workaround for a bug in toolkit creating a category for each extension even when not specified.
   @Defaults(['Success', 'Partial success', 'Failure', 'Interrupted'])
   RefdataValue result
   
   static hasMany = [
     logEntries: LogEntry
   ]
-  
   
   static mappedBy = ['logEntries': 'job']
   
@@ -71,7 +73,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   void begin () {
     this.started = Instant.now()
     this.statusFromString = 'In progress'
-    this.save(failOnError: true)
+    this.save(failOnError: true, flush:true)
   }
   
   void end () {

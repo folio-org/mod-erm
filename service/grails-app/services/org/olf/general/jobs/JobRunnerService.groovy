@@ -18,6 +18,13 @@ import groovy.util.logging.Slf4j
 
 @Slf4j
 class JobRunnerService implements EventPublisher {
+  
+  private static final class JobContext {
+    Serializable jobId
+    Serializable tenantId = Tenants.CurrentTenant.get()
+  }
+  public static final ThreadLocal<JobContext> jobContext = new ThreadLocal<JobContext>()
+  
   int globalConcurrentJobs = 3 // We need to be careful to not completely tie up all our resource
   private ExecutorService executorSvc
   
@@ -27,24 +34,21 @@ class JobRunnerService implements EventPublisher {
   @PostConstruct
   void init() {
     // Set up the Executor
-    executorSvc = Executors.newFixedThreadPool(globalConcurrentJobs)
     
     // SO: This is not ideal. We don't want to limit jobs globally to 1 ideally. It should be 
     // 1 per tenant, but that will involve implementing custom handling for the queue and executor.
     // While we only have 1 tenant, this will suffice.
-    new ThreadPoolExecutor(
-      1, // Core pool Idle threads.
-      1, // Treads max.
-      1000, // Millisecond wait.
-      TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
-      new LinkedBlockingQueue<Runnable>() // Blocking queue
-    )
+//    new ThreadPoolExecutor(
+//      1, // Core pool Idle threads.
+//      1, // Treads max.
+//      1000, // Millisecond wait.
+//      TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
+//      new LinkedBlockingQueue<Runnable>() // Blocking queue
+//    )
+    executorSvc = Executors.newFixedThreadPool(1)
     
     // Get the list of jobs from all tenants that were interrupted by app termination and
     // set their states appropriately.
-    
-    // Rebuild a queue from all tenants.
-    populateJobQueue()
     
     // Raise an event to say we are ready.
     notify('jobs:job_runner_ready')
@@ -72,6 +76,7 @@ class JobRunnerService implements EventPublisher {
   }
   
   void setInterruptedJobsState() {
+    log.debug "Checking for interrupted jobs"
     RefdataValue inProgress = PersistentJob.lookupStatus('In progress')
     PersistentJob.findAllByStatus(inProgress).each { PersistentJob j ->
       j.interrupted()
@@ -79,10 +84,10 @@ class JobRunnerService implements EventPublisher {
   }
   
   void populateJobQueue() {
+    log.debug "Populating intial job queue"
     final Map<Instant, List<String>> queue_order = new TreeMap<Instant, List<String>>()
         
     okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
-      log.debug "Perform trigger sync for tenant schema ${tenant_schema_id}"
       final String tid = tenant_schema_id as String
       Tenants.withId(tenant_schema_id) {
         setInterruptedJobsState()
@@ -108,7 +113,7 @@ class JobRunnerService implements EventPublisher {
     def me = this
     
     Tenants.withId(tenantId) {
-      PersistentJob job = PersistentJob.load(jobId)
+      PersistentJob job = PersistentJob.read(jobId)
       Runnable work = job.getWork()
       if (Closure.isAssignableFrom(work.class)) {
         // Change the delegate to this class so we can control access to beans.
@@ -124,26 +129,82 @@ class JobRunnerService implements EventPublisher {
       // as well as setting the job status on execution
       final Runnable currentWork = work
       work = { final String tid, final String jid, final Runnable wrk ->
-        Tenants.withId(tid) {
-          PersistentJob.withNewSession {
-            PersistentJob.get(jid).begin()
-          }
-          
-          try {
+        Tenants.CurrentTenant.set(tid)
+        jobContext.set(new JobContext( jobId: jid, tenantId: tid ))
+       
+        try {
+          beginJob()
+          Tenants.withCurrent {
             wrk()
-            PersistentJob.withNewSession {
-              PersistentJob.get(jid).end()
-            }
-          } catch (Exception e) {
-            PersistentJob.withNewSession {
-              PersistentJob.get(jid).fail()
-            }
           }
+          endJob()
+        } catch (Exception e) {
+          failJob()
+          log.error ("Job execution failed", e)
+          addJobError ("Job execution failed with exception: ${e.message}")
+          e.printStackTrace()
+        } finally {
+          jobContext.remove()
         }
       }.curry(tenantId, jobId, work)
       
       // Execute the work asynchronously.
       executorSvc.execute(work)
     }
-  }  
+  }
+  
+  public static def handleJobTenant (Closure code) {
+    final Serializable tenantId = jobContext.get()?.tenantId
+    if (tenantId) {
+      return Tenants.withId(tenantId, code)
+    }
+    
+    code()
+  }
+  
+  public static PersistentJob beginJob() {
+    handleJobTenant {
+      PersistentJob.withNewSession {
+        PersistentJob.get(jobContext.get().jobId).begin()
+      }
+    }
+  }
+  
+  public static PersistentJob endJob() {
+    handleJobTenant {
+      PersistentJob.withNewSession {
+        PersistentJob.get(jobContext.get().jobId).end()
+      }
+    }
+  }
+  
+  public static PersistentJob failJob() {
+    handleJobTenant {
+      PersistentJob.withNewSession {
+        PersistentJob.get(jobContext.get().jobId).fail()
+      }
+    }
+  }
+  
+  public static void addJobError (String msg) {
+    addJobLog(msg, 'Error')
+  }
+  public static void addJobInfo (String msg) {
+    addJobLog(msg, 'info')
+  }
+  
+  public static void addJobLog (String msg, String type) {
+    def jc = jobContext.get()
+    if (jc) {
+      handleJobTenant {
+        LogEntry.withNewTransaction {
+          LogEntry le = new LogEntry()
+          le.typeFromString = type
+          le.message = msg
+          le.job = PersistentJob.read(jc.jobId)
+          le.save(failOnError:true)
+        }
+      }
+    }
+  }
 }

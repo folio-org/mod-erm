@@ -20,13 +20,6 @@ class LogEntry implements MultiTenant<LogEntry> {
   Instant dateCreated
   String origin
   
-  def beforeValidate() {
-    if (!type) {
-      // Default to error.
-      setTypeFromString('Info')
-    }
-  }
-  
   String getOrigin() {
     if (!origin && job) {
       return "${job}"
@@ -36,7 +29,7 @@ class LogEntry implements MultiTenant<LogEntry> {
 
   static mapping = {
               id column: 'le_id', generator: 'uuid2', length:36
-         message column: 'le_message'
+         message column: 'le_message', type: 'text'
      dateCreated column: 'le_datecreated'
             type column: 'le_type_fk'
              job column: 'le_job_fk'

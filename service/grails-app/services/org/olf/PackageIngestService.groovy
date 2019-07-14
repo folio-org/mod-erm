@@ -1,5 +1,6 @@
 package org.olf
 
+import org.olf.general.jobs.JobRunnerService
 import org.olf.general.jobs.LogEntry
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
@@ -32,14 +33,6 @@ public class PackageIngestService {
   // managed by the vendors app. If we are running in folio mode, this service hides the detail of
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
-
-  private void addLogEntry (String message, String detail) {
-    new LogEntry( 
-      message: message,
-      detail: detail,
-      origin: this.getClass().getName()
-    ).save(flush: true, failOnError:false)
-  }
 
   public Map upsertPackage(Map package_data) {
     return upsertPackage(package_data,'LOCAL')
@@ -86,6 +79,7 @@ public class PackageIngestService {
       }
       else {
         log.warn('Package ingest - no provider information present')
+        
       }
 
       if ( pkg == null ) {
@@ -187,25 +181,27 @@ public class PackageIngestService {
                 pci.save(flush:true, failOnError:true)
               }
               else {
-                String message = "[${result.titleCount}] unable to identify platform for package content item :: ${platform_url_to_use}, ${pc.platformName}"
+                String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
                 log.error(message)
-                addLogEntry(message, null)
+                JobRunnerService.addJobError(message)
               }
             }
             catch ( Exception e ) {
-              String message = "[${result.titleCount}] problem"
+              String message = "Exception processing record #${result.titleCount}. ${e.message}"
               log.error(message,e)
-              addLogEntry(message, e.getMessage())
+              JobRunnerService.addJobError(message)
             }
           }
           else {
-            log.error("row ${result.titleCount} Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}")
+            String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
+            log.error(message)
+            JobRunnerService.addJobError(message)
           }
         }
       }
       catch ( Exception e ) {
-        String message = "Problem with line ${pc} in package load. Ignoring this row"
-        logEvent(message, e.getMessage())
+        String message = "Error when processing record ${pc} in package load. Ignoring this record."
+        JobRunnerService.addJobError(message)
         log.error(message,e)
       }
 
@@ -236,7 +232,9 @@ public class PackageIngestService {
       result.titleCount++
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
-        log.info("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
+        String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
+        log.info(message)
+        JobRunnerService.addJobInfo(message)
       }
     }
 
