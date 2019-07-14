@@ -1,0 +1,7 @@
+import groovy.transform.Field
+import org.olf.general.jobs.PersistentJob
+
+@Field
+PersistentJob persistentJob
+
+json g.render (persistentJob, [expand: ['logEntries']])
