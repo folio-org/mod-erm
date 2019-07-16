@@ -32,13 +32,13 @@ class UrlMappings {
         }
       }
 	  
-	  '/usageDataProviders' {
+      '/usageDataProviders' {
 		  controller = 'usageDataProvider'
 		  method = 'GET'
 		  filters = { "owner==${params.subscriptionAgreementId}" }
 	  }
 	  
-	  collection {
+      collection {
 		  '/usageDataProviders' {
 			  controller = 'usageDataProvider'
 			  method = 'GET'

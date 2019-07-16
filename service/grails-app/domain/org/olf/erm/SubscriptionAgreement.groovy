@@ -74,7 +74,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                    docs: DocumentAttachment,
          linkedLicenses: RemoteLicenseLink,
       supplementaryDocs: DocumentAttachment,
-	 usageDataProviders: UsageDataProvider,
+     usageDataProviders: UsageDataProvider,
   ]
 
   static mappedBy = [
@@ -83,7 +83,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     contacts: 'owner',
     orgs: 'owner',
     linkedLicenses: 'owner',
-	usageDataProviders: 'owner',
+    usageDataProviders: 'owner',
   ]
 
   static mapping = {
@@ -137,7 +137,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              description(nullable:true, blank:false)
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
-	   		 licenseNote(nullable:true, blank:false)
+             licenseNote(nullable:true, blank:false)
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             

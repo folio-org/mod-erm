@@ -25,6 +25,6 @@ public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<Us
 
 	@Override
 	public String remoteUri() {
-		return 'eusage/usage-data-providers';
+		return 'usage-data-providers';
 	}
 }
