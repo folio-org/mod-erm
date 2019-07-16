@@ -1,9 +1,7 @@
 package org.olf
 
-import static grails.async.Promises.*
 import static groovy.transform.TypeCheckingMode.SKIP
 
-import java.text.SimpleDateFormat
 import java.time.Instant
 
 import org.olf.general.jobs.PackageIngestJob

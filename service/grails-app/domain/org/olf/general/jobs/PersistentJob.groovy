@@ -22,7 +22,6 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   @Defaults(['Queued', 'In progress', 'Ended'])
   RefdataValue status
   
-  List<LogEntry> logEntries
   Instant dateCreated
   Instant started
   Instant ended
@@ -31,18 +30,11 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   @Defaults(['Success', 'Partial success', 'Failure', 'Interrupted'])
   RefdataValue result
   
-  static hasMany = [
-    logEntries: LogEntry
-  ]
-  
-  static mappedBy = ['logEntries': 'job']
-  
   static mapping = {
     tablePerHierarchy false
                    id generator: 'uuid2', length:36
                  name column:'job_name'
                status column:'job_status_fk'
-           logEntries cascade: 'all-delete-orphan'
           dateCreated column:'job_date_created'
               started column:'job_started'
                 ended column:'job_ended'
@@ -66,8 +58,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   }
   
   List<LogEntry> getErrorEntries() {
-    RefdataValue errorType = LogEntry.lookupType('Error')
-    LogEntry.findAllByType (errorType)
+    LogEntry.findAllByOrigniAndType (this.id, LogEntry.TYPE_ERROR)
   }
   
   void begin () {
