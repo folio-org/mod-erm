@@ -16,7 +16,7 @@ class LogEntry implements MultiTenant<LogEntry> {
   public static final String TYPE_INFO='info'
   
   String message
-  Instant dateCreated
+  Instant dateCreated = Instant.now()
   String origin
   
   static mapping = {

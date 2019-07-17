@@ -58,13 +58,15 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   }
   
   List<LogEntry> getErrorLog() {
-    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR, [sort: 'dateCreated', order: "asc"])
   }
+  
   List<LogEntry> getInfoLog() {
-    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO)
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO, [sort: 'dateCreated', order: "asc"])
   }
+  
   List<LogEntry> getFullLog() {
-    LogEntry.findAllByOrigin(this.id)
+    LogEntry.findAllByOrigin(this.id, [sort: 'dateCreated', order: "asc"])
   }
   
   void begin () {

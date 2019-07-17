@@ -1,4 +1,3 @@
-package persistentJob
 import org.olf.kb.ErmResource
 //getBinding().variables.each { k, v ->
 //  System.out.println "${k} = ${v}"
