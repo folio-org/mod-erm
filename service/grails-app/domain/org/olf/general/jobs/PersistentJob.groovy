@@ -57,8 +57,14 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
     jrs.handleNewJob(this.id, Tenants.currentId())
   }
   
-  List<LogEntry> getErrorEntries() {
-    LogEntry.findAllByOrigniAndType (this.id, LogEntry.TYPE_ERROR)
+  List<LogEntry> getErrorLog() {
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+  }
+  List<LogEntry> getInfoLog() {
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO)
+  }
+  List<LogEntry> getFullLog() {
+    LogEntry.findAllByOrigin(this.id)
   }
   
   void begin () {
@@ -72,7 +78,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
     this.statusFromString = 'Ended'
     if (!result) {
       // If errors then set to partial.
-      if (getErrorEntries()) {
+      if (getErrorLog()) {
         this.resultFromString = 'Partial success'
       } else {
         this.resultFromString = 'Success'

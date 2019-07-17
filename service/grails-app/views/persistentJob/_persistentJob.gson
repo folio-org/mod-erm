@@ -1,7 +1,17 @@
-import groovy.transform.Field
 import org.olf.general.jobs.PersistentJob
+import groovy.transform.Field
+
+final List logs = ['fullLog', 'errorLog', 'infoLog']
 
 @Field
 PersistentJob persistentJob
 
-json g.render (persistentJob, [expand: ['logEntries']])
+json g.render (persistentJob, [expand:['status', 'result']]) {
+  
+  logs.each {final String propName ->
+    final def logList = persistentJob[propName]
+    if (logList) {
+      call(propName, g.render(logList)) 
+    }
+  }
+}

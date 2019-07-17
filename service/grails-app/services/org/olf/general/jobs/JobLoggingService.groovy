@@ -22,24 +22,21 @@ class JobLoggingService {
   
   @Subscriber('jobs:log_error')
   void handleLogError(final String tenantId, final String jobId, final String message) {
-    addJobLog(message, LogEntry.TYPE_ERROR)
+    handleLogEvent(tenantId, jobId, message, LogEntry.TYPE_ERROR)
   }
   
   @Subscriber('jobs:log_info')
   void handleLogInfo (final String tenantId, final String jobId, final String message) {
-    addJobLog(message, LogEntry.TYPE_ERROR)
+    handleLogEvent(tenantId, jobId, message, LogEntry.TYPE_INFO)
   }
   
   void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type) {
-    def jc = JobRunnerService.jobContext.get()
-    if (jc?.jobId) {
-      Tenants.withId(tenantId) {
-        LogEntry le = new LogEntry()
-        le.type = type
-        le.message = message
-        le.origin = jobId
-        le.save(failOnError:true)
-      }
+    Tenants.withId(tenantId) {
+      LogEntry le = new LogEntry()
+      le.type = type
+      le.message = message
+      le.origin = jobId
+      le.save(failOnError:true, flush:true)
     }
   }
 }

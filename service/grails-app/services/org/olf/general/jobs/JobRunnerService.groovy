@@ -141,7 +141,7 @@ class JobRunnerService implements EventPublisher {
         } catch (Exception e) {
           failJob()
           log.error ("Job execution failed", e)
-          notify ('jobs:log_info', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+          notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
         } finally {
           jobContext.remove()
         }
@@ -161,7 +161,7 @@ class JobRunnerService implements EventPublisher {
     code()
   }
   
-  public static PersistentJob beginJob() {
+  public PersistentJob beginJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).begin()
@@ -169,7 +169,7 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  public static PersistentJob endJob() {
+  public PersistentJob endJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).end()
@@ -177,7 +177,7 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  public static PersistentJob failJob() {
+  public PersistentJob failJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).fail()

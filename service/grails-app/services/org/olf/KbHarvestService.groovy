@@ -26,7 +26,7 @@ import groovy.util.logging.Slf4j
 @Transactional
 class KbHarvestService {
 
-  // WIthout this, the service will be lazy initialised, and the tasks won't be scheduled until an external 
+  // Without this, the service will be lazy initialised, and the tasks won't be scheduled until an external 
   // tries to access the instance.
   boolean lazyInit = false 
 
