@@ -141,8 +141,7 @@ class JobRunnerService implements EventPublisher {
         } catch (Exception e) {
           failJob()
           log.error ("Job execution failed", e)
-          addJobError ("Job execution failed with exception: ${e.message}")
-          e.printStackTrace()
+          notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
         } finally {
           jobContext.remove()
         }
@@ -162,7 +161,7 @@ class JobRunnerService implements EventPublisher {
     code()
   }
   
-  public static PersistentJob beginJob() {
+  public PersistentJob beginJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).begin()
@@ -170,7 +169,7 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  public static PersistentJob endJob() {
+  public PersistentJob endJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).end()
@@ -178,32 +177,10 @@ class JobRunnerService implements EventPublisher {
     }
   }
   
-  public static PersistentJob failJob() {
+  public PersistentJob failJob() {
     handleJobTenant {
       PersistentJob.withNewSession {
         PersistentJob.get(jobContext.get().jobId).fail()
-      }
-    }
-  }
-  
-  public static void addJobError (String msg) {
-    addJobLog(msg, 'Error')
-  }
-  public static void addJobInfo (String msg) {
-    addJobLog(msg, 'info')
-  }
-  
-  public static void addJobLog (String msg, String type) {
-    def jc = jobContext.get()
-    if (jc) {
-      handleJobTenant {
-        LogEntry.withNewTransaction {
-          LogEntry le = new LogEntry()
-          le.typeFromString = type
-          le.message = msg
-          le.job = PersistentJob.read(jc.jobId)
-          le.save(failOnError:true)
-        }
       }
     }
   }

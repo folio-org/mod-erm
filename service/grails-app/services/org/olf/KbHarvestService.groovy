@@ -1,9 +1,7 @@
 package org.olf
 
-import static grails.async.Promises.*
 import static groovy.transform.TypeCheckingMode.SKIP
 
-import java.text.SimpleDateFormat
 import java.time.Instant
 
 import org.olf.general.jobs.PackageIngestJob
@@ -28,7 +26,7 @@ import groovy.util.logging.Slf4j
 @Transactional
 class KbHarvestService {
 
-  // WIthout this, the service will be lazy initialised, and the tasks won't be scheduled until an external 
+  // Without this, the service will be lazy initialised, and the tasks won't be scheduled until an external 
   // tries to access the instance.
   boolean lazyInit = false 
 

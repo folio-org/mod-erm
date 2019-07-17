@@ -9,6 +9,7 @@ import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
 
+import grails.events.EventPublisher
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
@@ -17,7 +18,7 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 @Transactional
-public class PackageIngestService {
+public class PackageIngestService implements EventPublisher {
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -48,7 +49,7 @@ public class PackageIngestService {
    * @return id of package upserted
    */
   public Map upsertPackage(Map package_data, String remotekbname) {
-
+    
     def result = [:]
     result.startTime = System.currentTimeMillis()
     result.titleCount=0
@@ -65,8 +66,10 @@ public class PackageIngestService {
 
 
       result.updateTime = System.currentTimeMillis()
-  
-      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}")
+      String message = "Package header: ${package_data.header} - update start time is ${result.updateTime}"
+      log.debug( message )
+      
+      notify ('jobs:log_info', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
 
       // header.packageSlug contains the package maintainers authoritative identifier for this package.
       pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
@@ -183,25 +186,25 @@ public class PackageIngestService {
               else {
                 String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
                 log.error(message)
-                JobRunnerService.addJobError(message)
+                notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
               }
             }
             catch ( Exception e ) {
               String message = "Exception processing record #${result.titleCount}. ${e.message}"
               log.error(message,e)
-              JobRunnerService.addJobError(message)
+              notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
             }
           }
           else {
             String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
             log.error(message)
-            JobRunnerService.addJobError(message)
+            notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
           }
         }
       }
       catch ( Exception e ) {
         String message = "Error when processing record ${pc} in package load. Ignoring this record."
-        JobRunnerService.addJobError(message)
+        notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
         log.error(message,e)
       }
 
@@ -234,7 +237,7 @@ public class PackageIngestService {
       if ( result.titleCount % 100 == 0 ) {
         String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
         log.info(message)
-        JobRunnerService.addJobInfo(message)
+        notify ('jobs:log_info', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
       }
     }
 

@@ -22,7 +22,6 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   @Defaults(['Queued', 'In progress', 'Ended'])
   RefdataValue status
   
-  List<LogEntry> logEntries
   Instant dateCreated
   Instant started
   Instant ended
@@ -31,18 +30,11 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
   @Defaults(['Success', 'Partial success', 'Failure', 'Interrupted'])
   RefdataValue result
   
-  static hasMany = [
-    logEntries: LogEntry
-  ]
-  
-  static mappedBy = ['logEntries': 'job']
-  
   static mapping = {
     tablePerHierarchy false
                    id generator: 'uuid2', length:36
                  name column:'job_name'
                status column:'job_status_fk'
-           logEntries cascade: 'all-delete-orphan'
           dateCreated column:'job_date_created'
               started column:'job_started'
                 ended column:'job_ended'
@@ -65,9 +57,14 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
     jrs.handleNewJob(this.id, Tenants.currentId())
   }
   
-  List<LogEntry> getErrorEntries() {
-    RefdataValue errorType = LogEntry.lookupType('Error')
-    LogEntry.findAllByType (errorType)
+  List<LogEntry> getErrorLog() {
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_ERROR)
+  }
+  List<LogEntry> getInfoLog() {
+    LogEntry.findAllByOriginAndType (this.id, LogEntry.TYPE_INFO)
+  }
+  List<LogEntry> getFullLog() {
+    LogEntry.findAllByOrigin(this.id)
   }
   
   void begin () {
@@ -81,7 +78,7 @@ abstract class PersistentJob implements MultiTenant<PersistentJob> {
     this.statusFromString = 'Ended'
     if (!result) {
       // If errors then set to partial.
-      if (getErrorEntries()) {
+      if (getErrorLog()) {
         this.resultFromString = 'Partial success'
       } else {
         this.resultFromString = 'Success'
