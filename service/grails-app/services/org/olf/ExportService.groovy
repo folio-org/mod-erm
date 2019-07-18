@@ -2,7 +2,11 @@ package org.olf
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
-import org.olf.kb.TitleInstance 
+import org.olf.kb.TitleInstance
+
+import org.olf.export.KBart
+
+import org.olf.export.KBartExport
 
 import com.k_int.okapi.OkapiTenantAwareController
 
@@ -69,9 +73,8 @@ public class ExportService {
       }
       
       // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
-      coverageService.lookupCoverageOverrides(results)
-      
-     
+      coverageService.lookupCoverageOverrides(results) 
+	  
 	  return results 
   }
   
@@ -91,45 +94,17 @@ public class ExportService {
 	  Package
 	  */ 
 
-      String headline =
-      "publication_title\t" +
-      "print_identifier\t" +
-      "online_identifier\t" +
-      "date_first_issue_online\t" +
-      "num_first_vol_online\t" +
-      "num_first_issue_online\t" +
-      "date_last_issue_online\t" +
-      "num_last_vol_online\t" +
-      "num_last_issue_online\t" +
-      "title_url\t" +
-      "first_author\t" +
-      "title_id\t" +
-      "embargo_info\t" +
-      "coverage_depth\t" +
-      "notes\t" +
-      "publisher_name\t" +
-      "publication_type\t" +
-      "date_monograph_published_print\t" +
-      "date_monograph_published_online\t" +
-      "monograph_volume\t" +
-      "monograph_edition\t" +
-      "first_editor\t" +
-      "parent_publication_title_id\t" +
-      "preceding_publication_title_id\t" +
-      "access_type\t";
-       
-	  
-	  return headline
+      // get headers as a map 
 
+	  KBart kbart = new KBart()
+      Map map = kbart.asMap()
+	  StringWriter sw = new StringWriter() 
+	  map.each{ k, v -> sw.append("${k}" + "\t") }
+	  return sw.toString()
 	  
-      /*def fieldsNames = new StringBuilder() 
-	   
-	  def fields = KBart.declaredFields
-	  fields.each {
-		 fieldsNames << it.name << "\t"
-	  } 
-	  return fieldsNames.toString()*/
 	  
   }
+  
+  
 
 }
