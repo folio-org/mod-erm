@@ -1,7 +1,17 @@
 import groovy.transform.Field
 import org.olf.general.jobs.PackageIngestJob
 
+final List logs = ['fullLog', 'errorLog', 'infoLog']
+
 @Field
 PackageIngestJob packageIngestJob
 
-json g.render (packageIngestJob, [expand: ['logEntries', 'status', 'result']])
+json g.render (packageIngestJob, [expand: ['status', 'result']]) {
+  
+  logs.each {final String propName ->
+    final def logList = packageIngestJob[propName]
+    if (logList) {
+      call(propName, g.render(logList)) 
+    }
+  }
+}
