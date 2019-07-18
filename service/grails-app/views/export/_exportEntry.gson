@@ -1,0 +1,47 @@
+import groovy.transform.Field
+import org.olf.erm.Entitlement
+import org.olf.kb.ErmResource
+import org.olf.kb.PackageContentItem
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
+
+final Object[] tuple = binding.variables.values()[0]
+
+boolean via_package = false
+final ErmResource resource = tuple[0] as ErmResource
+Entitlement ent
+TitleInstance ti
+
+switch (resource) {
+  case { it instanceof PackageContentItem}:
+    via_package = tuple[1]
+    ent = (via_package ? tuple[1] : tuple[2]) as Entitlement
+    ti = ((PackageContentItem)resource).pti.titleInstance
+    break
+  case { it instanceof PlatformTitleInstance}:
+    ti = ((PlatformTitleInstance)resource).titleInstance
+  case { it instanceof TitleInstance}:
+    ti = resource as TitleInstance
+  
+    // These resources can only be directly associated.
+    via_package = false
+    ent = tuple[2] as Entitlement
+    break
+}
+
+//final Map<String,?> result = ['title': ti, entitlement: ent]
+
+// We probably don't actually want to do this, but this gives us an Idea of what is happening.
+// json g.render(result)
+
+json {
+  if (via_package) {
+    final def pkg = ent.resource
+    
+    "package" {
+       id pkg.id
+       name pkg.name
+    }
+  }
+  title g.render(ti) 
+}
