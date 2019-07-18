@@ -43,25 +43,19 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
       log.debug("ExportController::index");
 	  
 	  final String subscriptionAgreementId = params.get("subscriptionAgreementId")
-	  println "id: "+subscriptionAgreementId
 	  
 	  List<ErmResource> results
 	  if (subscriptionAgreementId) {
 		  log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
 		  results = exportService.entitled()
-		  log.debug("found this many resources: "+ results.size())
-		  //mapToKBart(results)
+		  log.debug("found this many resources: "+ results.size()) 
 		  
 	  } else {
 		  log.debug("Getting export for all agreements")
 	      results = exportService.entitled()
-		  log.debug("found this many resources: "+ results.size())
-		  
-		 // mapToKBart(results)
+		  log.debug("found this many resources: "+ results.size()) 
 
 	  }
-	  
-	   
 	  respond results 
   }
 
@@ -72,71 +66,52 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
 
 	  final String filename = 'export.tsv' 
 	  String headline = exportService.kbartheader()
+	  final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+	  
+	 
+	  def results
+	  List<KBart> kbartList
+	  
+	  if (subscriptionAgreementId) {
+		 log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
+		 results = exportService.entitled()
+		 log.debug("results class: "+results.getClass().getName())
+		 //log.debug("found this many resources: "+ results.size())
+		 kbartList = exportService.mapToKBart(results)
+		 
+	  } else {
+		 log.debug("Getting export for all agreements")
+		 results = exportService.entitled()
+		 log.debug("results class: "+results.getClass().getName())
+		 log.debug("found this many resources: "+ results.size())
+		 
+		 kbartList = exportService.mapToKBart(results)
+
+	  }
+	  
 	  withFormat {
 		  tsv { 
 			  response.status = OK.value()
 			  response.contentType = "${tsvMimeType};charset=${encoding}";
 			  response.setHeader "Content-disposition", "attachment; filename=${filename}"
-			  def out = response.outputStream
-			  out.withWriter {
-					  writer -> writer.write(headline)
-					  writer.flush()
-					  writer.close()
+			  def outs = response.outputStream
+			  outs << headline + "\n"
+			  // serialize KbartExport list of kbart objects
+			   
+			  kbartList.each { KBart kb ->
+				  String line = kb.toString()
+				  outs << "${line}\n"
 			  }
-			  out.flush()
+	   
+			  outs.flush()
+			  outs.close()
 		  }
 	  }
 	  
 	   
   }
   
-  public void mapToKBart(final List<ErmResource> resources) {
-	  for (ErmResource res: resources) {
-		  
-		PlatformTitleInstance pti = res.pti
-		TitleInstance ti = pti.titleInstance
-		
-		KBart kbart = new KBart()
-	    //println res.getClass().getName()
-		//kbart.publication_title = res.name
-		if (res.depth) kbart.coverage_depth = res.depth
-		if (res.note) kbart.notes = res.note
-		if (pti) {
-		  //println "found pti"
-		  if (pti.url) kbart.title_url = pti.url
-		}
-		
-		if (ti) {
-			//println "found titleInstance"
-			kbart.publication_title = ti.name
-			if (ti.type.value) kbart.publication_type = ti.type.value
-			Object obj = ti.identifiers
-			if (obj) {
-				//println "got ti.identifiers: "+ obj.getClass().getName()
-				Iterator iter = ti.identifiers.iterator();
-				while (iter.hasNext()) {
-					IdentifierOccurrence thisIdent = iter.next()
-					Identifier ident =  thisIdent.identifier
-					if (ident) {
-						if (ident.ns.value.equals("eissn")) {
-							kbart.online_identifier = ident.value
-						} else if (ident.ns.value.equals("isbn")) {
-							kbart.print_identifier = ident.value
-						} else if (ident.ns.value.equals("issn")) {
-							kbart.print_identifier = ident.value
-						}
-						 
-							
-					}
-				}
-			}
-			println "\n"
-		}
-		println kbart.toString() 
-		
-		//println kbart as JSON
-	  }
-  }
+  
   
    
 
