@@ -35,17 +35,21 @@ public class KBart {
     public String preceding_publication_title_id = "" // not implemented
     public String access_type = "" // not implemented
 	
+	
+	
 	public String toString() {
+		final String separator = "\t"
 		String s = ""+
-		"title: "+ this.publication_title + "\n" +
-		"online_identifier: "+this.online_identifier + "\n" +
-		"print_identifier: "+this.print_identifier + "\n" +
-		"start_date: "+this.date_first_issue_online + "\n" +
-		"end_date: "+this.date_last_issue_online + "\n" +
-		"title_url: "+this.title_url + "\n" +
-		"depth: "+this.coverage_depth + "\n" +
-		"notes: "+this.notes + "\n" +
-		"publication_type: "+this.publication_type + "\n" 
+		this.publication_title + separator +
+		this.online_identifier + separator +
+		this.print_identifier + separator +
+		this.date_first_issue_online + separator +
+		this.date_last_issue_online + separator +
+		this.title_url + separator +
+		this.coverage_depth + separator +
+		this.notes + separator +
+		this.publication_type 
+		return s
 	}
 	
 	 
