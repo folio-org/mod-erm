@@ -12,25 +12,27 @@ boolean via_package = false
 final ErmResource resource = tuple[0] as ErmResource
 Entitlement ent
 TitleInstance ti
-Platform platform
-String depth
-String note
-String url
+Platform the_platform
+String the_depth
+String the_note
+String the_url
 
 switch (resource) {
   case { it instanceof PackageContentItem}:
     via_package = tuple[1]
     ent = (via_package ? tuple[1] : tuple[2]) as Entitlement
     ti = ((PackageContentItem)resource).pti.titleInstance
-    platform = ((PackageContentItem)resource).pti.platform
-    url = ((PackageContentItem)resource).pti.url
+    the_platform = ((PackageContentItem)resource).pti.platform
+    the_url = ((PackageContentItem)resource).pti.url
     
-    depth = ((PackageContentItem)resource).depth
-    note = ((PackageContentItem)resource).note
+    the_depth = ((PackageContentItem)resource).depth
+    the_note = ((PackageContentItem)resource).note
     break
   case { it instanceof PlatformTitleInstance}:
     ti = ((PlatformTitleInstance)resource).titleInstance
-    platform = ((PlatformTitleInstance)resource).platform
+    the_platform = ((PlatformTitleInstance)resource).platform
+    the_url = ((PlatformTitleInstance)resource).url
+    
   case { it instanceof TitleInstance}:
     ti = resource as TitleInstance
   
@@ -56,13 +58,16 @@ json {
     
      
   }
-  if (platform) {
-     g.render(platform)
+  if (the_platform) {
+     platform g.render(the_platform)
   }
-  if (note) {
-     g.render(note)
+  if (the_note) {
+     note g.render(the_note)
+  }
+  if (the_url) {
+     url g.render(the_url)
   } 
-  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage', 'platformInstances'], excludes: ['entitlements']])
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements']])
   
    
 }
