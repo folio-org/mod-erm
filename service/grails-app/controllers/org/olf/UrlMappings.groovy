@@ -97,7 +97,7 @@ class UrlMappings {
 
     
     // export endpoints
-    "/erm/export/$action" (controller:'export')
+    "/erm/export/$action?" (controller:'export')
 
   }
 }
