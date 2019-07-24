@@ -9,7 +9,6 @@ import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
 
-import grails.events.EventPublisher
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
 
@@ -18,7 +17,7 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 @Transactional
-public class PackageIngestService implements EventPublisher {
+public class PackageIngestService {
 
   // This boolean controls the behaviour of the loader when we encounter a title that does not have
   // a platform URL. We can error the row and do nothing, or create a row and point it at a proxy
@@ -49,7 +48,7 @@ public class PackageIngestService implements EventPublisher {
    * @return id of package upserted
    */
   public Map upsertPackage(Map package_data, String remotekbname) {
-    
+
     def result = [:]
     result.startTime = System.currentTimeMillis()
     result.titleCount=0
@@ -62,14 +61,12 @@ public class PackageIngestService implements EventPublisher {
       // Look up which remote kb via the name
       RemoteKB kb = RemoteKB.findByName(remotekbname) ?: new RemoteKB( name:remotekbname,
                                                                        rectype: new Long(1),
-                                                                       active:Boolean.TRUE).save(failOnError:true)
+                                                                       active:Boolean.TRUE).save(flush:true, failOnError:true)
 
 
       result.updateTime = System.currentTimeMillis()
-      String message = "Package header: ${package_data.header} - update start time is ${result.updateTime}"
-      log.debug( message )
-      
-      notify ('jobs:log_info', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+  
+      log.debug("Package header: ${package_data.header} - update start time is ${result.updateTime}")
 
       // header.packageSlug contains the package maintainers authoritative identifier for this package.
       pkg = Pkg.findBySourceAndReference(package_data.header.packageSource, package_data.header.packageSlug)
@@ -91,7 +88,7 @@ public class PackageIngestService implements EventPublisher {
                              source: package_data.header.packageSource,
                           reference: package_data.header.packageSlug,
                            remoteKb: kb,
-                             vendor: vendor).save(failOnError:true)
+                             vendor: vendor).save(flush:true, failOnError:true)
       }
       result.packageId = pkg.id
     }
@@ -137,7 +134,7 @@ public class PackageIngestService implements EventPublisher {
                 if ( pti == null ) 
                   pti = new PlatformTitleInstance(titleInstance:title, 
                                                   platform:platform,
-                                                  url:pc.url).save(failOnError:true)
+                                                  url:pc.url).save(flush:true, failOnError:true)
     
     
                 // Lookup or create a package content item record for this title on this platform in this package
@@ -157,7 +154,7 @@ public class PackageIngestService implements EventPublisher {
                                                accessStart:null,
                                                accessEnd:null, 
                                                addedTimestamp:result.updateTime,
-                                               lastSeenTimestamp:result.updateTime).save(failOnError:true)
+                                               lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
                 }
                 else {
                   // Note that we have seen the package content item now - so we don't delete it at the end.
@@ -181,30 +178,30 @@ public class PackageIngestService implements EventPublisher {
                 }
     
                 // Save needed either way
-                pci.save(failOnError:true)
+                pci.save(flush:true, failOnError:true)
               }
               else {
                 String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
                 log.error(message)
-                notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+                JobRunnerService.addJobError(message)
               }
             }
             catch ( Exception e ) {
               String message = "Exception processing record #${result.titleCount}. ${e.message}"
               log.error(message,e)
-              notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+              JobRunnerService.addJobError(message)
             }
           }
           else {
             String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
             log.error(message)
-            notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+            JobRunnerService.addJobError(message)
           }
         }
       }
       catch ( Exception e ) {
         String message = "Error when processing record ${pc} in package load. Ignoring this record."
-        notify ('jobs:log_error', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+        JobRunnerService.addJobError(message)
         log.error(message,e)
       }
 
@@ -237,7 +234,7 @@ public class PackageIngestService implements EventPublisher {
       if ( result.titleCount % 100 == 0 ) {
         String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
         log.info(message)
-        notify ('jobs:log_info', JobRunnerService.jobContext.get().tenantId, JobRunnerService.jobContext.get().jobId,  message)
+        JobRunnerService.addJobInfo(message)
       }
     }
 
@@ -255,7 +252,7 @@ public class PackageIngestService implements EventPublisher {
           try {
             log.debug("Removal candidate: pci.id #${removal_candidate.id} (Last seen ${removal_candidate.lastSeenTimestamp}, thisUpdate ${result.updateTime}) -- Set removed")
             removal_candidate.removedTimestamp = result.updateTime
-            removal_candidate.save(failOnError:true)
+            removal_candidate.save(flush:true, failOnError:true)
           } catch ( Exception e ) {
             log.error("Problem with line ${removal_candidate} in package load. Ignoring this row",e)
           }

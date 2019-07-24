@@ -1,19 +1,21 @@
 package org.olf.general.jobs
 
 import java.time.Instant
-
+import ch.qos.logback.classic.Level
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
 
 class LogEntry implements MultiTenant<LogEntry> {
+  public static final String TYPE_ERROR=Level.ERROR.levelStr.toLowerCase()
+  public static final String TYPE_INFO=Level.INFO.levelStr.toLowerCase()
   
   String id
   String type
-  
-  public static final String TYPE_ERROR='error'
-  public static final String TYPE_INFO='info'
+  void setType(String type) {
+    this.type = type.toLowerCase()
+  } 
   
   String message
   Instant dateCreated = Instant.now()
