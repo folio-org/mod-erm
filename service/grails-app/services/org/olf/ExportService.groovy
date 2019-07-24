@@ -34,12 +34,35 @@ import org.olf.export.KBartExport
 public class ExportService { 
 	CoverageService coverageService
 	
-   // still a WIP.  Needs code to select for only a single agreementId
+   // still a WIP.  the query when an agreement ID is passed isn't returning any results at all
 	
    List<ErmResource> entitled(final String agreementId = null) { 
 	  // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
       // to talk through with steve about how this should work.
-      final def results = ErmResource.executeQuery("""
+	  log.debug("got agreementId: "+ agreementId)
+	  def results = null
+	  if (agreementId) {
+		results = ErmResource.executeQuery("""
+
+        SELECT res, pkg_ent, direct_ent
+        FROM ErmResource as res
+          LEFT JOIN res.entitlements as direct_ent
+          LEFT JOIN res.pkg as pkg
+            ON res.class = PackageContentItem
+            LEFT JOIN pkg.entitlements as pkg_ent
+        WHERE
+          (
+            direct_ent.owner.id = :id
+            AND
+            res.class != Pkg
+          )
+        OR
+          (
+            pkg_ent.owner.id = :id
+          )
+      """, [id: agreementId], [readOnly: true])
+	  } else {
+        results = ErmResource.executeQuery("""
 
         SELECT res, pkg_ent, direct_ent
         FROM ErmResource as res
@@ -58,7 +81,7 @@ public class ExportService {
             pkg_ent.owner IS NOT NULL
           )
       """, [readOnly: true])
-      
+	  }
       // At this point we should have a List of results. But instead of each result being an ErmResource we should have a collection
       // of [0]->ErmResource, [1]->Entitlement, [2]->Entitlement.
       
