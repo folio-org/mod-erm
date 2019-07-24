@@ -47,7 +47,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
 	  List<ErmResource> results
 	  if (subscriptionAgreementId) {
 		  log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-		  results = exportService.entitled()
+		  results = exportService.entitled(subscriptionAgreementId)
 		  log.debug("found this many resources: "+ results.size()) 
 		  
 	  } else {
@@ -62,7 +62,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
   /*
    * kbart export (placeholder)
    */
-  def kbart() {
+  def kbart( ) {
 
 	  final String filename = 'export.tsv' 
 	  String headline = exportService.kbartheader()
@@ -74,9 +74,9 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
 	  
 	  if (subscriptionAgreementId) {
 		 log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-		 results = exportService.entitled()
+		 results = exportService.entitled(subscriptionAgreementId)
 		 log.debug("results class: "+results.getClass().getName())
-		 //log.debug("found this many resources: "+ results.size())
+		 log.debug("found this many resources: "+ results.size())
 		 kbartList = exportService.mapToKBart(results)
 		 
 	  } else {
