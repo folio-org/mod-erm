@@ -34,7 +34,9 @@ import org.olf.export.KBartExport
 public class ExportService { 
 	CoverageService coverageService
 	
-   List<ErmResource> entitled() { 
+   // still a WIP.  Needs code to select for only a single agreementId
+	
+   List<ErmResource> entitled(final String agreementId = null) { 
 	  // Ian: It's now possible for an agreement to have entitlements that do not link to a resource. Need
       // to talk through with steve about how this should work.
       final def results = ErmResource.executeQuery("""
@@ -98,68 +100,57 @@ public class ExportService {
 	  
   }
   
-  public List<KBart> mapToKBart(final List<Object> resources) {
+  /*
+   * Still a WIP.  Needs processing of obj[1] and obj[2]
+   */
+  public List<KBart> mapToKBart(final List<Object> objects) {
 	  log.debug("map to kbart")
 	  List<KBart> kbartList = new ArrayList<KBart>();
-	  for (Object res: resources) {
-		
-		  
-		if (res instanceof Entitlement) {
-		    log.debug("this is an entititlement")
-		} else if (res instanceof ErmResource) {
-			log.debug("this is an ermResource")
-		} else {
-			log.debug("resource class: "+res.getClass().getName())
-		}
-		
-		
-		/*PlatformTitleInstance pti = res.pti
-		TitleInstance ti = pti.titleInstance
-		
+	  
+	  for (Object obj: objects) {
 		KBart kbart = new KBart()
-		
-		//kbart.publication_title = res.name
-		if (res.depth) kbart.coverage_depth = res.depth
-		if (res.note) kbart.notes = res.note
-		if (pti) {
-		  //println "found pti"
-		  if (pti.url) kbart.title_url = pti.url
+		ErmResource res  = (ErmResource) obj[0]
+		if (obj[0] instanceof PackageContentItem) {
+		   PackageContentItem pci = (PackageContentItem) obj[0]
+		   PlatformTitleInstance pti = pci.pti
+		   TitleInstance ti = pti.titleInstance
+		   kbart.publication_title = ti.name
+		   kbart.publication_type = ti.type.value
+		   if (pci.depth) kbart.coverage_depth = pci.depth
+		   if (pci.note) kbart.notes = pci.note
+		   if (pti.url) kbart.title_url = pti.url
+		   
+		   Object identifiers_obj = ti.identifiers
+		   if (identifiers_obj) { 
+			   Iterator iter = ti.identifiers.iterator();
+			   while (iter.hasNext()) {
+				   IdentifierOccurrence thisIdent = iter.next()
+				   Identifier ident =  thisIdent.identifier
+				   if (ident) {
+					   if (ident.ns.value.equals("eissn")) {
+						   kbart.online_identifier = ident.value
+					   } else if (ident.ns.value.equals("isbn")) {
+						   kbart.print_identifier = ident.value
+					   } else if (ident.ns.value.equals("issn")) {
+						   kbart.print_identifier = ident.value
+					   } 
+				   }
+			   }
+		   }
+		   kbartList.add(kbart)
+		   
 		}
+		//Object obj1 = obj[1]
+		//Object obj2 = obj[2]
+		//log.debug("obj1 class: "+ obj1.getClass().getName()) 
+		//log.debug("obj2 class: "+ obj2.getClass().getName())
 		
-		if (ti) {
-			//println "found titleInstance"
-			kbart.publication_title = ti.name
-			if (ti.type.value) kbart.publication_type = ti.type.value
-			Object obj = ti.identifiers
-			if (obj) {
-				//println "got ti.identifiers: "+ obj.getClass().getName()
-				Iterator iter = ti.identifiers.iterator();
-				while (iter.hasNext()) {
-					IdentifierOccurrence thisIdent = iter.next()
-					Identifier ident =  thisIdent.identifier
-					if (ident) {
-						if (ident.ns.value.equals("eissn")) {
-							kbart.online_identifier = ident.value
-						} else if (ident.ns.value.equals("isbn")) {
-							kbart.print_identifier = ident.value
-						} else if (ident.ns.value.equals("issn")) {
-							kbart.print_identifier = ident.value
-						}
-						 
-							
-					}
-				}
-			}
-			println "\n"
-		}
-		kbartList.add(kbart)
-		println kbart.toString()*/
-	     
-		
+		 
 	  }
 	  return kbartList
   }
   
+ 
   
 
 }
