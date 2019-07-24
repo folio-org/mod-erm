@@ -67,7 +67,7 @@ json {
   if (the_url) {
      url g.render(the_url)
   } 
-  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements']])
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'coverage'], excludes: ['entitlements', 'work', 'platformInstances']])
   
    
 }
