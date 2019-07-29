@@ -68,13 +68,12 @@ public class CoverageService {
       
       createAlias 'resource', 'ermResource'
       createAlias 'ermResource.contentItems', 'pcis', JoinType.LEFT_OUTER_JOIN
-	  if (agreementId) {
-		  eq 'owner.id', agreementId
-	  } else {
-		  isNotNull 'owner.id'
-	  }
+      if (agreementId) {
+        eq 'owner.id', agreementId
+      } else {
+        isNotNull 'owner.id'
+      }
      
-      
       or {
         
         final Set<String> ids = resources.collect{ it.id }
