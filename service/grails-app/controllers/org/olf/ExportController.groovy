@@ -23,97 +23,62 @@ import static org.springframework.http.HttpStatus.OK
 @Slf4j
 @CurrentTenant
 class ExportController extends OkapiTenantAwareController<TitleInstance>  {
-	
-	
+
   ExportService exportService
-	
+
   final String csvMimeType = 'text/csv'
   final String tsvMimeType = 'text/tab-separated-value'
   final String encoding = "UTF-8"
   
 
   ExportController()  {
-	  super(TitleInstance, true)
+    super(TitleInstance, true)
   }
-	
+
   /**
    * main index method (by default, return titles as json)
    */
   def index() {
-      log.debug("ExportController::index");
-	  
-	  final String subscriptionAgreementId = params.get("subscriptionAgreementId")
-	  
-	  List<ErmResource> results
-	  if (subscriptionAgreementId) {
-		  log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-		  results = exportService.entitled(subscriptionAgreementId)
-		  log.debug("found this many resources: "+ results.size()) 
-		  
-	  } else {
-		  log.debug("Getting export for all agreements")
-	      results = exportService.entitled()
-		  log.debug("found this many resources: "+ results.size()) 
-
-	  }
-	  respond results 
+    log.debug("ExportController::index");
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId") 
+    log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
+    List<ErmResource> results = exportService.entitled(subscriptionAgreementId)
+    log.debug("found this many resources: "+ results.size()) 
+    respond results 
   }
 
   /*
    * kbart export (placeholder)
    */
   def kbart( ) {
+    final String filename = 'export.tsv' 
+    String headline = exportService.kbartheader()
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+	  
+    List<KBart> kbartList 
+    log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
+    def results = exportService.entitled(subscriptionAgreementId) 
+    log.debug("found this many resources: "+ results.size())
+    kbartList = exportService.mapToKBart(results) 
 
-	  final String filename = 'export.tsv' 
-	  String headline = exportService.kbartheader()
-	  final String subscriptionAgreementId = params.get("subscriptionAgreementId")
-	  
-	 
-	  def results
-	  List<KBart> kbartList
-	  
-	  if (subscriptionAgreementId) {
-		 log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-		 results = exportService.entitled(subscriptionAgreementId)
-		 log.debug("results class: "+results.getClass().getName())
-		 log.debug("found this many resources: "+ results.size())
-		 kbartList = exportService.mapToKBart(results)
-		 
-	  } else {
-		 log.debug("Getting export for all agreements")
-		 results = exportService.entitled()
-		 log.debug("results class: "+results.getClass().getName())
-		 log.debug("found this many resources: "+ results.size())
-		 
-		 kbartList = exportService.mapToKBart(results)
-
-	  }
-	  
-	  withFormat {
-		  tsv { 
-			  response.status = OK.value()
-			  response.contentType = "${tsvMimeType};charset=${encoding}";
-			  response.setHeader "Content-disposition", "attachment; filename=${filename}"
-			  def outs = response.outputStream
-			  outs << headline + "\n"
-			  // serialize KbartExport list of kbart objects
+    withFormat {
+      tsv { 
+        response.status = OK.value()
+        response.contentType = "${tsvMimeType};charset=${encoding}";
+        response.setHeader "Content-disposition", "attachment; filename=${filename}"
+        def outs = response.outputStream
+        outs << headline + "\n"
+        // serialize KbartExport list of kbart objects
 			   
-			  kbartList.each { KBart kb ->
-				  String line = kb.toString()
-				  outs << "${line}\n"
-			  }
-	   
-			  outs.flush()
-			  outs.close()
-		  }
-	  }
-	  
-	   
-  }
-  
-  
-  
-   
+        kbartList.each { KBart kb ->
+          String line = kb.toString()
+	      outs << "${line}\n"
+	    }
 
+	    outs.flush()
+	    outs.close()
+      }
+    }
+  }
 }
 
