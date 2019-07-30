@@ -232,7 +232,7 @@ public class PackageIngestService {
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
         String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
-        log.trace(message)
+        log.info (message)
 //        JobRunnerService.addJobInfo(message)
       }
     }
