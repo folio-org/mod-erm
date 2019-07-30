@@ -19,12 +19,16 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
       if (jid) {
         switch (eventObject.level) {
           case Level.INFO:
-          case Level.ERROR:
           case Level.WARN:
           
             final Serializable tid = JobRunnerService.jobContext.get()?.tenantId
-            JobLoggingService.handleLogEvent(tid, jid, eventObject.message, eventObject.level.levelStr, Instant.ofEpochMilli(eventObject.timeStamp))
-          break
+            JobLoggingService.handleLogEvent(tid, jid, eventObject.message, Level.INFO.levelStr, Instant.ofEpochMilli(eventObject.timeStamp))
+            break
+          
+          case Level.ERROR:
+            final Serializable tid = JobRunnerService.jobContext.get()?.tenantId
+            JobLoggingService.handleLogEvent(tid, jid, eventObject.message, Level.ERROR.levelStr, Instant.ofEpochMilli(eventObject.timeStamp))
+            break
         }
       }
     } catch (Throwable t) { 
