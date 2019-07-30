@@ -28,10 +28,8 @@ class JobLoggingService {
   }
   
   private final static Closure addLogEntry = { final Map<String, ?> logProperties, final Serializable jobId ->
-//    LogEntry.withTransaction {
-      LogEntry le = new LogEntry(logProperties)
-      le.save(failOnError: true, flush: true)
-//    }
+    LogEntry le = new LogEntry(logProperties)
+    le.save(failOnError: true, flush: true)
   }
   
   static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now()) {
