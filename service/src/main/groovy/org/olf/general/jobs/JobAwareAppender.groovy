@@ -1,6 +1,7 @@
 package org.olf.general.jobs
 
 import org.openqa.selenium.logging.LogEntries
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.transaction.TransactionDefinition
 
 import ch.qos.logback.classic.Level
@@ -11,20 +12,6 @@ import java.time.Instant
 
 public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
   
-  private final Closure addLogEntry = { final ILoggingEvent eventObject, final Serializable jobId ->
-    
-    LogEntry.withNewTransaction {
-        LogEntry le = new LogEntry(
-          type: eventObject.level.levelStr,
-          origin: jobId,
-          message: eventObject.message,
-          dateCreated: Instant.ofEpochMilli(eventObject.timeStamp)
-        )
-        
-        le.save(failOnError: true)
-    }
-  }
-
   @Override
   protected void append(final ILoggingEvent eventObject) {
     try {
@@ -33,17 +20,15 @@ public class JobAwareAppender extends AppenderBase<ILoggingEvent> {
         switch (eventObject.level) {
           case Level.INFO:
           case Level.ERROR:
+          case Level.WARN:
           
             final Serializable tid = JobRunnerService.jobContext.get()?.tenantId
-          
-            if (tid) {
-              Tenants.withId( tid, addLogEntry.curry(eventObject, jid) )
-            } else {
-              addLogEntry(eventObject, jid)
-            }
+            JobLoggingService.handleLogEvent(tid, jid, eventObject.message, eventObject.level.levelStr, Instant.ofEpochMilli(eventObject.timeStamp))
           break
         }
       }
-    } catch (Throwable t) { /* Silent */ }
+    } catch (Throwable t) { 
+      t.printStackTrace()
+    }
   }
 }

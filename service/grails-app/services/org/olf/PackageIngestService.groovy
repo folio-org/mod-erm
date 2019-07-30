@@ -79,16 +79,15 @@ public class PackageIngestService {
       }
       else {
         log.warn('Package ingest - no provider information present')
-        
       }
 
       if ( pkg == null ) {
         pkg = new Pkg(
-                              name: package_data.header.packageName,
-                             source: package_data.header.packageSource,
-                          reference: package_data.header.packageSlug,
-                           remoteKb: kb,
-                             vendor: vendor).save(flush:true, failOnError:true)
+              name: package_data.header.packageName,
+             source: package_data.header.packageSource,
+          reference: package_data.header.packageSlug,
+           remoteKb: kb,
+             vendor: vendor).save(flush:true, failOnError:true)
       }
       result.packageId = pkg.id
     }
@@ -183,25 +182,25 @@ public class PackageIngestService {
               else {
                 String message = "Exception processing record #${result.titleCount}. Unable to identify platform for package content item ${platform_url_to_use}, ${pc.platformName}"
                 log.error(message)
-                JobRunnerService.addJobError(message)
+//                JobRunnerService.addJobError(message)
               }
             }
             catch ( Exception e ) {
               String message = "Exception processing record #${result.titleCount}. ${e.message}"
               log.error(message,e)
-              JobRunnerService.addJobError(message)
+//              JobRunnerService.addJobError(message)
             }
           }
           else {
             String message = "Exception processing record #${result.titleCount}. Unable to resolve title ${pc.title} ${pc.instanceIdentifiers}"
             log.error(message)
-            JobRunnerService.addJobError(message)
+//            JobRunnerService.addJobError(message)
           }
         }
       }
       catch ( Exception e ) {
         String message = "Error when processing record ${pc} in package load. Ignoring this record."
-        JobRunnerService.addJobError(message)
+//        JobRunnerService.addJobError(message)
         log.error(message,e)
       }
 
@@ -234,7 +233,7 @@ public class PackageIngestService {
       if ( result.titleCount % 100 == 0 ) {
         String message = "Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}"
         log.info(message)
-        JobRunnerService.addJobInfo(message)
+//        JobRunnerService.addJobInfo(message)
       }
     }
 

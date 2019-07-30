@@ -1,24 +1,21 @@
 package org.olf.general.jobs
 
-import java.time.Instant
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.concurrent.ThreadPoolExecutor
-import java.util.concurrent.TimeUnit
+import static grails.async.Promises.*
 
-import javax.annotation.PostConstruct
-import org.olf.KbHarvestService
-import com.k_int.okapi.OkapiTenantAdminService
-import com.k_int.web.toolkit.refdata.Defaults
-import com.k_int.web.toolkit.refdata.RefdataValue
-import grails.events.EventPublisher
+import grails.async.Promise
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import groovy.util.logging.Slf4j
+import java.time.Instant
+import java.util.concurrent.TimeUnit
+import org.grails.async.factory.future.CachedThreadPoolPromiseFactory
 
 @Slf4j
 class JobLoggingService {
+  
+  static {
+    promiseFactory = new CachedThreadPoolPromiseFactory (10, 5L, TimeUnit.SECONDS)
+  }
   
   @Subscriber('jobs:log_error')
   void handleLogError(final String tenantId, final String jobId, final String message) {
@@ -30,13 +27,32 @@ class JobLoggingService {
     handleLogEvent(tenantId, jobId, message, LogEntry.TYPE_INFO)
   }
   
-  void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type) {
-    Tenants.withId(tenantId) {
-      LogEntry le = new LogEntry()
-      le.type = type
-      le.message = message
-      le.origin = jobId
-      le.save(failOnError:true, flush:true)
+  private final static Closure addLogEntry = { final Map<String, ?> logProperties, final Serializable jobId ->
+//    LogEntry.withTransaction {
+      LogEntry le = new LogEntry(logProperties)
+      le.save(failOnError: true, flush: true)
+//    }
+  }
+  
+  static void handleLogEvent ( final String tenantId, final String jobId, final String message, final String type, final Instant timestamp = Instant.now()) {
+    Promise p = task {
+      final Map<String, ?> jobProperties = [
+        'type': type,
+        'origin': jobId,
+        'message': message,
+        'dateCreated': timestamp
+      ]
+      
+      if ( jobId ) {
+        if (tenantId) {
+          Tenants.withId( tenantId, addLogEntry.curry(jobProperties, jobId) )
+        } else {
+          addLogEntry(jobProperties, jobId)
+        }
+      }
+    }
+    p.onError { Throwable err ->
+      log.error "Error saving log message", err
     }
   }
 }
