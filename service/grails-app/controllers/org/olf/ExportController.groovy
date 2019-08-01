@@ -20,6 +20,9 @@ import com.opencsv.CSVWriter
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVParser
 import com.opencsv.ICSVWriter
+import com.opencsv.bean.StatefulBeanToCsv
+import com.opencsv.bean.StatefulBeanToCsvBuilder
+
 
 /**
  * The ExportController provides endpoints for exporting content in specific formats
@@ -59,41 +62,36 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     final String filename = 'export.tsv' 
     String headline = exportService.kbartheader()
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
-	  
-    List<KBart> kbartList 
+
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
     def results = exportService.entitled(subscriptionAgreementId) 
-    log.debug("found this many resources: "+ results.size())
-    kbartList = exportService.mapToKBart(results) 
-	
-    //withFormat {
-    //  tsv { 
-        response.status = OK.value()
-        response.contentType = "${tsvMimeType};charset=${encoding}";
-        response.setHeader "Content-disposition", "attachment; filename=${filename}"
-        def outs = response.outputStream
-		OutputStream buffOs = new BufferedOutputStream(outs)
-		OutputStreamWriter osWriter = new OutputStreamWriter(buffOs)
-	
-		ICSVWriter csvWriter = new CSVWriterBuilder(osWriter)
-				.withSeparator('\t' as char)
-				.withQuoteChar(ICSVParser.NULL_CHARACTER)
-				.withEscapeChar(ICSVParser.NULL_CHARACTER)
-				.withLineEnd(ICSVWriter.DEFAULT_LINE_END)
-				.build();
-		
-        outs << headline + "\n"
-		
-        // serialize KbartExport list of kbart objects
-        kbartList.each { KBart kb ->
-          String line = kb.toString() 
-		  csvWriter.writeNext(line)
-	    }
-		osWriter.flush() 
-		 
-      //}
-    //}
-	 
+    log.debug("found this many resources: "+ results.size()) 
+   
+    response.status = OK.value()
+    response.contentType = "${tsvMimeType};charset=${encoding}";
+    response.setHeader "Content-disposition", "attachment; filename=${filename}"
+    def outs = response.outputStream
+    OutputStream buffOs = new BufferedOutputStream(outs)
+    OutputStreamWriter osWriter = new OutputStreamWriter(buffOs)
+
+    ICSVWriter csvWriter = new CSVWriterBuilder(osWriter)
+      .withSeparator('\t' as char)
+      .withQuoteChar(ICSVParser.NULL_CHARACTER)
+      .withEscapeChar(ICSVParser.NULL_CHARACTER)
+      .withLineEnd(ICSVWriter.DEFAULT_LINE_END)
+      .build();
+
+    // write header
+    outs << headline + "\n"
+    // get some content 
+    List<KBart> kbartList = exportService.mapToKBart(results)
+
+    // serialize KbartExport list of kbart objects
+    kbartList.each { KBart kb -> 
+      String line = kb.toString() // toString impl will get fields in the right order
+      csvWriter.writeNext(line)
+    }
+    osWriter.flush() 
   }
 }
 
