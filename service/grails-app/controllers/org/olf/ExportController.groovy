@@ -22,6 +22,7 @@ import com.opencsv.ICSVParser
 import com.opencsv.ICSVWriter
 import com.opencsv.bean.StatefulBeanToCsv
 import com.opencsv.bean.StatefulBeanToCsvBuilder
+import com.opencsv.bean.ColumnPositionMappingStrategy;
 
 
 /**
@@ -59,10 +60,10 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
    * kbart export (placeholder)
    */
   def kbart() {
-    final String filename = 'export.tsv' 
-    String headline = exportService.kbartheader()
-    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
-
+	final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    final String filename = 'export.tsv'
+	
+	 
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
     def results = exportService.entitled(subscriptionAgreementId) 
     log.debug("found this many resources: "+ results.size()) 
@@ -70,7 +71,9 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     response.status = OK.value()
     response.contentType = "${tsvMimeType};charset=${encoding}";
     response.setHeader "Content-disposition", "attachment; filename=${filename}"
-    def outs = response.outputStream
+	 
+		
+    def outs = response.outputStream 
     OutputStream buffOs = new BufferedOutputStream(outs)
     OutputStreamWriter osWriter = new OutputStreamWriter(buffOs)
 
@@ -79,19 +82,17 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
       .withQuoteChar(ICSVParser.NULL_CHARACTER)
       .withEscapeChar(ICSVParser.NULL_CHARACTER)
       .withLineEnd(ICSVWriter.DEFAULT_LINE_END)
-      .build();
-
-    // write header
-    outs << headline + "\n"
-    // get some content 
-    List<KBart> kbartList = exportService.mapToKBart(results)
-
-    // serialize KbartExport list of kbart objects
-    kbartList.each { KBart kb -> 
-      String line = kb.toString() // toString impl will get fields in the right order
-      csvWriter.writeNext(line)
-    }
-    osWriter.flush() 
+      .build(); 
+	  
+	StatefulBeanToCsv<KBart> sbc = new StatefulBeanToCsvBuilder<KBart>(csvWriter)
+	  .build()
+	
+	// display the header then use sbc to serialize the list of kbart objects
+	csvWriter.writeNext(KBart.header())
+    List<KBart> kbartList = KBart.transform(results)
+	 
+    sbc.write(kbartList)
+	osWriter.close() 
   }
 }
 
