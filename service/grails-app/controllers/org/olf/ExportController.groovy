@@ -16,6 +16,7 @@ import org.olf.kb.ErmResource
 import org.olf.export.KBart
 import static org.springframework.http.HttpStatus.OK
 
+
 import com.opencsv.CSVWriter
 import com.opencsv.CSVWriterBuilder
 import com.opencsv.ICSVParser
@@ -25,6 +26,7 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder
 import com.opencsv.bean.ColumnPositionMappingStrategy;
 
 
+
 /**
  * The ExportController provides endpoints for exporting content in specific formats
  * harvested by the erm module.
@@ -32,6 +34,7 @@ import com.opencsv.bean.ColumnPositionMappingStrategy;
 @Slf4j
 @CurrentTenant
 class ExportController extends OkapiTenantAwareController<TitleInstance>  {
+
 
   ExportService exportService
 
@@ -93,6 +96,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
 	 
     sbc.write(kbartList)
 	osWriter.close() 
+
   }
 }
 

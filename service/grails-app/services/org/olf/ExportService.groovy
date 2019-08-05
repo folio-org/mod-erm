@@ -2,6 +2,7 @@ package org.olf
 import org.olf.kb.ErmResource 
 import com.k_int.okapi.OkapiTenantAwareController
 
+
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
@@ -11,6 +12,7 @@ import org.hibernate.sql.JoinType
 import grails.converters.JSON
 
 
+
 import org.olf.export.KBart
 import org.olf.export.KBartExport
 
@@ -18,7 +20,7 @@ import org.olf.export.KBartExport
  * 
  */
 @Transactional
-public class ExportService { 
+public class ExportService {
   CoverageService coverageService
    
   List<ErmResource> entitled(final String agreementId = null) {  
@@ -79,4 +81,5 @@ public class ExportService {
       
     return results  
   } 
+
 }

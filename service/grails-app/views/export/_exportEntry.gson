@@ -57,6 +57,7 @@ json {
     }
   }
   
+
   if (the_platform) {
      platform g.render(the_platform)
   }
@@ -77,3 +78,4 @@ json {
   
    
 }
+
