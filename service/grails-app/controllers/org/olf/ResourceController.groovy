@@ -55,6 +55,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     // Not title. Just show a 404
     if (!ti) {
       //response.status = 404
+      //For issue ERM-285
       render ([] as JSON);
       return 
     }
