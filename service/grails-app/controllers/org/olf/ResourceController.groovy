@@ -44,7 +44,7 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
    */
   def entitlementOptions ( String resourceId ) {
     log.debug("entitlementOptions(${resourceId})");
-    
+
     // Easiest way to check that this resource is a title is to read it in as one.
     // We use criteria here to ensure
     
@@ -52,12 +52,20 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     
     log.debug("Got ti ${ti?.id}");
     
-    // Not title. Just show a 404
+    //For issue ERM-285
     if (!ti) {
-      //response.status = 404
-      //For issue ERM-285
-      render ([] as JSON);
-      return 
+      //Check to see if the resourceId points to a package
+      final Pkg pkg = resourceId ? Pkg.read( resourceId ) : null
+      if (!pkg) {
+        //if not then we return the empty set
+
+        //response.status = 404
+        respond ([]);
+        return 
+      } else {
+        respond ([pkg]);
+        return
+      }
     }
     
     // We have a matching title. We need to work out where we can get the title from. This means finding all
