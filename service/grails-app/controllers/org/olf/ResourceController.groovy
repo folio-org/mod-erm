@@ -1,5 +1,6 @@
 package org.olf
 
+import grails.converters.JSON
 import org.hibernate.Hibernate
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
@@ -48,11 +49,13 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
     // We use criteria here to ensure
     
     final TitleInstance ti = resourceId ? TitleInstance.findByIdAndSubType ( resourceId, TitleInstance.lookupOrCreateSubType('electronic') ) : null
-    log.debug("Got ti ${ti.id}");
+    
+    log.debug("Got ti ${ti?.id}");
     
     // Not title. Just show a 404
     if (!ti) {
-      response.status = 404
+      //response.status = 404
+      render ([] as JSON);
       return 
     }
     
