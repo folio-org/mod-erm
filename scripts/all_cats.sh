@@ -8,7 +8,7 @@ do
   CAT_NAME=`echo $cat_desc | jq --raw-output '.desc'`
   echo $CAT_NAME
   CAT_DEFN=`curl -s --header "X-Okapi-Tenant: diku" http://localhost:8080/erm/refdataValues/$CAT_ID -X GET`
-  for value in `echo $CAT_DEFN | jq -c -r '.values[] | { id, value }'`
+  for value in `echo $CAT_DEFN | jq -c -r '.values[] | { id, value, "label" }'`
   do
     echo $value
   done
