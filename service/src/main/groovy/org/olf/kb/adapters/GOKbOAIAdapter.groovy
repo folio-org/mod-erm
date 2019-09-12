@@ -113,6 +113,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       }
     }
 
+    log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url}");
   }
 
   public void freshenHoldingsData(String cursor,
