@@ -12,13 +12,19 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   RefdataValue status
   String note
   
-  
   static belongsTo = [ owner: SubscriptionAgreement ]
+  
+  static hasMany = [
+    amendments: LicenseAmendmentStatus
+  ]
+  
+  static mappedBy = [amendments: 'owner']
   
   static mapping = {
          status column:'rll_status'
            note column:'rll_note', type: 'text'
           owner column:'rll_owner'
+     amendments cascade: 'all-delete-orphan'
   }
   
   static constraints = {
@@ -27,7 +33,7 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   }
 
   @Override
-  public String remoteUri() {
+  public def remoteUri() {
     return 'licenses/licenses';
   }
 }
