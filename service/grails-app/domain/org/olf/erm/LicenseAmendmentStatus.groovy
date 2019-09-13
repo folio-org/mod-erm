@@ -10,6 +10,8 @@ public class LicenseAmendmentStatus implements MultiTenant<LicenseAmendmentStatu
   
   String id
   
+  String amendmentId
+  
   @Defaults(['Current', 'Future', 'Historical', 'Does not apply'])
   RefdataValue status
   String note
@@ -19,14 +21,16 @@ public class LicenseAmendmentStatus implements MultiTenant<LicenseAmendmentStatu
   
   static mapping = {
              id column:'las_id', generator: 'uuid2', length:36
+    amendmentId column:'las_amendment_id', length:36
          status column:'las_status'
            note column:'las_note', type: 'text'
           owner column:'las_owner'
   }
   
   static constraints = {
-       owner  (nullable:false)
-       status (nullable:false)
-         note (nullable:true, blank:false)
+    amendmentId (nullable:false, balnk:false)
+          owner (nullable:false)
+         status (nullable:false)
+           note (nullable:true, blank:false)
   }
 }
