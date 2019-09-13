@@ -14,8 +14,6 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   RefdataValue status
   String note
   
-  LinkedHashSet<LicenseAmendmentStatus> amendments = []
-  
   static belongsTo = [ owner: SubscriptionAgreement ]
   
   static hasMany = [
@@ -41,7 +39,7 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   }
 
   @Override
-  public def remoteUri() {
-    return "licenses/licenses/${remoteId}?${applicableAmendmentParams}"
+  public final def remoteUri() {
+    {->"licenses/licenses/${remoteId}?${applicableAmendmentParams}"}
   }
 }
