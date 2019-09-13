@@ -8,9 +8,13 @@ import grails.gorm.MultiTenant
 
 public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<RemoteLicenseLink> {
   
+  static transients = ['applicableAmendmentParams']
+  
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status
   String note
+  
+  LinkedHashSet<LicenseAmendmentStatus> amendments = []
   
   static belongsTo = [ owner: SubscriptionAgreement ]
   
@@ -31,9 +35,13 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
                status (nullable:false)
                  note (nullable:true, blank:false)
   }
+  
+  private String getApplicableAmendmentParams() {
+    amendments.findResults({it.status.value == 'current' ? 'applyAmendment=' + it.amendmentId : '' }).join('&')
+  }
 
   @Override
   public def remoteUri() {
-    return 'licenses/licenses';
+    return "licenses/licenses/${remoteId}?${applicableAmendmentParams}"
   }
 }
