@@ -278,8 +278,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           "platformUrl": tipp_platform_url,
           "platformName": tipp_platform_name,
           "url": tipp_url,
-          "access_start": access_start,
-          "access_end": access_end
+          "accessStart": access_start,
+          "accessEnd": access_end
         ])
       }
     }
