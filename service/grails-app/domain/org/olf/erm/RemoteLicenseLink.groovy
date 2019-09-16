@@ -40,6 +40,10 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
 
   @Override
   public final def remoteUri() {
-    {->"licenses/licenses/${remoteId}${applicableAmendmentParams ? '?' + applicableAmendmentParams : ''}"}
+    {->
+      def amends = applicableAmendmentParams
+      "licenses/licenses/${remoteId}${amends ? '?' + amends : ''}"
+      
+    }
   }
 }
