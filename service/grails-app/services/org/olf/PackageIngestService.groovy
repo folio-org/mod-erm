@@ -51,10 +51,13 @@ class PackageIngestService {
    */
   public Map upsertPackage(PackageSchema package_data, String remotekbname) {
 
-    def result = [:]
-    result.startTime = System.currentTimeMillis()
-    result.titleCount=0
-    result.averageTimePerTitle=0
+    def result = [
+      startTime: System.currentTimeMillis(),
+      titleCount: 0,
+      newTitles: 0,
+      removedTitles: 0,
+      updatedTitles: 0
+    ]
 
     Pkg pkg = null
 
@@ -145,24 +148,42 @@ class PackageIngestService {
                   [pti:pti, pkg:result.packageId])
               PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
 
+              boolean isUpdate = false
               if ( pci == null ) {
                 log.debug("Record ${result.titleCount} - Create new package content item")
                 pci = new PackageContentItem(
-                    pti:pti,
-                    pkg:Pkg.get(result.packageId),
-                    note:(pc.coverageNote) ? pc.coverageNote : null,
-                    depth:(pc.coverageDepth) ? pc.coverageDepth : null,
-                    accessStart:(pc.accessStart) ? pc.accessStart : null,
-                    accessEnd:(pc.accessEnd) ? pc.accessEnd : null,
-                    addedTimestamp:result.updateTime,
-                    lastSeenTimestamp:result.updateTime).save(flush:true, failOnError:true)
+                  pti:pti,
+                  pkg:Pkg.get(result.packageId),
+                  addedTimestamp:result.updateTime)
               }
               else {
                 // Note that we have seen the package content item now - so we don't delete it at the end.
                 log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
-                pci.lastSeenTimestamp = result.updateTime
-                // TODO: Check for and record any CHANGES to this title in this package (coverage, embargo, etc)
+                isUpdate = true
               }
+              
+              // Add/Update common properties.
+              pci.with {
+                note = pc.coverageNote
+                depth = pc.coverageDepth
+                accessStart = pc.accessStart
+                accessEnd = pc.accessEnd
+                addedTimestamp = result.updateTime
+                lastSeenTimestamp = result.updateTime
+              }
+              
+              if (pci.isDirty()) {
+                if (isUpdate) {
+                  // This means we have changes to an existing PCI and not a new one.
+                  result.updatedTitles++
+                } else {
+                  // New item.
+                  result.newTitles++
+                }
+                
+                pci.save(flush: true, failOnError: true)
+              }
+            
 
               // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
               // extends to include the supplied information. It is a contract with the KB that we assume this is correct info.
@@ -224,9 +245,9 @@ class PackageIngestService {
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
         log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
-//        JobRunnerService.addJobInfo(message)
       }
     }
+    def totalAvg = (System.currentTimeMillis()-result.startTime)/1000
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
@@ -245,16 +266,14 @@ class PackageIngestService {
         } catch ( Exception e ) {
           log.error("Problem removing ${removal_candidate} in package load",e)
         }
-        removal_counter++
+        result.removedTitles++
       }
-      result.numTitlesRemoved = removal_counter
     }
     
-    if (removal_counter > 0) {
-      log.info("Removed ${removal_counter} items successfully")
-    } else {
-      log.info("Nothing to remove")
-    }
+    log.info ("Processed ${result.titleCount} titles in ${totalAvg} seconds ${totalAvg/result.titleCount} average")
+    log.info ("Added ${result.newTitles} titles")
+    log.info ("Updated ${result.updatedTitles} titles")
+    log.info ("Removed ${result.removedTitles} titles")
 
     return result
   }
