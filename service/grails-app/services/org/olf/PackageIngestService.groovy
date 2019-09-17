@@ -13,7 +13,9 @@ import org.olf.kb.RemoteKB
 import org.olf.kb.TitleInstance
 import org.slf4j.MDC
 import grails.gorm.transactions.Transactional
+import grails.util.GrailsNameUtils
 import groovy.util.logging.Slf4j
+import java.util.concurrent.TimeUnit
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -39,6 +41,8 @@ class PackageIngestService {
   public Map upsertPackage(PackageSchema package_data) {
     return upsertPackage(package_data,'LOCAL')
   }
+  
+  private static final def countChanges = ['accessStart', 'accessEnd']
 
   /**
    * Load the paackage data (Given in the agreed canonical json package format) into the KB.
@@ -176,13 +180,26 @@ class PackageIngestService {
                 if (isUpdate) {
                   // This means we have changes to an existing PCI and not a new one.
                   result.updatedTitles++
+                  
+                  // Grab the dirty properties
+                  def modifiedFieldNames = pci.getDirtyPropertyNames()
+                  for (fieldName in modifiedFieldNames) {
+                    if (countChanges.contains(fieldName)) {
+                      def currentValue = pci."$fieldName"
+                      def originalValue = pci.getPersistentValue(fieldName)
+                      if (currentValue != originalValue) {
+                        result["${fieldName}"] = (result["${fieldName}"] ?: 0)++
+                      }
+                    }
+                  }
+                  
                 } else {
                   // New item.
                   result.newTitles++
                 }
-                
-                pci.save(flush: true, failOnError: true)
               }
+                
+              pci.save(flush: true, failOnError: true)
             
 
               // If the row has a coverage statement, check that the range of coverage we know about for this title on this platform
@@ -247,7 +264,7 @@ class PackageIngestService {
         log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
       }
     }
-    def totalAvg = (System.currentTimeMillis()-result.startTime)/1000
+    def finishedTime = (System.currentTimeMillis()-result.startTime)/1000
 
     // At the end - Any PCIs that are currently live (Don't have a removedTimestamp) but whos lastSeenTimestamp is < result.updateTime
     // were not found on this run, and have been removed. We *may* introduce some extra checks here - like 3 times or a time delay, but for now,
@@ -270,10 +287,29 @@ class PackageIngestService {
       }
     }
     
-    log.info ("Processed ${result.titleCount} titles in ${totalAvg} seconds ${totalAvg/result.titleCount} average")
-    log.info ("Added ${result.newTitles} titles")
-    log.info ("Updated ${result.updatedTitles} titles")
-    log.info ("Removed ${result.removedTitles} titles")
+    // Need to pause long enough so that the timestamps are different
+    TimeUnit.MILLISECONDS.sleep(1)
+    if (result.titleCount > 0) {
+      log.info ("Processed ${result.titleCount} titles in ${finishedTime} seconds (${finishedTime/result.titleCount} average)")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Added ${result.newTitles} titles")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Updated ${result.updatedTitles} titles")
+      TimeUnit.MILLISECONDS.sleep(1)
+      log.info ("Removed ${result.removedTitles} titles")
+      
+      // Log the counts too.
+      for (final String change : countChanges) {
+        if (result[change]) {
+          TimeUnit.MILLISECONDS.sleep(1)
+          log.info ("Changed ${GrailsNameUtils.getNaturalName(change).toLowerCase()} on ${result[change]} titles")
+        }
+      }
+    } else {
+      if (result.titleCount > 0) {
+        log.info ("No titles to process")
+      }
+    }
 
     return result
   }
