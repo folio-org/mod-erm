@@ -58,7 +58,7 @@ class UrlMappings {
         "/import" (controller: 'package', action: 'import', method: 'POST')
       }
         
-      "/content" (controller: 'package', action: 'allContent', method: 'GET')
+      "/content" (controller: 'package', action: 'content', method: 'GET')
       "/content/current" (controller: 'package', action: 'currentContent', method: 'GET')
       "/content/joining" (controller: 'package', action: 'joiningContent', method: 'GET')
       "/content/leaving" (controller: 'package', action: 'leavingContent', method: 'GET')

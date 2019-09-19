@@ -26,7 +26,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     return render (status: 200)
   }
   
-  def allContent () {
+  def content () {
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
     }
