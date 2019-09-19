@@ -57,7 +57,7 @@ class Application extends GrailsAutoConfiguration {
         builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
         
         log.info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
-        log.info "Runtime cpus reported ${Runtime.getRuntime().availableProcessors()}"
+        log.info "Runtime CPUs reported ${Runtime.getRuntime().availableProcessors()}"
         log.info "Allocated ${builder.ioThreads} IO Threads"
         log.info "Allocated ${builder.workerThreads} worker threads"
         log.info "Allocated ${builder.bufferSize} bytes of ${builder.directBuffers ? 'direct' : 'indirect'} buffer space per thread"
