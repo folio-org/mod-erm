@@ -60,17 +60,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             createAlias 'entitlements', 'direct_ent'
               eq 'direct_ent.owner.id', subscriptionAgreementId
               
-            and {
-              or {
-                isNull 'accessEnd'
-                gte 'accessEnd', today
-              }
-              or {
-                isNull 'accessStart'
-                lte 'accessStart', today
-              }
-            }
-              
             projections {
               property ('id')
             }
