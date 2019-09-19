@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean
 import grails.boot.GrailsApp
 import grails.boot.config.GrailsAutoConfiguration
 import groovy.util.logging.Slf4j
+import io.undertow.UndertowOptions
 import io.undertow.Undertow.Builder
 
 @Slf4j
@@ -51,6 +52,9 @@ class Application extends GrailsAutoConfiguration {
         
         // 8 Workers per I/O thread
         builder.workerThreads = builder.workerThreads = builder.ioThreads * workers_per_io
+        
+        // Enable HTTP2
+        builder.setServerOption(UndertowOptions.ENABLE_HTTP2, true)
         
         log.info "Runtime memory reported ${Runtime.getRuntime().maxMemory() / 1024 / 1024} mb"
         log.info "Runtime cpus reported ${Runtime.getRuntime().availableProcessors()}"
