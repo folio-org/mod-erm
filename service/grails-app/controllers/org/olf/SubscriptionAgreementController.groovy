@@ -83,9 +83,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
                 
-                projections {
-                  property ('id')
-                }
+              projections {
+                property ('id')
+              }
             }
             
             and {
