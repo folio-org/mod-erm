@@ -30,10 +30,24 @@ class UrlMappings {
         method = 'GET'
         filters = { "owner==${params.subscriptionAgreementId}" }
       }
+	  
+      '/usageDataProviders' {
+  		  controller = 'usageDataProvider'
+  		  method = 'GET'
+  		  filters = { "owner==${params.subscriptionAgreementId}" }
+  	  }
       
+      // Root level extensions
       collection {
+        '/publicLookup' (action: 'publicLookup', method: 'GET')
+        
         '/linkedLicenses' {
           controller = 'remoteLicenseLink'
+          method = 'GET'
+        }
+        
+        '/usageDataProviders' {
+          controller = 'usageDataProvider'
           method = 'GET'
         }
       }
@@ -42,13 +56,6 @@ class UrlMappings {
   		  controller = 'usageDataProvider'
   		  method = 'GET'
   		  filters = { "owner==${params.subscriptionAgreementId}" }
-  	  }
-	  
-      collection {
-  		  '/usageDataProviders' {
-  			  controller = 'usageDataProvider'
-  			  method = 'GET'
-  		  }
   	  }
     }
 
