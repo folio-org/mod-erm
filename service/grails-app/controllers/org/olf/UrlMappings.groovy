@@ -15,9 +15,8 @@ class UrlMappings {
 
     // Map /sas to SubscriptionAgreementController
     '/erm/sas'(resources: 'subscriptionAgreement') {
-//       "/addToAgreement"(action:'addToAgreement')
       "/resources" (action: 'resources', method: 'GET')
-      "/resources2" (action: 'resources2', method: 'GET')
+
       "/export/$action?" (controller: 'export', method: 'GET')
 	  
       '/linkedLicenses' {
@@ -34,17 +33,17 @@ class UrlMappings {
       }
 	  
       '/usageDataProviders' {
-		  controller = 'usageDataProvider'
-		  method = 'GET'
-		  filters = { "owner==${params.subscriptionAgreementId}" }
-	  }
+  		  controller = 'usageDataProvider'
+  		  method = 'GET'
+  		  filters = { "owner==${params.subscriptionAgreementId}" }
+  	  }
 	  
       collection {
-		  '/usageDataProviders' {
-			  controller = 'usageDataProvider'
-			  method = 'GET'
-		  }
-	  }
+  		  '/usageDataProviders' {
+  			  controller = 'usageDataProvider'
+  			  method = 'GET'
+  		  }
+  	  }
     }
 
     '/erm/titles'(resources: 'title') {
