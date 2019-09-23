@@ -1,0 +1,107 @@
+import java.util.concurrent.ExecutionException
+import java.util.concurrent.Future
+
+import org.olf.erm.RemoteLicenseLink
+import org.olf.erm.SubscriptionAgreement
+
+import groovy.transform.Field
+import groovyx.net.http.HttpException
+
+@Field
+SubscriptionAgreement subscriptionAgreement
+
+@Field
+Map<String,Future> licenses
+
+getBinding().variables.each { k, v ->
+  System.out.println "${k} = ${v}"
+}
+
+json {
+  name subscriptionAgreement.name
+  startDate subscriptionAgreement.startDate
+  endDate subscriptionAgreement.endDate
+  isPerpetual subscriptionAgreement.isPerpetual ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.isPerpetual]) : null
+  agreementStatus subscriptionAgreement.agreementStatus ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.agreementStatus]) : null
+    
+  linkedLicenses (subscriptionAgreement.linkedLicenses.findAll { it.status?.value == 'controlling' && licenses.keySet().contains(it.id) } ) { RemoteLicenseLink rll ->
+    
+    try {
+      final Map license = (licenses[rll.id]?.get()) as Map
+      if (license) {
+        status rll.status ? g.render(template: 'refdataValue_v1', model: ['refdataValue': rll.status]) : null
+        remoteId_object {
+          name license.name
+          final Map stat = license.status as Map
+          status stat ? {
+            value stat.value
+            label stat.label
+          } : null
+          description license.description
+          startDate license.startDate
+          endDate license.endDate
+          openEnded license.openEnded
+        }
+      }
+      
+    } catch (ExecutionException e) {
+      if (e.cause instanceof HttpException) {
+        HttpException httpEx = e.cause as HttpException
+        error httpEx.statusCode
+        message httpEx.message
+      } else {
+        error e.class.name
+        message e.message
+      }
+    }
+  }
+}
+
+/* "description": "License for the AAAS Science Classic Agreement",
+              "startDate": "2019-01-01",
+              "endDate": "2020-06-30",
+              "openEnded": false,
+              "customProperties": {
+                "walkInAccess": [
+                  {
+                    "id": 2,
+                    "internal": false,
+                    "value": {
+                      "value": "yes",
+                      "label": "Yes"
+                    },
+                    "publicNote": "A note for display in a patron facing system",
+                    "type": {
+                      "name": "walkInAccess",
+                      "primary": true,
+                      "label": "Walk-in access permitted?",
+                      "description": "Can non-members of the library/institution use the resource when in the library",
+                      "weight": 0
+                    }
+                  }
+                ],
+                "textAndDataMining": [
+                  {
+                    "id": 6,
+                    "internal": false,
+                    "value": {
+                      "value": "not_applicable",
+                      "label": "Not applicable"
+                    },
+                    "type": {
+                      "name": "textAndDataMining",
+                      "primary": false,
+                      "label": "Text and Data mining",
+                      "description": "Whether it is permitted to use text and data mining processes on the content of the resource",
+                      "weight": 0
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    ]
+  }
+  */
