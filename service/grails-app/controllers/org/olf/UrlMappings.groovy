@@ -60,8 +60,8 @@ class UrlMappings {
         
       "/content" (controller: 'package', action: 'content', method: 'GET')
       "/content/current" (controller: 'package', action: 'currentContent', method: 'GET')
-      "/content/joining" (controller: 'package', action: 'joiningContent', method: 'GET')
-      "/content/leaving" (controller: 'package', action: 'leavingContent', method: 'GET')
+      "/content/future" (controller: 'package', action: 'futureContent', method: 'GET')
+      "/content/dropped" (controller: 'package', action: 'droppedContent', method: 'GET')
     }
 
     "/erm/pci"(resources:'packageContentItem')
