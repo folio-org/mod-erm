@@ -39,7 +39,9 @@ class UrlMappings {
       
       // Root level extensions
       collection {
-        '/publicLookup' (action: 'publicLookup', method: 'GET')
+        '/publicLookup' (action: 'publicLookup', method: 'GET') {
+          perPage = { Math.min(params.int('perPage') ?: params.int('max') ?: 5, 5) }
+        }
         
         '/linkedLicenses' {
           controller = 'remoteLicenseLink'
