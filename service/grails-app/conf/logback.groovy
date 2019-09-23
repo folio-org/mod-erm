@@ -48,7 +48,7 @@ if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environ
   
   logger ('com.k_int.web.toolkit.refdata.GrailsDomainRefdataHelpers', DEBUG)
   logger ('com.k_int.web.toolkit.utils.RequestUtils', DEBUG)
-  logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', DEBUG)
+  logger ('com.k_int.okapi.remote_resources.RemoteOkapiLinkListener', TRACE)
   logger ('com.k_int.okapi.OkapiTenantAdminService', TRACE)
   
   // Uncomment below logging for output of OKAPI client http.
