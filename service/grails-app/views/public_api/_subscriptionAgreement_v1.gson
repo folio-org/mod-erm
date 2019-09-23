@@ -41,6 +41,9 @@ json {
           startDate license.startDate
           endDate license.endDate
           openEnded license.openEnded
+          
+          final Map terms = license.customProperties as Map
+          customProperties g.render (terms)
         }
       }
       
