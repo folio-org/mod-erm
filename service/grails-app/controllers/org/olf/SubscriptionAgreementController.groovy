@@ -42,10 +42,12 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       final LocalDate today = LocalDate.now()
         
       final def results = doTheLookup (ErmResource) {
+        readOnly (true)
         or {
           
           // Direct PTIs
           'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+            readOnly (true)
             
             createAlias 'entitlements', 'direct_ent'
               eq 'direct_ent.owner.id', subscriptionAgreementId
@@ -57,6 +59,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           // Direct PCIs
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
             
             createAlias 'entitlements', 'direct_ent'
               eq 'direct_ent.owner.id', subscriptionAgreementId
@@ -68,6 +71,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            readOnly (true)
             
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
@@ -82,8 +86,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             }
           }
         }
-        
-        readOnly (true)
       }
       
       // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
@@ -113,11 +115,11 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               eq 'direct_ent.owner.id', subscriptionAgreementId
               or {
                 isNull 'direct_ent.activeFrom'
-                lte 'direct_ent.activeFrom', today
+                le 'direct_ent.activeFrom', today
               }
               or {
                 isNull 'direct_ent.activeTo'
-                gte 'direct_ent.activeTo', today
+                ge 'direct_ent.activeTo', today
               }
               
             projections {
@@ -132,19 +134,19 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               eq 'direct_ent.owner.id', subscriptionAgreementId
               or {
                 isNull 'direct_ent.activeFrom'
-                lte 'direct_ent.activeFrom', today
+                le 'direct_ent.activeFrom', today
               }
               or {
                 isNull 'direct_ent.activeTo'
-                gte 'direct_ent.activeTo', today
+                ge 'direct_ent.activeTo', today
               }
               or {
                 isNull 'accessStart'
-                lte 'accessStart', today
+                le 'accessStart', today
               }
               or {
                 isNull 'accessEnd'
-                gte 'accessEnd', today
+                ge 'accessEnd', today
               }
               
             projections {
@@ -161,11 +163,11 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                 
                 or {
                   isNull 'pkg_ent.activeFrom'
-                  lte 'direct_ent.activeFrom', today
+                  le 'direct_ent.activeFrom', today
                 }
                 or {
                   isNull 'pkg_ent.activeTo'
-                  gte 'direct_ent.activeTo', today
+                  ge 'direct_ent.activeTo', today
                 }
                 
               projections {
@@ -175,11 +177,11 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             
             or {
               isNull 'accessStart'
-              lte 'accessStart', today
+              le 'accessStart', today
             }
             or {
               isNull 'accessEnd'
-              gte 'accessEnd', today
+              ge 'accessEnd', today
             }
             
             projections {
@@ -199,4 +201,205 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     }
   }
   
+  def droppedResources () {
+    
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    if (subscriptionAgreementId) {
+
+      // Now
+      final LocalDate today = LocalDate.now()
+        
+      final def results = doTheLookup (ErmResource) {
+        or {
+          
+          // Direct PTIs
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              lt 'direct_ent.activeTo', today
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Direct PCIs
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              
+              // Valid resource
+              and {
+                // Valid access start
+                or {
+                  isNull 'accessStart'
+                  isNull 'direct_ent.activeTo'
+                  ltProperty 'accessStart', 'direct_ent.activeTo'
+                }
+                // Valid access end
+                or {
+                  isNull 'accessEnd'
+                  isNull 'direct_ent.activeFrom'
+                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
+                }
+              }
+              
+              // Line or Resource in the past
+              or {
+                lt 'direct_ent.activeTo', today
+                lt 'accessEnd', today
+              }
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Pci linked via package.
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            
+            createAlias 'pkg.entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              
+              // Valid resource
+              and {
+                // Valid access start
+                or {
+                  isNull 'accessStart'
+                  isNull 'direct_ent.activeTo'
+                  ltProperty 'accessStart', 'direct_ent.activeTo'
+                }
+                // Valid access end
+                or {
+                  isNull 'accessEnd'
+                  isNull 'direct_ent.activeFrom'
+                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
+                }
+              }
+              
+              // Line or Resource in the past
+              or {
+                lt 'direct_ent.activeTo', today
+                lt 'accessEnd', today
+              }
+            
+            projections {
+              property ('id')
+            }
+          }
+        }
+        
+        readOnly (true)
+      }
+      
+      // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
+      coverageService.lookupCoverageOverrides(results, "${subscriptionAgreementId}")
+      
+      respond results
+      return
+    }
+  }
+  
+  def futureResources () {
+    
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    if (subscriptionAgreementId) {
+
+      // Now
+      final LocalDate today = LocalDate.now()
+        
+      final def results = doTheLookup (ErmResource) {
+        or {
+          
+          // Direct PTIs
+          'in' 'id', new DetachedCriteria(PlatformTitleInstance).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              gt 'direct_ent.activeFrom', today
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Direct PCIs
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            
+            createAlias 'entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              
+              // Valid resource
+              and {
+                // Valid access start
+                or {
+                  isNull 'accessStart'
+                  isNull 'direct_ent.activeTo'
+                  ltProperty 'accessStart', 'direct_ent.activeTo'
+                }
+                // Valid access end
+                or {
+                  isNull 'accessEnd'
+                  isNull 'direct_ent.activeFrom'
+                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
+                }
+              }
+              
+              // Line or Resource in the future
+              or {
+                gt 'direct_ent.activeFrom', today
+                gt 'accessStart', today
+              }
+              
+            projections {
+              property ('id')
+            }
+          }
+          
+          // Pci linked via package.
+          'in' 'id', new DetachedCriteria(PackageContentItem).build {
+            
+            createAlias 'pkg.entitlements', 'direct_ent'
+              eq 'direct_ent.owner.id', subscriptionAgreementId
+              
+              // Valid resource
+              and {
+                // Valid access start
+                or {
+                  isNull 'accessStart'
+                  isNull 'direct_ent.activeTo'
+                  ltProperty 'accessStart', 'direct_ent.activeTo'
+                }
+                // Valid access end
+                or {
+                  isNull 'accessEnd'
+                  isNull 'direct_ent.activeFrom'
+                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
+                }
+              }
+              
+              // Line or Resource in the future
+              or {
+                gt 'direct_ent.activeFrom', today
+                gt 'accessStart', today
+              }
+            
+            projections {
+              property ('id')
+            }
+          }
+        }
+        
+        readOnly (true)
+      }
+      
+      // This method writes to the web request if there is one (which of course there should be as we are in a controller method)
+      coverageService.lookupCoverageOverrides(results, "${subscriptionAgreementId}")
+      
+      respond results
+      return
+    }
+  }
 }
