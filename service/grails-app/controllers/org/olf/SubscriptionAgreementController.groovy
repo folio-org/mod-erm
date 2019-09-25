@@ -37,9 +37,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     if (subscriptionAgreementId) {
-
-      // Now
-      final LocalDate today = LocalDate.now()
         
       final def results = doTheLookup (ErmResource) {
         readOnly (true)
@@ -104,7 +101,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 
       // Now
       final LocalDate today = LocalDate.now()
-        
       final def results = doTheLookup (ErmResource) {
         or {
           
@@ -163,11 +159,11 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                 
                 or {
                   isNull 'pkg_ent.activeFrom'
-                  le 'direct_ent.activeFrom', today
+                  le 'pkg_ent.activeFrom', today
                 }
                 or {
                   isNull 'pkg_ent.activeTo'
-                  ge 'direct_ent.activeTo', today
+                  ge 'pkg_ent.activeTo', today
                 }
                 
               projections {
@@ -260,28 +256,28 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
             
-            createAlias 'pkg.entitlements', 'direct_ent'
-              eq 'direct_ent.owner.id', subscriptionAgreementId
+            createAlias 'pkg.entitlements', 'pkg_ent'
+              eq 'pkg_ent.owner.id', subscriptionAgreementId
               
               // Valid resource
               and {
                 // Valid access start
                 or {
                   isNull 'accessStart'
-                  isNull 'direct_ent.activeTo'
-                  ltProperty 'accessStart', 'direct_ent.activeTo'
+                  isNull 'pkg_ent.activeTo'
+                  ltProperty 'accessStart', 'pkg_ent.activeTo'
                 }
                 // Valid access end
                 or {
                   isNull 'accessEnd'
-                  isNull 'direct_ent.activeFrom'
-                  gtProperty 'accessEnd', 'direct_ent.activeFrom'
+                  isNull 'pkg_ent.activeFrom'
+                  gtProperty 'accessEnd', 'pkg_ent.activeFrom'
                 }
               }
               
               // Line or Resource in the past
               or {
-                lt 'direct_ent.activeTo', today
+                lt 'pkg_ent.activeTo', today
                 lt 'accessEnd', today
               }
             
