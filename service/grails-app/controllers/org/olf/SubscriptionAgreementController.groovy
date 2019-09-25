@@ -1,20 +1,18 @@
 package org.olf
 
+import java.time.LocalDate
+
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmResource
 import org.olf.kb.PackageContentItem
-import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.Pkg
-import org.hibernate.sql.JoinType
-import org.olf.erm.Entitlement
+import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.OkapiTenantAwareController
 
-import grails.gorm.multitenancy.CurrentTenant
-import grails.orm.HibernateCriteriaBuilder
-import groovy.util.logging.Slf4j
-import java.time.LocalDate
 import grails.gorm.DetachedCriteria
+import grails.gorm.multitenancy.CurrentTenant
+import groovy.util.logging.Slf4j
 
 
 /**
