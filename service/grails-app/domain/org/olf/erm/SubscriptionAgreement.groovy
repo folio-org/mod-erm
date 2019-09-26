@@ -46,8 +46,11 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
 
-  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Cancelled'])
+  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Closed'])
   RefdataValue agreementStatus
+
+  @Defaults(['Cancelled', 'Ceased', 'Superceded'])
+  RefdataValue reasonForClosure
 
   @CategoryId('Global.Yes_No')
   @Defaults(['Yes', 'No'])
@@ -101,6 +104,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
            agreementType column:'sa_agreement_type'
          renewalPriority column:'sa_renewal_priority'
          agreementStatus column:'sa_agreement_status'
+         reasonForClosure column:'sa_reason_for_closure'
              isPerpetual column:'sa_is_perpetual'
      contentReviewNeeded column:'sa_content_review_needed'
                  enabled column:'sa_enabled'
@@ -129,6 +133,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              renewalDate(nullable:true, blank:false)
           nextReviewDate(nullable:true, blank:false)
            agreementType(nullable:true, blank:false)
+           reasonForClosure(nullable:true, blank:false)
          renewalPriority(nullable:true, blank:false)
          agreementStatus(nullable:true, blank:false)
              isPerpetual(nullable:true, blank:false)
