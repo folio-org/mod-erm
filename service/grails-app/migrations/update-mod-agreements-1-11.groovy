@@ -37,16 +37,4 @@ databaseChangeLog = {
   changeSet(author: "sosguthorpe (generated)", id: "1568388094555-4") {
     addForeignKeyConstraint(baseColumnNames: "las_owner", baseTableName: "license_amendment_status", constraintName: "FKo66rknrrhqlfoxxpjcq1p9f54", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rol_id", referencedTableName: "remote_license_link")
   }
-
-  changeSet(author: "ethanfreestone (manual)", id: "260920190932-1") {
-    addColumn(tableName: "subscription_agreement") {
-      column(name: "sa_reason_for_closure", type: "VARCHAR(36)") {
-        constraints(nullable: "false")
-      }
-    }
-  }
-  changeSet(author: "ethanfreestone (manual)", id: "260920190932-2") {
-        addForeignKeyConstraint(baseColumnNames: "sa_reason_for_closure", baseTableName: "subscription_agreement", constraintName: "reasonforclosureforeignkeyconstraint26092019", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
-    }
-
 }

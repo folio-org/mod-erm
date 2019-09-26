@@ -133,7 +133,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
              renewalDate(nullable:true, blank:false)
           nextReviewDate(nullable:true, blank:false)
            agreementType(nullable:true, blank:false)
-           reasonForClosure(nullable:true, blank:false)
+           reasonForClosure(nullable:true, blank:true)
          renewalPriority(nullable:true, blank:false)
          agreementStatus(nullable:true, blank:false)
              isPerpetual(nullable:true, blank:false)
