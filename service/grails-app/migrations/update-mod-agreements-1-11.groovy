@@ -45,5 +45,8 @@ databaseChangeLog = {
       }
     }
   }
-  
+  changeSet(author: "ethanfreestone (manual)", id: "260920190932-2") {
+        addForeignKeyConstraint(baseColumnNames: "sa_reason_for_closure", baseTableName: "subscription_agreement", constraintName: "reasonforclosureforeignkeyconstraint26092019", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
+    }
+
 }
