@@ -81,14 +81,17 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       // Use the request if possible
       RequestAttributes attributes = RequestContextHolder.getRequestAttributes()
       if(attributes && attributes instanceof GrailsWebRequest) {
+        
+        GrailsWebRequest gwr = attributes as GrailsWebRequest
+        
         log.debug "Is within a request context"
-        TimeZone tz = RequestContextUtils.getTimeZone(attributes) ?: TimeZone.getDefault()
+        TimeZone tz = RequestContextUtils.getTimeZone(gwr.currentRequest) ?: TimeZone.getDefault()
         
         log.debug "Using TZ ${tz}"
-        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz)
+        ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz.toZoneId())
         
         log.debug "Now in ${tz} is ${zdt}"
-        ld = ZonedDateTime.ofInstant(Instant.now(), tz).toLocalDate()
+        ld = zdt.toLocalDate()
         
         log.debug "LocalDate of ${ld} extracted for query"
       } else {
@@ -98,6 +101,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       
       // Create the query
       def query = Period.where {
+         (owner.id == "${this.id}") &&
          (startDate == null || startDate <= ld) && 
            (endDate == null || endDate >= ld)
       }
@@ -108,7 +112,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       if (!currentPeriod) {
         // Find the last period.
         query = Period.where {
-          (startDate == null || startDate == max(startDate))
+          (owner.id == "${this.id}") && (startDate == null || startDate == max(startDate))
         }
         currentPeriod = query.list(sort: startDate,max: 1)?.getAt(0)
       } 
