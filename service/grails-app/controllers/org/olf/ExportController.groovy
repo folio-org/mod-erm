@@ -38,14 +38,21 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     super(TitleInstance, true)
   }
 
-  /**
-   * main index method (by default, return titles as json)
-   */
   def index() {
     log.debug("ExportController::index");
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
     log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
-    List<ErmResource> results = exportService.entitled(subscriptionAgreementId)
+    List<ErmResource> results = exportService.all(subscriptionAgreementId)
+    log.debug("found this many resources: "+ results.size())
+    
+    respondWithResults ( results )
+  }
+  
+  def current() {
+    log.debug("ExportController::index");
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    log.debug("Getting export for specific agreement: "+ subscriptionAgreementId)
+    List<ErmResource> results = exportService.current(subscriptionAgreementId)
     log.debug("found this many resources: "+ results.size())
     
     respondWithResults ( results )

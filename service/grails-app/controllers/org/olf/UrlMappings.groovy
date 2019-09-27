@@ -22,8 +22,8 @@ class UrlMappings {
 
       "/export/$format?"          (controller: 'export', method: 'GET')
       "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
-      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
-      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
+//      "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
+//      "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 	  
       '/linkedLicenses' {
         controller = 'remoteLicenseLink'
@@ -132,8 +132,8 @@ class UrlMappings {
     // export endpoints
     "/export/$format?"          (controller: 'export', method: 'GET')
     "/export/current/$format?"  (controller: 'export', action: 'current', method: 'GET')
-    "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
-    "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
+//    "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
+//    "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 
   }
 }
