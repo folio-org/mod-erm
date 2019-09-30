@@ -75,7 +75,7 @@ class UrlMappings {
         "/external" ( action: 'external' )
       }
     }
-    '/erm/contacts'(resources: 'internalContact')
+    '/erm/contacts'(resources: 'internalContact', excludes: ['update', 'patch', 'save', 'create', 'edit', 'delete'])
 
     '/erm/refdataValues'(resources: 'refdata') {
       // The collection section allows us to create methods that impact the whole set of refdataValues rather than a specific resource.
@@ -100,8 +100,8 @@ class UrlMappings {
     "/codex-instances" ( controller:'subscribedContent', action:'codexSearch', stats:'true')
     "/codex-instances/$id" ( controller:'subscribedContent', action:'codexItem')
 
-    "/erm/knowledgebase" ( controller:'kb', action:'index')
-    "/erm/knowledgebase/$action" ( controller:'kb' )
+//    "/erm/knowledgebase" ( controller:'kb', action:'index')
+//    "/erm/knowledgebase/$action" ( controller:'kb' )
     
     "/erm/jobs" ( resources:'persistentJob', excludes: ['update', 'patch', 'save']) {
       collection {

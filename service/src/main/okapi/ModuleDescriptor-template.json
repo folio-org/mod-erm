@@ -7,84 +7,133 @@
       "version": "${info.app.minorVersion}",
       "handlers" : [
         {
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/sas"
-        },{
-          "methods": ["GET", "PUT", "DELETE", "POST"],
-          "pathPattern": "/erm/sas/{id}"
+          "methods": ["GET"],
+          "pathPattern": "/erm/sas",
+          "permissionsRequired": [ "agreements.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/sas/{id}/*"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/kbs"
-        },{
-          "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/erm/kbs/{id}"
+          "pathPattern": "/erm/sas/{id}",
+          "permissionsRequired": [ "agreements.item.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/kbs/{id}/*"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/packages"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/titles"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/titles/*"
-        },{
-          "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/erm/packages/{id}"
+          "pathPattern": "/erm/sas/{id}/export",
+          "permissionsRequired": [ "agreements.item.export" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/packages/{id}/*"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/contacts"
-        },{
-          "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/erm/contacts/{id}"
-        },{
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/content"
-        },{
-          "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/erm/content/{id}"
+          "pathPattern": "/erm/sas/{id}/export/*",
+          "permissionsRequired": [ "agreements.item.export" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/content/{id}/*"
+          "pathPattern": "/erm/sas/{id}/*",
+          "permissionsRequired": [ "agreements.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/sas",
+          "permissionsRequired": [ "agreements.collection.post" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/sas/{id}",
+          "permissionsRequired": [ "agreements.item.put" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/sas/{id}",
+          "permissionsRequired": [ "agreements.item.delete" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/kiwt/*"
+          "pathPattern": "/export",
+          "permissionsRequired": [ "agreements.collection.export" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/knowledgebase"
+          "pathPattern": "/export/*",
+          "permissionsRequired": [ "agreements.collection.export" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/knowledgebase/*"
+          "pathPattern": "/erm/files",
+          "permissionsRequired": [ "agreements.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resource"
+          "pathPattern": "/erm/files/{id}",
+          "permissionsRequired": [ "agreements.files.item.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/resource/*"
-        }, {
-          "methods": ["GET"],
-          "pathPattern": "/erm/entitlements"
+          "pathPattern": "/erm/files/{id}/*",
+          "permissionsRequired": [ "agreements.files.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/files",
+          "permissionsRequired": [ "agreements.files.collection.post" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/files/{id}",
+          "permissionsRequired": [ "agreements.files.item.put" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/files/{id}",
+          "permissionsRequired": [ "agreements.files.item.delete" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/entitlements/*"
-        }, {
-          "methods": ["GET", "POST"],
-          "pathPattern": "/erm/pci"
-        },{
-          "methods": ["GET", "PUT", "DELETE"],
-          "pathPattern": "/erm/pci/{id}"
+          "pathPattern": "/erm/contacts",
+          "permissionsRequired": [ "agreements.contacts.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/pci/{id}/*"
+          "pathPattern": "/erm/contacts/{id}",
+          "permissionsRequired": [ "agreements.contacts.item.get" ]
         },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/org",
+          "permissionsRequired": [ "agreements.orgs.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/org/{id}",
+          "permissionsRequired": [ "agreements.orgs.item.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/org/{id}/*",
+          "permissionsRequired": [ "agreements.orgs.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/packages",
+          "permissionsRequired": [ "agreements.orgs.collection.post" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/org/{id}",
+          "permissionsRequired": [ "agreements.orgs.item.put" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/org/{id}",
+          "permissionsRequired": [ "agreements.orgs.item.delete" ]
+        },
+        
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/packages",
+          "permissionsRequired": [ "agreements.resources.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/packages/{id}",
+          "permissionsRequired": [ "agreements.resources.item.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/packages/{id}/*",
+          "permissionsRequired": [ "agreements.resources.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/packages",
+          "permissionsRequired": [ "agreements.resources.collection.post" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/packages/{id}",
+          "permissionsRequired": [ "agreements.resources.item.put" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/packages/{id}",
+          "permissionsRequired": [ "agreements.resources.item.delete" ]
+        },
+        
+        
+        
+        
+        {
           "methods": ["GET", "POST"],
           "pathPattern": "/erm/org",
           "modulePermissions": [ "vendor.collection.get" ]
@@ -92,30 +141,6 @@
           "methods": ["GET"],
           "pathPattern": "/erm/org/find/{name}",
           "modulePermissions": [ "vendor.collection.get" ]
-        },{
-          "methods": ["GET", "POST", "DELETE"],
-          "pathPattern": "/erm/refdataValues"
-        },{
-          "methods": ["GET", "POST", "DELETE"],
-          "pathPattern": "/erm/refdataValues/*"
-        },{
-          "methods": ["GET", "POST", "DELETE"],
-          "pathPattern": "/erm/refdataValues/{domain}/{property}"
-        },{
-          "methods": ["GET", "DELETE"],
-          "pathPattern": "/erm/files/{id}"
-        },{
-         "methods": ["GET"],
-         "pathPattern": "/erm/files/{id}/*"
-        },{
-         "methods": ["GET", "POST"],
-         "pathPattern": "/erm/files"
-        },{
-          "methods": ["GET", "DELETE", "POST"],
-          "pathPattern": "/erm/jobs/{id}"
-        },{
-         "methods": ["GET", "POST"],
-         "pathPattern": "/erm/jobs"
         }
       ]
     },{
