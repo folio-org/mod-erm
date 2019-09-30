@@ -115,10 +115,10 @@ class UrlMappings {
      // how we might make this path more dynamic.
     "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save']) {
       collection {
-        "/electronic" ( action:'electronic' )
+        "/electronic" ( action:'electronic', method: 'GET')
       }
-      "/entitlementOptions" ( action:'entitlementOptions' )
-      "/entitlements" ( action:'entitlements' )
+      "/entitlementOptions" ( action:'entitlementOptions', method: 'GET')
+      "/entitlements" ( action:'entitlements', method: 'GET' )
     }
 
  
