@@ -203,7 +203,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
              licenseNote(nullable:true, blank:false)
-                 periods(minSize: 1, validator:Period.PERIOD_COLLECTION_VALIDATOR)
+                 periods(minSize: 1, validator:Period.PERIOD_COLLECTION_VALIDATOR, sort:'startDate')
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
             
