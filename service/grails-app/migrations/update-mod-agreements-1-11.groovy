@@ -86,7 +86,7 @@ databaseChangeLog = {
   changeSet(author: "ethanfreestone (manual)", id:"260920190932-5") {
     grailsChange {
       change {
-          sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_reason_for_closure=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.ReasonForClosure' AND rdv_value='cancelled')".toString())
+          sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_reason_for_closure=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.ReasonForClosure' AND rdv_value='cancelled') WHERE sa_agreement_status=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='cancelled')".toString())
       }
     }
   }
