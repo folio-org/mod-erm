@@ -113,7 +113,7 @@ class UrlMappings {
      // This is the URL path used by the eresources screen.
      // See http://docs.grails.org/latest/guide/theWebLayer.html#embeddedVariables#_dynamically_resolved_variables for information on
      // how we might make this path more dynamic.
-    "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save']) {
+    "/erm/resource" ( resources:'resource', excludes: ['delete', 'update', 'patch', 'save', 'edit', 'create']) {
       collection {
         "/electronic" ( action:'electronic', method: 'GET')
       }
