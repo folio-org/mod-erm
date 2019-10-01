@@ -46,7 +46,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   @Defaults(['Definitely renew', 'For review', 'Definitely cancel'])
   RefdataValue renewalPriority
 
-  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Closed'])
+  @Defaults(['Draft', 'Requested', 'In negotiation', 'Rejected', 'Active', 'Closed', 'Cancelled'])
   RefdataValue agreementStatus
 
   @Defaults(['Cancelled', 'Ceased', 'Superceded'])

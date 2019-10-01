@@ -14,5 +14,4 @@ databaseChangeLog = {
   include file: 'remote-kb-status.groovy'
   include file: 'update-mod-agreements-1-10.groovy'
   include file: 'update-mod-agreements-1-11.groovy'
-  include file: 'update-mod-agreements-1-12.groovy'
 }
