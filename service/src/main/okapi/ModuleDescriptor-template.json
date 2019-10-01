@@ -40,8 +40,12 @@
           "permissionsRequired": [ "erm.agreements.usageDataProviders.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/sas/{id}/*",
-          "permissionsRequired": [ "erm.agreements.item.get" ]
+          "pathPattern": "/erm/sas/{id}/resources",
+          "permissionsRequired": [ "erm.agreements.item.resources.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/sas/{id}/resources/*",
+          "permissionsRequired": [ "erm.agreements.item.resources.get" ]
         },{
           "methods": ["POST"],
           "pathPattern": "/erm/sas",
@@ -251,7 +255,8 @@
       "erm.agreements.item.get",
       "erm.agreements.export",
       "erm.agreements.linkedLicenses.get",
-      "erm.agreements.usageDataProviders.get"
+      "erm.agreements.usageDataProviders.get",
+      "erm.agreements.resources.get"
     ]
   },{
     "permissionName": "erm.agreements.edit",
