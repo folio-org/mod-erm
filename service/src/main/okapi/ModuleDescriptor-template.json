@@ -136,6 +136,24 @@
         
         {
           "methods": ["GET"],
+          "pathPattern": "/erm/jobs",
+          "permissionsRequired": [ "erm.jobs.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/jobs/{id}",
+          "permissionsRequired": [ "erm.jobs.item.get" ]
+        },{
+          "methods": ["POST"],
+          "pathPattern": "/erm/jobs/{type}",
+          "permissionsRequired": [ "erm.jobs.item.post" ]
+        },{
+          "methods": ["DELETE"],
+          "pathPattern": "/erm/jobs/{id}",
+          "permissionsRequired": [ "erm.jobs.item.delete" ]
+        },
+        
+        {
+          "methods": ["GET"],
           "pathPattern": "/erm/refdataValues",
           "permissionsRequired": [ "erm.refdata.collection.get" ]
         },{
@@ -185,23 +203,23 @@
         {
           "methods": ["GET"],
           "pathPattern": "/erm/resource",
-          "permissionsRequired": [ "erm.resource.collection.get" ]
+          "permissionsRequired": [ "erm.resources.collection.get" ]
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/resource/electronic",
-          "permissionsRequired": [ "erm.resource.collection.get" ]
+          "permissionsRequired": [ "erm.resources.collection.get" ]
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/resource/{id}",
-          "permissionsRequired": [ "erm.resource.item.get" ]
+          "permissionsRequired": [ "erm.resources.item.get" ]
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/resource/{id}/entitlements",
-          "permissionsRequired": [ "erm.resource.item.entitlement.get" ]
+          "permissionsRequired": [ "erm.resources.item.entitlement.get" ]
         },{
           "methods": ["GET"],
           "pathPattern": "/erm/resource/{id}/entitlementOptions",
-          "permissionsRequired": [ "erm.resource.item.entitlementOptions.get" ]
+          "permissionsRequired": [ "erm.resources.item.entitlementOptions.get" ]
         },
         
         {
@@ -310,6 +328,23 @@
       "erm.packages.item.content.get"
     ]
   },{
+    "permissionName": "erm.jobs.view",
+    "subPermissions": [
+      "erm.jobs.collection.get",
+      "erm.jobs.item.get"
+    ]
+  },{
+    "permissionName": "erm.jobs.edit",
+    "subPermissions": [
+      "erm.jobs.item.post"
+    ]
+  },{
+    "permissionName": "erm.jobs.manage",
+    "subPermissions": [
+      "erm.jobs.edit",
+      "erm.jobs.item.delete"
+    ]
+  },{
     "permissionName": "erm.refdata.view",
     "subPermissions": [ 
       "erm.refdata.collection.get",
@@ -348,12 +383,12 @@
       "erm.kbs.item.delete"
     ]
   },{
-    "permissionName": "erm.resource.view",
+    "permissionName": "erm.resources.view",
     "subPermissions": [
-      "erm.resource.collection.get",
-      "erm.resource.item.get",
-      "erm.resource.item.entitlement.get",
-      "erm.resource.item.entitlementOptions.get"
+      "erm.resources.collection.get",
+      "erm.resources.item.get",
+      "erm.resources.item.entitlement.get",
+      "erm.resources.item.entitlementOptions.get"
     ]
   },{
     "permissionName": "erm.titles.view",
