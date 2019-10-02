@@ -66,4 +66,20 @@ databaseChangeLog = {
   changeSet(author: "sosguthorpe (generated)", id: "1569598352742-7") {
     dropColumn(columnName: "sa_start_date", tableName: "subscription_agreement")
   }
+  
+  // Changeset to rectify incorrect dates without needing a reset.
+  changeSet(author: "sosguthorpe (generated)", id: "1569598352742-8") {
+    grailsChange {
+      change {
+        // Add Period entry for each existing agreement.
+        sql.execute("""
+          UPDATE 
+            ${database.defaultSchemaName}.period
+          SET per_end_date = NULL
+          WHERE
+            per_start_date > per_end_date;
+        """.toString())
+      }
+    }
+  }
 }
