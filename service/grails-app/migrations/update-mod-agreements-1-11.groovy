@@ -69,7 +69,7 @@ databaseChangeLog = {
   changeSet(author: "ethanfreestone (manual)", id:"260920190932-4") {
     grailsChange {
       change {
-        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'closed' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.AgreementStatus') as owner, 'Closed' as label WHERE NOT EXISTS (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.SubscriptionAgreement' AND rdv_value='closed' LIMIT 1);".toString())
+        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'closed' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.AgreementStatus') as owner, 'Closed' as label WHERE NOT EXISTS (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='closed' LIMIT 1);".toString())
       }
     }
   }
