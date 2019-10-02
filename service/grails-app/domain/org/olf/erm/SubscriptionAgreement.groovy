@@ -117,11 +117,27 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   }
   
   LocalDate getStartDate() {
-    currentPeriod?.startDate
+    if (currentPeriod) {
+      return currentPeriod.startDate
+    }
+    def query = Period.where {
+      (owner.id == "${this.id}") && (startDate == null || startDate == min(startDate).of { owner.id == "${this.id}" })
+    }
+    Period earliest = query.list(sort: 'startDate', max: 1)?.getAt(0)
+    
+    earliest.startDate
   }
   
   LocalDate getEndDate() {
-    currentPeriod?.endDate
+    if (currentPeriod) {
+      return currentPeriod.endDate
+    }
+    def query = Period.where {
+      (owner.id == "${this.id}") && (endDate == null || endDate == max(endDate).of { owner.id == "${this.id}" })
+    }
+    Period latest = query.list(sort: 'endDate', max: 1)?.getAt(0)
+    
+    latest.endDate
   }
   
   static hasMany = [
