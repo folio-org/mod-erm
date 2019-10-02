@@ -49,8 +49,8 @@ echo Parse result to extract request ID
 AGREE_1_ID=`echo $AGREE_1 | jq -r ".id" | tr -d '\r'`
 AGREE_2_ID=`echo $AGREE_2 | jq -r ".id" | tr -d '\r'`
 AGREE_3_ID=`echo $AGREE_3 | jq -r ".id" | tr -d '\r'`
-AGREE_4_ID=`echo $AGREE_3 | jq -r ".id" | tr -d '\r'`
+AGREE_4_ID=`echo $AGREE_4 | jq -r ".id" | tr -d '\r'`
 echo Created request 1: $AGREE_1_ID
 echo Created request 2: $AGREE_2_ID
 echo Created request 3: $AGREE_3_ID
-echo Created request 3: $AGREE_4_ID
+echo Created request 4: $AGREE_4_ID
