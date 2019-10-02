@@ -271,6 +271,7 @@
     "subPermissions": [ 
       "erm.agreements.collection.get",
       "erm.agreements.item.get",
+      "erm.agreements.item.resources.get",
       "erm.agreements.export",
       "erm.agreements.linkedLicenses.get",
       "erm.agreements.usageDataProviders.get",
