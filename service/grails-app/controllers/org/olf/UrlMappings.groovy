@@ -77,10 +77,7 @@ class UrlMappings {
     }
     '/erm/contacts'(resources: 'internalContact', excludes: ['update', 'patch', 'save', 'create', 'edit', 'delete'])
 
-    '/erm/refdataValues'(resources: 'refdata') {
-      // The collection section allows us to create methods that impact the whole set of refdataValues rather than a specific resource.
-      // WIthout this, the url here would be /erm/refdataValues/RDV_ID/lookupOrCreate which is not what we want. Having this here gives us a URL of
-      // /erm/refdataValues/lookupOrCreate which is what we want
+    '/erm/refdata'(resources: 'refdata') {
       collection {
         "/$domain/$property" (controller: 'refdata', action: 'lookup', method: 'GET')
       }
