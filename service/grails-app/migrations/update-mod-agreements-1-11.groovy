@@ -53,7 +53,7 @@ databaseChangeLog = {
   changeSet(author: "ethanfreestone (manual)", id: "260920190932-2") {
     grailsChange {
       change {
-        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_category (rdc_id, rdc_version, rdc_description) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'SubscriptionAgreement.ReasonForClosure' as description;".toString())
+        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_category (rdc_id, rdc_version, rdc_description) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'SubscriptionAgreement.ReasonForClosure' as description WHERE NOT EXISTS (SELECT rdc_description FROM ${database.defaultSchemaName}.refdata_category WHERE (rdc_description)=('SubscriptionAgreement.ReasonForClosure') LIMIT 1);".toString())
       }
     }
   }
@@ -65,11 +65,11 @@ databaseChangeLog = {
     }
   }
 
-  // Ensure 'closed' is a refdata value for subscription agreement status 
+  // Ensure 'closed' is a refdata value for subscription agreement status
   changeSet(author: "ethanfreestone (manual)", id:"260920190932-4") {
     grailsChange {
       change {
-        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'closed' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.AgreementStatus') as owner, 'Closed' as label;".toString())
+        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'closed' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.AgreementStatus') as owner, 'Closed' as label WHERE NOT EXISTS (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.SubscriptionAgreement' AND rdv_value='closed' LIMIT 1);".toString())
       }
     }
   }
@@ -78,7 +78,7 @@ databaseChangeLog = {
   changeSet(author: "ethanfreestone (manual)", id:"260920190932-4") {
     grailsChange {
       change {
-        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'cancelled' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.ReasonForClosure') as owner, 'Cancelled' as label;".toString())
+        sql.execute("INSERT INTO ${database.defaultSchemaName}.refdata_value (rdv_id, rdv_version, rdv_value, rdv_owner, rdv_label) SELECT md5(random()::text || clock_timestamp()::text) as id, 0 as version, 'cancelled' as value, (SELECT rdc_id FROM  ${database.defaultSchemaName}.refdata_category WHERE rdc_description='SubscriptionAgreement.ReasonForClosure') as owner, 'Cancelled' as label WHERE NOT EXISTS (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.ReasonForClosure' AND rdv_value='cancelled' LIMIT 1);".toString())
       }
     }
   }
@@ -90,13 +90,13 @@ databaseChangeLog = {
       }
     }
   }
-/*   // Update all agreements with status 'cancelled' to be status 'closed'
+  // Update all agreements with status 'cancelled' to be status 'closed'
   changeSet(author: "ethanfreestone (manual)", id:"260920190932-6") {
     grailsChange {
       change {
           sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_agreement_status=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='closed') WHERE sa_agreement_status=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='cancelled')".toString())
       }
     }
-  }  */
+  } 
 }
 
