@@ -164,27 +164,27 @@
         
         {
           "methods": ["GET"],
-          "pathPattern": "/erm/refdataValues",
+          "pathPattern": "/erm/refdata",
           "permissionsRequired": [ "erm.refdata.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/refdataValues/{domain}/{property}",
+          "pathPattern": "/erm/refdata/{domain}/{property}",
           "permissionsRequired": [ "erm.refdata.collection.get" ]
         },{
           "methods": ["GET"],
-          "pathPattern": "/erm/refdataValues/{id}",
+          "pathPattern": "/erm/refdata/{id}",
           "permissionsRequired": [ "erm.refdata.item.get" ]
         },{
           "methods": ["POST"],
-          "pathPattern": "/erm/refdataValues",
+          "pathPattern": "/erm/refdata",
           "permissionsRequired": [ "erm.refdata.item.post" ]
         },{
           "methods": ["PUT"],
-          "pathPattern": "/erm/refdataValues/{id}",
+          "pathPattern": "/erm/refdata/{id}",
           "permissionsRequired": [ "erm.refdata.item.put" ]
         },{
           "methods": ["DELETE"],
-          "pathPattern": "/erm/refdataValues/{id}",
+          "pathPattern": "/erm/refdata/{id}",
           "permissionsRequired": [ "erm.refdata.item.delete" ]
         },
         
