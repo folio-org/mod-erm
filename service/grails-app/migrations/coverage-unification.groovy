@@ -23,7 +23,7 @@ databaseChangeLog = {
     // Add two new columns with the old names but with the correct type.
     addColumn(tableName: "coverage_statement") {
       column (name: "cs_start_date", type: "DATE")
-      column (name: "cs_end_date", type: "DATE")
+      column (name: "cs_end_date", type: ".//DATE")
     }
     grailsChange {
       change {
