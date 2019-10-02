@@ -401,7 +401,8 @@
       "erm.resources.item.entitlement.get",
       "erm.resources.item.entitlementOptions.get",
       "erm.entitlements.collection.get",
-      "erm.entitlements.item.get"
+      "erm.entitlements.item.get",
+      "erm.kbs.collection.get"
     ]
   },{
     "permissionName": "erm.titles.view",
