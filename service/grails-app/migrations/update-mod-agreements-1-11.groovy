@@ -97,6 +97,14 @@ databaseChangeLog = {
           sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_agreement_status=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='closed') WHERE sa_agreement_status=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='cancelled')".toString())
       }
     }
-  } 
+  }
+  // Remove refdata value corresponding to the status of 'cancelled'
+  changeSet(author: "ethanfreestone (manual)", id:"260920190932-7") {
+    grailsChange {
+      change {
+          sql.execute("DELETE FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_id=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value INNER JOIN ${database.defaultSchemaName}.refdata_category ON refdata_value.rdv_owner = refdata_category.rdc_id WHERE rdc_description='SubscriptionAgreement.AgreementStatus' AND rdv_value='cancelled' LIMIT 1)".toString())
+      }
+    }
+  }
 }
 
