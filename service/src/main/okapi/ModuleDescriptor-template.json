@@ -72,6 +72,16 @@
         
         {
           "methods": ["GET"],
+          "pathPattern": "/erm/entitlements",
+          "permissionsRequired": [ "erm.entitlements.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/entitlements/{id}",
+          "permissionsRequired": [ "erm.entitlements.item.get" ]
+        },
+        
+        {
+          "methods": ["GET"],
           "pathPattern": "/erm/files",
           "permissionsRequired": [ "erm.files.collection.get" ]
         },{
@@ -389,7 +399,9 @@
       "erm.resources.collection.get",
       "erm.resources.item.get",
       "erm.resources.item.entitlement.get",
-      "erm.resources.item.entitlementOptions.get"
+      "erm.resources.item.entitlementOptions.get",
+      "erm.entitlements.collection.get",
+      "erm.entitlements.item.get"
     ]
   },{
     "permissionName": "erm.titles.view",
