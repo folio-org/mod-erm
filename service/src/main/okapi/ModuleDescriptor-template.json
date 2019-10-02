@@ -274,7 +274,7 @@
       "erm.agreements.export",
       "erm.agreements.linkedLicenses.get",
       "erm.agreements.usageDataProviders.get",
-      "erm.agreements.resources.get"
+      "erm.resources.view"
     ]
   },{
     "permissionName": "erm.agreements.edit",
