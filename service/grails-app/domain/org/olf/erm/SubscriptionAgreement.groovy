@@ -112,9 +112,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
       if (!currentPeriod) {
         // Find the last period.
         query = Period.where {
-          (owner.id == "${this.id}") && (startDate == null || startDate == max(startDate))
+          (owner.id == "${this.id}") && (endDate == null || endDate == max(endDate).of { owner.id == "${this.id}" }  )
         }
-        currentPeriod = query.list(sort: startDate,max: 1)?.getAt(0)
+        currentPeriod = query.list(sort: endDate,max: 1)?.getAt(0)
       } 
     }
     currentPeriod
