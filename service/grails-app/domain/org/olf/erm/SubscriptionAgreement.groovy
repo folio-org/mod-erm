@@ -231,6 +231,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
         this.reasonForClosure = null
       }
     }
-    this.agreementStatus = value
+    this.agreementStatus = statusValue
   }
 }
