@@ -224,4 +224,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
   }
+
+  setAgreementStatus (RefdataValue statusValue) {
+    if (statusValue) {
+      if (statusValue.value != 'closed') {
+        this.reasonForClosure = null
+      }
+    }
+    this.agreementStatus = value
+  }
 }
