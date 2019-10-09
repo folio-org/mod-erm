@@ -225,7 +225,7 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
           })
   }
 
-  setAgreementStatus (RefdataValue statusValue) {
+  public void setAgreementStatus (RefdataValue statusValue) {
     if (statusValue) {
       if (statusValue.value != 'closed') {
         this.reasonForClosure = null
