@@ -4,12 +4,15 @@ import java.time.LocalDate
 
 import org.olf.kb.AbstractCoverageStatement
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
 
 /**
  * Represents the local coverage override
  */
+
+@GrailsCompileStatic
 public class HoldingsCoverage extends AbstractCoverageStatement implements MultiTenant<HoldingsCoverage> {
   
   String id

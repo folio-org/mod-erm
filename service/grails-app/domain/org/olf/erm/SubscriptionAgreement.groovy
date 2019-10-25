@@ -2,16 +2,15 @@ package org.olf.erm
 
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalDateTime
 import java.time.ZonedDateTime
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
-import org.grails.web.util.WebUtils
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
+
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue

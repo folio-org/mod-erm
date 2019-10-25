@@ -2,8 +2,6 @@ package org.olf.erm
 
 import java.time.LocalDate
 
-import com.k_int.web.toolkit.refdata.RefdataValue
-
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j

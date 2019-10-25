@@ -409,4 +409,10 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       return
     }
   }
+  
+  def doClone () {
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    CLONE_GROUPING
+    
+  }
 }

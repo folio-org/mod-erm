@@ -4,12 +4,14 @@ import org.olf.general.Org
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
 
 /**
  * Link a subscription agreement with an org and attach a role
  */
+@GrailsCompileStatic
 public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreementOrg>{
   
   String id

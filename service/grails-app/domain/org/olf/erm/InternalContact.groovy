@@ -2,8 +2,11 @@ package org.olf.erm
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
+
+@GrailsCompileStatic
 public class InternalContact implements MultiTenant<InternalContact>{
   
   String id

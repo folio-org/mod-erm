@@ -1,11 +1,11 @@
 package org.olf.erm;
 
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
-import com.k_int.web.toolkit.refdata.Defaults
-import com.k_int.web.toolkit.refdata.RefdataValue
 
+import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
+@GrailsCompileStatic
 public class UsageDataProvider extends RemoteOkapiLink implements MultiTenant<UsageDataProvider> {
 
 	String usageDataProviderNote
