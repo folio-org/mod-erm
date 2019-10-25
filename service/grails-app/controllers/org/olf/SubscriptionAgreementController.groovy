@@ -24,6 +24,19 @@ import groovy.util.logging.Slf4j
 @CurrentTenant
 class SubscriptionAgreementController extends OkapiTenantAwareController<SubscriptionAgreement>  {
   
+  private static final Map<String, List<String>> CLONE_GROUPING = [
+    'agreementInfo': ['name', 'description', 'renewalPriority' , 'isPerpetual'],
+    'internalContacts': ['contacts'],
+    'agreementLines': ['entitlements'], // Do not copy poLine. Need to also duplicate coverage 
+    'linkedLicenses': ['linkedLicenses'],
+    'externalLicenses': ['externalLicenseDocs'],
+    'organizations': ['orgs'],
+    'supplementaryInformation': ['supplementaryDocs'],
+    'usageData': ['usageDataProviders'],
+    'tags': ['tags']
+  ]
+  
+  
   CoverageService coverageService
   
   SubscriptionAgreementController() {
