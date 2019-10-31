@@ -10,7 +10,7 @@ import org.olf.general.Org
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
-
+import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -23,9 +23,10 @@ import groovy.util.logging.Slf4j
  * Subscription agreement - object holding details about an SA connecting a resource list (Composed Of packages and platform-titles).
  */
 @Slf4j
-public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement> {
-  
+public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
+   
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
+  static cloneStaticValues = [periods: [new Period(startDate: LocalDate.now())]]
   
   String description
   String id
@@ -251,6 +252,13 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     else {
       this.reasonForClosure = reasonValue
     }
+  }
+  
+  /**
+   * Nearly all properties are copied 
+   */
+  public SubscriptionAgreement clone () {
+    super.clone()
   }
 
 }
