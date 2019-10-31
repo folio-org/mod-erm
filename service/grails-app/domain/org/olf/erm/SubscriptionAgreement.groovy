@@ -10,6 +10,7 @@ import org.olf.general.Org
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.servlet.support.RequestContextUtils
+
 import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
@@ -26,7 +27,7 @@ import groovy.util.logging.Slf4j
 public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
-  static cloneStaticValues = [periods: [new Period(startDate: LocalDate.now())]]
+  static cloneStaticValues = [periods: { SubscriptionAgreement target -> [new Period('owner': target, 'startDate': LocalDate.now())]}]
   
   String description
   String id
@@ -72,7 +73,6 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
 
   Org vendor
 
-//  @BindImmutably
   Set<Entitlement> items
   
   private Period currentPeriod
@@ -102,15 +102,9 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
         ld = LocalDate.now()
       }
       
-      // Create the query
-      def query = Period.where {
-         (owner.id == "${this.id}") &&
-         (startDate == null || startDate <= ld) && 
-           (endDate == null || endDate >= ld)
+      currentPeriod = periods.find { Period p ->
+        startDate <= ld && (endDate == null || endDate >= ld)
       }
-      
-      // Execute.
-      currentPeriod = query.find()
     }
     currentPeriod
   }
@@ -119,28 +113,42 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
     currentPeriod?.cancellationDeadline
   }
   
+  private LocalDate startDate = null
   LocalDate getStartDate() {
-    if (currentPeriod) {
-      return currentPeriod.startDate
-    }
-    def query = Period.where {
-      (owner.id == "${this.id}") && (startDate == null || startDate == min(startDate).of { owner.id == "${this.id}" })
-    }
-    Period earliest = query.list(sort: 'startDate', max: 1)?.getAt(0)
+    if (startDate == null) {
     
-    earliest.startDate
+      if (currentPeriod) {
+        startDate = currentPeriod.startDate
+        return startDate
+      }
+      
+      LocalDate earliest = null
+      periods.each { Period p ->
+        if (p.startDate < earliest) earliest = p.startDate
+      }
+      
+      startDate = earliest
+    }
+    startDate
   }
   
+  private LocalDate endDate = null
   LocalDate getEndDate() {
-    if (currentPeriod) {
-      return currentPeriod.endDate
+    if (endDate == null) {
+      
+      if (currentPeriod) {
+        endDate = currentPeriod.endDate
+        return endDate
+      }
+      
+      LocalDate latest = null
+      periods.each { Period p ->
+        if (p.endDate > latest) latest = p.endDate
+      }
+      
+      endDate = latest
     }
-    def query = Period.where {
-      (owner.id == "${this.id}") && (endDate == null || endDate == max(endDate).of { owner.id == "${this.id}" })
-    }
-    Period latest = query.list(sort: 'endDate', max: 1)?.getAt(0)
-    
-    latest.endDate
+    endDate
   }
   
   static hasMany = [
