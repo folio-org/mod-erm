@@ -433,8 +433,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       }
       
       log.debug "Attempting to clone agreement ${subscriptionAgreementId} using props ${props}"
-      
-      respond queryForResource(subscriptionAgreementId).clone(props)
+      SubscriptionAgreement sa = queryForResource(subscriptionAgreementId).clone(props)
+      sa.save(failOnError:true)
+      respond sa
       return
     }
     
