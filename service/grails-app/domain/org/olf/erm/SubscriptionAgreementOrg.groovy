@@ -1,6 +1,6 @@
 package org.olf.erm
 import org.olf.general.Org
-
+import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
 
@@ -12,7 +12,7 @@ import grails.gorm.MultiTenant
  * Link a subscription agreement with an org and attach a role
  */
 @GrailsCompileStatic
-public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreementOrg>{
+public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreementOrg>, Clonable<SubscriptionAgreementOrg> {
   
   String id
   Org org
@@ -36,5 +36,13 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
     owner(nullable:false, blank:false);
     org(nullable:true, blank:false);
     role(nullable:true, blank:false);
+  }
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here. 
+   */
+  @Override
+  public SubscriptionAgreementOrg clone () {
+    Clonable.super.clone()
   }
 }

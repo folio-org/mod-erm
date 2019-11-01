@@ -27,7 +27,10 @@ import groovy.util.logging.Slf4j
 public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
   static transients = ['cancellationDeadline', 'startDate', 'endDate', 'currentPeriod']
-  static cloneStaticValues = [periods: { SubscriptionAgreement target -> [new Period('owner': target, 'startDate': LocalDate.now())]}]
+  static cloneStaticValues = [
+    periods: { [new Period('owner': delegate, 'startDate': LocalDate.now())] },
+    name: { "Copy of: ${owner.name}" /* Owner is the current object. */ }
+  ]
   
   String description
   String id
@@ -263,10 +266,10 @@ public class SubscriptionAgreement implements MultiTenant<SubscriptionAgreement>
   }
   
   /**
-   * Nearly all properties are copied 
+   * Need to resolve the conflict manually and add the call to the clonable method here. 
    */
+  @Override
   public SubscriptionAgreement clone () {
-    super.clone()
+    Clonable.super.clone()
   }
-
 }

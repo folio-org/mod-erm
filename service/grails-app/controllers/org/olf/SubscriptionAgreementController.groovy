@@ -31,7 +31,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
     super(SubscriptionAgreement)
   }
   
-  
   def resources () {
     
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")

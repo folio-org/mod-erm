@@ -11,7 +11,7 @@ import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
 import com.k_int.okapi.remote_resources.OkapiLookup
-
+import com.k_int.web.toolkit.domain.traits.Clonable
 import grails.databinding.BindInitializer
 import grails.gorm.MultiTenant
 import groovy.util.logging.Slf4j
@@ -26,9 +26,19 @@ import groovy.util.logging.Slf4j
  *
  */
 @Slf4j
-public class Entitlement implements MultiTenant<Entitlement> {
+public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitlement> {
   public static final Class<? extends ErmResource>[] ALLOWED_RESOURCES = [Pkg, PackageContentItem, PlatformTitleInstance] as Class[]
-
+  
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public Entitlement clone () {
+    Clonable.super.clone()
+  }
+  
+  
   String id
 
   ErmResource resource

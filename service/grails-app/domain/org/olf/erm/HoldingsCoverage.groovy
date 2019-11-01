@@ -4,6 +4,8 @@ import java.time.LocalDate
 
 import org.olf.kb.AbstractCoverageStatement
 
+import com.k_int.web.toolkit.domain.traits.Clonable
+
 import grails.compiler.GrailsCompileStatic
 import grails.gorm.MultiTenant
 
@@ -13,7 +15,7 @@ import grails.gorm.MultiTenant
  */
 
 @GrailsCompileStatic
-public class HoldingsCoverage extends AbstractCoverageStatement implements MultiTenant<HoldingsCoverage> {
+public class HoldingsCoverage extends AbstractCoverageStatement implements MultiTenant<HoldingsCoverage>, Clonable<HoldingsCoverage> {
   
   String id
 
@@ -47,5 +49,13 @@ public class HoldingsCoverage extends AbstractCoverageStatement implements Multi
     startIssue(nullable:true, blank:false)
     endVolume(nullable:true, blank:false)
     endIssue(nullable:true, blank:false)
+  }
+  
+  /**
+   * Need to resolve the conflict manually and add the call to the clonable method here.
+   */
+  @Override
+  public HoldingsCoverage clone () {
+    Clonable.super.clone()
   }
 }
