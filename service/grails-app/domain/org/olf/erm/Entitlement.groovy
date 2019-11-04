@@ -118,14 +118,15 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   static hasMany = [
     coverage: HoldingsCoverage
+   poLineIds: POLine,
   ]
 
   Set<HoldingsCoverage> coverage = []
   
-  @OkapiLookup(
+  /* @OkapiLookup(
     value = '/orders-storage/po-lines/${obj.poLineId}'
   )
-  String poLineId
+  String poLineId */
   
   static mappedBy = [
     coverage: 'entitlement',
@@ -165,7 +166,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
-             poLineId column: 'ent_po_line_id'
+            poLineIds cascade: 'all-delete-orphan'
              coverage cascade: 'all-delete-orphan'
   }
 
