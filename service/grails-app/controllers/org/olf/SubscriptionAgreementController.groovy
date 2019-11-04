@@ -12,7 +12,9 @@ import com.k_int.okapi.OkapiTenantAwareController
 import grails.converters.JSON
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import static org.springframework.http.HttpStatus.*
 
 
 /**
@@ -410,6 +412,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
 //    'tags': ['tags']
   ]
   
+  @Transactional
   def doClone () {
     final Set<String> props = []
     final String subscriptionAgreementId = params.get("subscriptionAgreementId")
@@ -433,9 +436,15 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       }
       
       log.debug "Attempting to clone agreement ${subscriptionAgreementId} using props ${props}"
-      SubscriptionAgreement sa = queryForResource(subscriptionAgreementId).clone(props)
-      sa.save(failOnError:true)
-      respond sa
+      SubscriptionAgreement instance = queryForResource(subscriptionAgreementId).clone(props)
+      
+      instance.save()
+      if (instance.hasErrors()) {
+        transactionStatus.setRollbackOnly()
+        respond instance.errors, view:'edit' // STATUS CODE 422 automatically when errors rendered.
+        return
+      }
+      respond instance, [status: OK]
       return
     }
     
