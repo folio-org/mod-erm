@@ -118,7 +118,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   static hasMany = [
     coverage: HoldingsCoverage
-   poLineIds: POLine,
+     poLines: OrderLine,
   ]
 
   Set<HoldingsCoverage> coverage = []
@@ -166,7 +166,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
-            poLineIds cascade: 'all-delete-orphan'
+             poLines cascade: 'all-delete-orphan'
              coverage cascade: 'all-delete-orphan'
   }
 
@@ -224,9 +224,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
               return val != null ?  ['externalEntitlement.reference.not.null'] : true
             }
           })
-         
-         
-         poLineId (nullable:true, blank:false)
   }
   
   @Transient

@@ -38,6 +38,19 @@ class UrlMappings {
         }
       }
 	  
+	  '/poLines' {
+		  controller = 'orderLine'
+		  method = 'GET'
+		  filters = { "owner==${params.entitlementId}" }
+	  }
+	
+	  collection {
+		  '/poLines' {
+		   controller = 'orderLine'
+		   method = 'GET'
+		  }
+	  }
+	  
       '/usageDataProviders' {
   		  controller = 'usageDataProvider'
   		  method = 'GET'

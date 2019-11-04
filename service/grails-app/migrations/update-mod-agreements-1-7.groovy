@@ -1,9 +1,4 @@
 databaseChangeLog = {
-  changeSet(author: "sosguthorpe (generated)", id: "1558523001530-1") {
-    addColumn(tableName: "entitlement") {
-      column(name: "ent_po_line_id", type: "varchar(255)")
-    }
-  }
 
   changeSet(author: "sosguthorpe (generated)", id: "1558523001530-2") {
     addColumn(tableName: "custom_property") {

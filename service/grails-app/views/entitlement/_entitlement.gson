@@ -31,6 +31,10 @@ if (entitlement.type == 'external') {
     }
   }
   
+  if (params.controller != 'orderLine' ) {
+  	should_expand << 'poLines'
+  }
+  
 
   json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
         

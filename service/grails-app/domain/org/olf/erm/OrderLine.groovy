@@ -6,7 +6,7 @@ import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
 
-public class POLine extends RemoteOkapiLink implements MultiTenant<POLine> {
+public class OrderLine extends RemoteOkapiLink implements MultiTenant<OrderLine> {
   
 	static belongsTo = [ owner: Entitlement ]
   
