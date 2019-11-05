@@ -117,7 +117,7 @@ public class Entitlement implements MultiTenant<Entitlement> {
   ]
 
   static hasMany = [
-    coverage: HoldingsCoverage
+    coverage: HoldingsCoverage,
      poLines: OrderLine,
   ]
 

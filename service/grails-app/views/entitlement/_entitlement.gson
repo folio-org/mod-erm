@@ -10,11 +10,11 @@ if (entitlement.type == 'external') {
   json tmpl."externalEntitlement"(entitlement)
 } else {
   
-  final String objectProperty = 'poLineId'
-  final String objectMethod = "${objectProperty}_object"
+  //	final String objectProperty = 'poLineId'
+  //	final String objectMethod = "${objectProperty}_object"
   def remoteObjValue
   
-  if(entitlement[objectProperty] && actionName.toLowerCase() != 'index' && entitlement.respondsTo(objectMethod)){
+  /* if(entitlement[objectProperty] && actionName.toLowerCase() != 'index' && entitlement.respondsTo(objectMethod)){
     try {
       remoteObjValue = entitlement.invokeMethod(objectMethod, null)
       if (remoteObjValue instanceof Future) {
@@ -29,18 +29,17 @@ if (entitlement.type == 'external') {
         remoteObjValue = [error: e.class.name, message: e.message]
       }
     }
-  }
-  
-  if (params.controller != 'orderLine' ) {
-  	should_expand << 'poLines'
-  }
-  
+  }  */
 
   json g.render(entitlement, [expand: ['owner', 'resource' ]]) {
         
-    if (remoteObjValue) {
+    /* if (remoteObjValue) {
       call( objectMethod, remoteObjValue )
-    }
+    } */
+    
+    if (params.controller != 'orderLine' ) {
+  		should_expand << 'poLines'
+	}
     
     if (entitlement.coverage) {
       
