@@ -38,19 +38,6 @@ class UrlMappings {
         }
       }
 	  
-	  '/poLines' {
-		  controller = 'orderLine'
-		  method = 'GET'
-		  filters = { "owner==${params.entitlementId}" }
-	  }
-	
-	  collection {
-		  '/poLines' {
-		   controller = 'orderLine'
-		   method = 'GET'
-		  }
-	  }
-	  
       '/usageDataProviders' {
   		  controller = 'usageDataProvider'
   		  method = 'GET'
@@ -87,6 +74,18 @@ class UrlMappings {
       collection {
         "/external" ( action: 'external' )
       }
+	  '/poLines' {
+		  controller = 'orderLine'
+		  method = 'GET'
+		  filters = { "owner==${params.entitlementId}" }
+	  }
+	
+	  collection {
+		  '/poLines' {
+		   controller = 'orderLine'
+		   method = 'GET'
+		  }
+	  }
     }
     '/erm/contacts'(resources: 'internalContact', excludes: ['update', 'patch', 'save', 'create', 'edit', 'delete'])
 

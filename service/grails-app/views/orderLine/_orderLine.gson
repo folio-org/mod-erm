@@ -5,8 +5,10 @@ import org.olf.erm.OrderLine
 
 inherits template: "/remoteOkapiLink/remoteOkapiLink"
 
+/* def should_expand = []
+
 if (params.controller == 'orderLine' ) {
   should_expand << 'owner'
-}
+} */
 
-json g.render(orderLine, ['excludes': ['id', 'version'], 'expand':should_expand])
+json g.render(orderLine, ['excludes': ['id', 'version']])

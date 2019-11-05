@@ -6,6 +6,8 @@ import org.olf.erm.Entitlement
 
 @Field Entitlement entitlement
 
+def should_expand = []
+
 if (entitlement.type == 'external') {
   json tmpl."externalEntitlement"(entitlement)
 } else {
