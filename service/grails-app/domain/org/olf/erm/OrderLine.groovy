@@ -6,20 +6,24 @@ import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
 
-public class OrderLine extends RemoteOkapiLink implements MultiTenant<OrderLine> {
-  
+public class OrderLine implements MultiTenant<OrderLine> {
+	
+	String id
+	String poLineId
+	
 	static belongsTo = [ owner: Entitlement ]
   
-	static mapping = {
-	                  owner column: 'pol_owner_fk'                  
+	  static mapping = {
+  //    table 'order_lines'
+					 id column: 'pol_id', generator: 'uuid2', length:36
+				version column: 'pol_version'
+				  owner column: 'pol_owner_fk'  
+			   poLineId column: 'pol_orders_fk'
+				   
 	}
   
 	static constraints = {
-		owner(nullable:false, blank:false)
-	}
-
-	@Override
-	public String remoteUri() {
-		return 'orders-storage/po-lines';
-	}
+		 owner(nullable:false, blank:false);
+	   poLineId(nullable:true, blank:false);
+	}  
 }

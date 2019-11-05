@@ -1,13 +1,13 @@
-databaseChangeLog = {
+databaseChangeLog = {	
 	changeSet(author: "claudia (manual)", id: "2019-11-04-00001") {
 		createTable(tableName: "order_line") {
-			column(name: "rol_id", type: "VARCHAR(36)") {
+			column(name: "pol_id", type: "VARCHAR(36)") {
 				constraints(nullable: "false")
 			}
-			column(name: "rol_version", type: "BIGINT") {
+			column(name: "pol_version", type: "BIGINT") {
 				constraints(nullable: "false")
 			}
-			column(name: "rol_remote_id", type: "VARCHAR(50)") {
+			column(name: "pol_orders_fk", type: "VARCHAR(50)") {
 				constraints(nullable: "false")
 			}
 			column(name: "pol_owner_fk", type: "VARCHAR(36)") {
@@ -17,7 +17,7 @@ databaseChangeLog = {
 	  }
 	  
 	  changeSet(author: "claudia (manual)", id: "2019-11-04-00002") {
-		  addPrimaryKey(columnNames: "rol_id", constraintName: "order_linePK", tableName: "order_line")
+		  addPrimaryKey(columnNames: "pol_id", constraintName: "order_linePK", tableName: "order_line")
 	  }
 	  
 	  changeSet(author: "claudia (manual)", id: "2019-11-04-00003") {
