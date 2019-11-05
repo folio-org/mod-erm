@@ -123,11 +123,6 @@ public class Entitlement implements MultiTenant<Entitlement> {
 
   Set<HoldingsCoverage> coverage = []
   
-  /* @OkapiLookup(
-    value = '/orders-storage/po-lines/${obj.poLineId}'
-  )
-  String poLineId */
-  
   static mappedBy = [
     coverage: 'entitlement',
     poLines: 'owner'
