@@ -1,8 +1,5 @@
 package org.olf.erm;
 
-import com.k_int.web.toolkit.refdata.Defaults
-import com.k_int.web.toolkit.refdata.RefdataValue
-
 import grails.gorm.MultiTenant
 
 public class OrderLine implements MultiTenant<OrderLine> {
