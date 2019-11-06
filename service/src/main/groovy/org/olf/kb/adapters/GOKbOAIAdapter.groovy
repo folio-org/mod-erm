@@ -211,6 +211,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
         def tipp_status = tipp_entry?.status?.text()
         if ( tipp_status != 'Deleted' ) {
+          def tipp_id = tipp_entry?.@id?.toString()
           def tipp_title = tipp_entry?.title?.name?.text()
           def tipp_medium = tipp_entry?.medium?.text()
           def tipp_media = null;
@@ -264,6 +265,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
           String access_start = tipp_entry.access?.@start?.toString()
           String access_end = tipp_entry.access?.@end?.toString()
+          
+          //Retired TIPPs are no longer in the package and should have an access_end, if not then make a guess at it
+          if(access_end.length()==0 && tipp_status == "Retired") {
+            access_end = tipp_entry.lastUpdated?.text().toString()
+            log.info( "accessEnd date guessed for retired title: ${tipp_title} in package: ${package_name}. TIPP ID: ${tipp_id}" )
+          }
 
           // log.debug("consider tipp ${tipp_title}");
 
