@@ -27,4 +27,8 @@ databaseChangeLog = {
 								  deferrable: "false", initiallyDeferred: "false",
 								  referencedColumnNames: "ent_id", referencedTableName: "entitlement")
 	  }
+	  
+	  changeSet(author: "claudia (manual)", id: "2019-11-06-0001") {
+		  dropColumn(columnName: "ent_po_line_id", tableName: "entitlement")
+	  }
 }
