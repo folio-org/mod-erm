@@ -178,7 +178,9 @@ databaseChangeLog = {
                   1 as v,
                   ent_po_line_id as poid
                 FROM 
-                  ${database.defaultSchemaName}.entitlement;
+                  ${database.defaultSchemaName}.entitlement
+				WHERE
+				  ent_po_line_id is not NULL;
         """.toString())
 		  }
 		}
