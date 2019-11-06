@@ -29,6 +29,24 @@ databaseChangeLog = {
 	  }
 	  
 	  changeSet(author: "claudia (manual)", id: "2019-11-06-0001") {
+		  grailsChange {
+			change {
+			  // Add order_line entry for each existing entitlement.
+			  sql.execute("""
+            INSERT INTO ${database.defaultSchemaName}.order_line (pol_id, pol_owner_fk, pol_version, pol_orders_fk )
+                SELECT
+                  md5(random()::text || clock_timestamp()::text)::uuid as id,
+                  ent_id as oid,
+                  1 as v,
+                  ent_po_line_id as poid
+                FROM 
+                  ${database.defaultSchemaName}.entitlement;
+        """.toString())
+			}
+		  }
+		}
+	  
+	  changeSet(author: "claudia (manual)", id: "2019-11-06-0002") {
 		  dropColumn(columnName: "ent_po_line_id", tableName: "entitlement")
 	  }
 }
