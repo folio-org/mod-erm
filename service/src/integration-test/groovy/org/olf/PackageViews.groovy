@@ -10,15 +10,13 @@ import spock.lang.*
 @Slf4j
 @Integration
 @Stepwise
-class AgreementViews extends BaseSpec {
+class PackageViews extends BaseSpec {
   
   @Shared
   String pkg_id
   
-  @Shared
-  String agg_id
-  
   def 'Ingest a test package' () {
+    final LocalDate nextWeek = LocalDate.now().plusWeeks(1)
     
     when: 'Testing package added'
       doPost('/erm/packages/import') {
@@ -130,10 +128,10 @@ class AgreementViews extends BaseSpec {
               },
               {
                 depth "fulltext"
-                accessStart "2025-01-01"
+                accessStart "${nextWeek}"
                 coverage ([
                   {
-                    startDate "2015-01-01"
+                    startDate "${nextWeek}"
                     startVolume "33"
                   }
                 ])
@@ -163,122 +161,46 @@ class AgreementViews extends BaseSpec {
       }
     and: 'Find the package by name'
       List resp = doGet("/erm/packages", [filters: ['name==access_start_access_end_tests Package']])
-      pkg_id = resp[0].id
       
     then: 'Expect package found'
       assert (pkg_id = resp.getAt(0)?.id) != null
       assert resp?.getAt(0)?.name == 'access_start_access_end_tests Package'
   }
   
-  def 'Add an agreement for our package' () {
-    final LocalDate today = LocalDate.now()
-    final LocalDate tomorrow = today.plusDays(1)
-    when: 'Agreement added for package'
-      Map httpResult = doPost('/erm/sas') {
-        periods ([{
-          startDate today.toString()
-          endDate tomorrow.toString()
-        }])
-        items ([{
-          'resource' pkg_id
-        }])
-        name 'Test agreement'
-      }
-      
-    then: 'Agreement added'
-      assert (agg_id = httpResult?.id) != null
-      assert (httpResult?.items?.size() ?: 0) == 1
-  }
-  
   @Unroll
-  def 'Test agreement line range #agreement_line_start - #agreement_line_end' (final String agreement_line_start, final String agreement_line_end, final Map<String, List<String>> expected) {
+  def 'Test package content endpoint #test_endpoint' (final String test_endpoint, final List<String> expected_titles) {
     
-    final List<String> endpoints = ['current', 'future', 'dropped'] 
-    
-    when: 'Agreement read'
-      Map httpResult = doGet("/erm/sas/${agg_id}")
-      
-    and: 'Order-line dates set to #agreement_line_start - #agreement_line_end'
-      httpResult.items[0].activeFrom = agreement_line_start
-      httpResult.items[0].activeTo = agreement_line_end
-    
-    and: 'Update put'
-      httpResult = doPut("/erm/sas/${agg_id}", httpResult)
-      
-    then: 'Agreement saved'
-      assert httpResult?.id == agg_id
-      assert (httpResult?.items?.size() ?: 0) == 1
+    final List<String> endpoints = ['current', 'future', 'dropped']
     
     when: 'Enpoints checked'
-      final List<String> nevers_not_seen = expected['never']?.collect() ?: []
       final Map<String,List<String>> seen_resources = [:].withDefault { [] }
       
-      // We must check all endpoints to ensure the 'never' are met.
+      // Checking all endpoints and check we only see the title in the expected list
       for ( final String endpoint : endpoints ) {
-        if (endpoint != 'never') {
-          log.info "Checking for ${endpoint} resources"
-          List epResult = doGet("/erm/sas/${agg_id}/resources/${endpoint}")
-          for ( def result : epResult ) {
-            final String name = result['_object'].pti.titleInstance.name
-            seen_resources[endpoint] << name
-            nevers_not_seen.remove(name)
-          }
+        log.info "Checking for ${endpoint} pcis"
+        List epResult = doGet("/erm/packages/${pkg_id}/content/${endpoint}")
+        for ( def result : epResult ) {
+          final String name = result.pti.titleInstance.name
+          seen_resources[endpoint] << name
         }
       }
     
     then: 'Expectations are met'
-      expected.each { String endpoint, List<String> val ->
-        if (endpoint != 'never') {
-          assert val.intersect(seen_resources[endpoint]).size() == val.size()
+      endpoints.each { String endpoint ->
+        
+        if (test_endpoint == endpoint) {
+          // Test is present.
+          assert seen_resources[endpoint].intersect(expected_titles).size() == expected_titles.size()
+        } else {
+          // Should be no overlap.
+          assert seen_resources[endpoint].intersect(expected_titles).size() == 0
         }
       }
-      
-      // And assert the ones that should be never are not seen.
-     assert (expected['never']?.size() ?: 0) == nevers_not_seen.size()
     
     where:
-      agreement_line_start | agreement_line_end
-      '2007-01-01'         | '2009-12-31'
-      '2007-01-01'         | '2012-12-31'
-      '2019-01-01'         | '2020-12-31'
-      '2006-01-01'         | '2020-12-31'
-      '2006-01-01'         | '2030-12-31'
-      '2020-01-01'         | '2030-12-31'
-      null                 | '2030-12-31'
-      '2007-01-01'         | null
-      
-      expected << [[
-        never: ['Afghanistan', 'Archaeological and Environmental Forensic Science', 'Bethlehem University Journal'],
-        dropped: ['Archives of Natural History']
-      ],[
-        never: ['Afghanistan', 'Bethlehem University Journal'],
-        dropped: ['Archaeological and Environmental Forensic Science','Archives of Natural History']
-      ],[
-        never: ['Afghanistan', 'Archives of Natural History', 'Bethlehem University Journal'],
-        current: ['Archaeological and Environmental Forensic Science']
-      ],[
-        never: ['Bethlehem University Journal'],
-        dropped: ['Afghanistan', 'Archives of Natural History'],
-        current: ['Archaeological and Environmental Forensic Science']
-      ],[
-        future: ['Bethlehem University Journal'],
-        dropped: ['Afghanistan', 'Archives of Natural History'],
-        current: ['Archaeological and Environmental Forensic Science']
-      ],[
-        never: ['Afghanistan', 'Archives of Natural History'],
-        future: ['Archaeological and Environmental Forensic Science','Bethlehem University Journal']
-      ],[
-        future: ['Bethlehem University Journal'],
-        dropped: ['Afghanistan', 'Archives of Natural History'],
-        current: ['Archaeological and Environmental Forensic Science']
-      ],[
-        future: ['Bethlehem University Journal'],
-        dropped: ['Afghanistan', 'Archives of Natural History'],
-        current: ['Archaeological and Environmental Forensic Science']
-      ]]
-  }
-  
-  def cleanupSpecWithSpring() {
-    // NOOP
+      test_endpoint   | expected_titles
+      'dropped'       | ['Afghanistan', 'Archives of Natural History']
+      'current'       | ['Archaeological and Environmental Forensic Science']
+      'future'        | ['Bethlehem University Journal']
   }
 }
