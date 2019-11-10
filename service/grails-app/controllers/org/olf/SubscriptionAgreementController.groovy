@@ -424,14 +424,18 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       // Create a set of propertyNames to clone.
       
       // Build up a list of properties from the incoming json object.
-      for (Map.Entry<String, String> entry : body.entrySet()) {
-        final String fieldOrGroup = entry.key
-        if (CLONE_GROUPING.containsKey(fieldOrGroup)) {
-          // Add the group instead.
-          props.addAll( CLONE_GROUPING[fieldOrGroup] )
-        } else {
-          // Assume single field.
-          props << fieldOrGroup
+      for (Map.Entry<String, Boolean> entry : body.entrySet()) {
+        
+        if (entry.value == true) {
+        
+          final String fieldOrGroup = entry.key
+          if (CLONE_GROUPING.containsKey(fieldOrGroup)) {
+            // Add the group instead.
+            props.addAll( CLONE_GROUPING[fieldOrGroup] )
+          } else {
+            // Assume single field.
+            props << fieldOrGroup
+          }
         }
       }
       
