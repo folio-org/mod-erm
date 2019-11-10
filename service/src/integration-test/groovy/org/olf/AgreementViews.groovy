@@ -1,13 +1,16 @@
 package org.olf
 
 import java.time.LocalDate
-
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import grails.testing.mixin.integration.Integration
 import spock.lang.*
 
 @Integration
 @Stepwise
 class AgreementViews extends BaseSpec {
+
+  Logger log = LoggerFactory.getLogger(AgreementViews)
   
   @Shared
   String pkg_id
@@ -220,6 +223,7 @@ class AgreementViews extends BaseSpec {
       // We must check all endpoints to ensure the 'never' are met.
       for ( final String endpoint : endpoints ) {
         if (endpoint != 'never') {
+          log.debug "Finding ${endpoint} resources"
           List epResult = doGet("/erm/sas/${agg_id}/resources/${endpoint}")
           for ( def result : epResult ) {
             final String name = result['_object'].pti.titleInstance.name
@@ -255,8 +259,8 @@ class AgreementViews extends BaseSpec {
         never: ['Afghanistan', 'Archaeological and Environmental Forensic Science', 'Bethlehem University Journal'],
         dropped: ['Archives of Natural History']
       ],[
-        never: ['Afghanistan', 'Bethlehem University Journal'],
-        dropped: ['Archaeological and Environmental Forensic Science','Archives of Natural History']
+        never: ['Bethlehem University Journal'],
+        dropped: ['Afghanistan', 'Archaeological and Environmental Forensic Science','Archives of Natural History']
       ],[
         never: ['Afghanistan', 'Archives of Natural History', 'Bethlehem University Journal'],
         current: ['Archaeological and Environmental Forensic Science']
@@ -280,9 +284,5 @@ class AgreementViews extends BaseSpec {
         dropped: ['Afghanistan', 'Archives of Natural History'],
         current: ['Archaeological and Environmental Forensic Science']
       ]]
-  }
-  
-  def cleanupSpecWithSpring() {
-    // NOOP
   }
 }
