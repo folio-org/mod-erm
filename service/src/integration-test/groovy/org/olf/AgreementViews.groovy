@@ -1,13 +1,10 @@
 package org.olf
 
-import com.k_int.okapi.OkapiHeaders
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
 import java.time.LocalDate
-import org.olf.erm.Entitlement
+
+import grails.testing.mixin.integration.Integration
 import spock.lang.*
 
-@Slf4j
 @Integration
 @Stepwise
 class AgreementViews extends BaseSpec {
@@ -208,6 +205,8 @@ class AgreementViews extends BaseSpec {
     then: 'Agreement saved'
       assert httpResult?.id == agg_id
       assert (httpResult?.items?.size() ?: 0) == 1
+      assert httpResult.items[0].activeTo == agreement_line_start
+      assert httpResult.items[0].activeTo == agreement_line_end
     
     when: 'Enpoints checked'
       final List<String> nevers_not_seen = expected['never']?.collect() ?: []
@@ -216,7 +215,6 @@ class AgreementViews extends BaseSpec {
       // We must check all endpoints to ensure the 'never' are met.
       for ( final String endpoint : endpoints ) {
         if (endpoint != 'never') {
-          log.info "Checking for ${endpoint} resources"
           List epResult = doGet("/erm/sas/${agg_id}/resources/${endpoint}")
           for ( def result : epResult ) {
             final String name = result['_object'].pti.titleInstance.name
@@ -225,16 +223,17 @@ class AgreementViews extends BaseSpec {
           }
         }
       }
+    then: 'Dropped resources match expected dropped resources'
+      assert seen_resources['dropped'].size() == (expected['dropped']?.size() ?: 0)
     
-    then: 'Expectations are met'
-      expected.each { String endpoint, List<String> val ->
-        if (endpoint != 'never') {
-          assert val.intersect(seen_resources[endpoint]).size() == val.size()
-        }
-      }
-      
-      // And assert the ones that should be never are not seen.
-     assert (expected['never']?.size() ?: 0) == nevers_not_seen.size()
+    and: 'Future resources match expected future resources'
+      assert seen_resources['future'].size() == (expected['future']?.size() ?: 0)
+    
+    and: 'Current resources match expected current resources'
+      assert seen_resources['current'].size() == (expected['current']?.size() ?: 0)
+    
+    and: 'Never resources were not seen in the previous matches'
+     assert nevers_not_seen.size() == (expected['never']?.size() ?: 0)
     
     where:
       agreement_line_start | agreement_line_end

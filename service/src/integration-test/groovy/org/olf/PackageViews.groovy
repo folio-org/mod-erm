@@ -1,13 +1,10 @@
 package org.olf
 
-import com.k_int.okapi.OkapiHeaders
-import grails.testing.mixin.integration.Integration
-import groovy.util.logging.Slf4j
 import java.time.LocalDate
-import org.olf.erm.Entitlement
+
+import grails.testing.mixin.integration.Integration
 import spock.lang.*
 
-@Slf4j
 @Integration
 @Stepwise
 class PackageViews extends BaseSpec {
@@ -177,7 +174,6 @@ class PackageViews extends BaseSpec {
       
       // Checking all endpoints and check we only see the title in the expected list
       for ( final String endpoint : endpoints ) {
-        log.info "Checking for ${endpoint} pcis"
         List epResult = doGet("/erm/packages/${pkg_id}/content/${endpoint}")
         for ( def result : epResult ) {
           final String name = result.pti.titleInstance.name
