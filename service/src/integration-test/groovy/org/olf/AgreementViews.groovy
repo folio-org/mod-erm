@@ -205,7 +205,12 @@ class AgreementViews extends BaseSpec {
     then: 'Agreement saved'
       assert httpResult?.id == agg_id
       assert (httpResult?.items?.size() ?: 0) == 1
-      assert httpResult.items[0].activeTo == agreement_line_start
+      
+    when: 'Agreement re-read'
+      httpResult = doGet("/erm/sas/${agg_id}", ['expand': 'items'])
+    
+    then: 'Dates are correct'
+      assert httpResult.items[0].activeFrom == agreement_line_start
       assert httpResult.items[0].activeTo == agreement_line_end
     
     when: 'Enpoints checked'
