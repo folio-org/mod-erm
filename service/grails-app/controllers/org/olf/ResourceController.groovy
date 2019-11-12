@@ -116,6 +116,9 @@ class ResourceController extends OkapiTenantAwareController<ErmResource>  {
             projections {
               property ('pkg.id')
             }
+            and {
+              isNull 'removedTimestamp'
+            }
           }
         }
     })
