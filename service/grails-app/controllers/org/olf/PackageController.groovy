@@ -29,9 +29,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
   def content () {
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
-      and {
-        isNull 'removedTimestamp'
-      }
+      isNull 'removedTimestamp'
     }
   }
   
@@ -49,9 +47,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
           lte 'accessStart', today
         }
       }
-      and {
-        isNull 'removedTimestamp'
-      }
+      isNull 'removedTimestamp'
     }
   }
   
@@ -60,9 +56,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
       gt 'accessStart', today
-      and {
-        isNull 'removedTimestamp'
-      }
+      isNull 'removedTimestamp'
     }
   }
   
@@ -71,9 +65,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'
       lt 'accessEnd', today
-      and {
-        isNull 'removedTimestamp'
-      }
+      isNull 'removedTimestamp'
     }
   }
 }

@@ -79,9 +79,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             projections {
               property ('id')
             }
-            and {
-              isNull 'removedTimestamp'
-            }
+            isNull 'removedTimestamp'
           }
         }
       }
@@ -184,9 +182,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             projections {
               property ('id')
             }
-            and {
-              isNull 'removedTimestamp'
-            }
+            isNull 'removedTimestamp'
           }
         }
         
@@ -269,9 +265,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               lt 'pkg_ent.activeTo', today
               lt 'accessEnd', today
             }
-            and {
-              isNull 'removedTimestamp'
-            }
+            isNull 'removedTimestamp'
           }
         }
         
@@ -355,9 +349,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               gt 'pkg_ent.activeFrom', today
               gt 'accessStart', today
             }
-            and {
-              isNull 'removedTimestamp'
-            }
+            isNull 'removedTimestamp'
           }
         }
         
