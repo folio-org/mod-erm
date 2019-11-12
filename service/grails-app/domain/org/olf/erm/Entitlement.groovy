@@ -127,15 +127,11 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
   ]
 
   static hasMany = [
-    coverage: HoldingsCoverage
+    coverage: HoldingsCoverage,
+     poLines: OrderLine,
   ]
 
   Set<HoldingsCoverage> coverage = []
-  
-  @OkapiLookup(
-    value = '/orders-storage/po-lines/${obj.poLineId}'
-  )
-  String poLineId
   
   static mappedBy = [
     coverage: 'entitlement',
@@ -175,7 +171,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
              activeTo column: 'ent_active_to'
             authority column: 'ent_authority'
             reference column: 'ent_reference'
-             poLineId column: 'ent_po_line_id'
+             poLines cascade: 'all-delete-orphan'
              coverage cascade: 'all-delete-orphan'
   }
 
@@ -233,9 +229,6 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
               return val != null ?  ['externalEntitlement.reference.not.null'] : true
             }
           })
-         
-         
-         poLineId (nullable:true, blank:false)
   }
   
   @Transient

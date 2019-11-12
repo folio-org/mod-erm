@@ -1,8 +1,7 @@
 package org.olf.erm;
 
-import org.olf.general.DocumentAttachment
-
 import com.k_int.okapi.remote_resources.RemoteOkapiLink
+import com.k_int.web.toolkit.databinding.BindImmutably
 import com.k_int.web.toolkit.domain.traits.Clonable
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
@@ -18,6 +17,9 @@ public class RemoteLicenseLink extends RemoteOkapiLink implements MultiTenant<Re
   @Defaults(['Controlling', 'Future', 'Historical'])
   RefdataValue status
   String note
+  
+  @BindImmutably
+  Set<LicenseAmendmentStatus> amendments = []
   
   static belongsTo = [ owner: SubscriptionAgreement ]
   
