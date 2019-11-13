@@ -70,7 +70,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
-            readOnly (true)
+            isNull 'removedTimestamp'
             
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
@@ -155,6 +155,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           // Pci linked via package.
           'in' 'id', new DetachedCriteria(PackageContentItem).build {
             
+            isNull 'removedTimestamp'
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
@@ -167,7 +168,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                   isNull 'pkg_ent.activeTo'
                   ge 'pkg_ent.activeTo', today
                 }
-                
+              
               projections {
                 property ('id')
               }
@@ -222,7 +223,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           and {
             eq 'class', PackageContentItem
             eq 'direct_ent.owner.id', subscriptionAgreementId
-        
             
             // Valid access start
             or {
@@ -247,6 +247,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           and {
             eq 'class', PackageContentItem
+            isNull 'removedTimestamp'
             eq 'pkg_ent.owner.id', subscriptionAgreementId
             
             // Valid access start
@@ -329,6 +330,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
           
           and {
             eq 'class', PackageContentItem
+            isNull 'removedTimestamp'
             eq 'pkg_ent.owner.id', subscriptionAgreementId
             
             // Valid access start
@@ -362,5 +364,61 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
       respond results
       return
     }
+  }
+  
+  
+  private static final Map<String, List<String>> CLONE_GROUPING = [
+    'agreementInfo': ['name', 'description', 'renewalPriority' , 'isPerpetual'],
+    'internalContacts': ['contacts'],
+    'agreementLines': ['items'], // Do not copy poLine. Need to also duplicate coverage
+//    'linkedLicenses': ['linkedLicenses'],
+    'externalLicenses': ['externalLicenseDocs'],
+    'organizations': ['orgs'],
+    'supplementaryInformation': ['supplementaryDocs'],
+    'usageData': ['usageDataProviders'],
+//    'tags': ['tags']
+  ]
+  
+  @Transactional
+  def doClone () {
+    final Set<String> props = []
+    final String subscriptionAgreementId = params.get("subscriptionAgreementId")
+    if (subscriptionAgreementId) {
+      
+      // Grab the JSON body.
+      JSONObject body = request.JSON
+      
+      // Create a set of propertyNames to clone.
+      
+      // Build up a list of properties from the incoming json object.
+      for (Map.Entry<String, Boolean> entry : body.entrySet()) {
+        
+        if (entry.value == true) {
+        
+          final String fieldOrGroup = entry.key
+          if (CLONE_GROUPING.containsKey(fieldOrGroup)) {
+            // Add the group instead.
+            props.addAll( CLONE_GROUPING[fieldOrGroup] )
+          } else {
+            // Assume single field.
+            props << fieldOrGroup
+          }
+        }
+      }
+      
+      log.debug "Attempting to clone agreement ${subscriptionAgreementId} using props ${props}"
+      SubscriptionAgreement instance = queryForResource(subscriptionAgreementId).clone(props)
+      
+      instance.save()
+      if (instance.hasErrors()) {
+        transactionStatus.setRollbackOnly()
+        respond instance.errors, view:'edit' // STATUS CODE 422 automatically when errors rendered.
+        return
+      }
+      respond instance, [status: OK]
+      return
+    }
+    
+    respond ([statusCode: 404])
   }
 }
