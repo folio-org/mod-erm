@@ -23,7 +23,6 @@ json {
   endDate subscriptionAgreement.endDate
   isPerpetual subscriptionAgreement.isPerpetual ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.isPerpetual]) : null
   agreementStatus subscriptionAgreement.agreementStatus ? g.render(template: 'refdataValue_v1', model: ['refdataValue': subscriptionAgreement.agreementStatus]) : null
-    
   linkedLicenses (subscriptionAgreement.linkedLicenses.findAll { it.status?.value == 'controlling' && licenses.keySet().contains(it.id) } ) { RemoteLicenseLink rll ->
     
     try {
@@ -42,7 +41,10 @@ json {
           endDate license.endDate
           openEnded license.openEnded
           
-          final Map terms = license.customProperties as Map
+          final Map<String, Iterable> terms = (license.customProperties as Map<String, Iterable>).collectEntries { String key, Iterable val -> 
+            [(key): val.findAll { Map<String,?> defVal -> defVal.internal == false }]
+          }
+          
           customProperties g.render (terms)
         }
       }
