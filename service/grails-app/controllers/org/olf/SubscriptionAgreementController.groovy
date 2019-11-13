@@ -74,7 +74,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             'in' 'pkg.id', new DetachedCriteria(Pkg).build {
               createAlias 'entitlements', 'pkg_ent'
                 eq 'pkg_ent.owner.id', subscriptionAgreementId
-                
+              
+              isNull 'removedTimestamp'
+
               projections {
                 property ('id')
               }
@@ -82,7 +84,6 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
             projections {
               property ('id')
             }
-            isNull 'removedTimestamp'
           }
         }
       }
@@ -167,7 +168,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
                   isNull 'pkg_ent.activeTo'
                   ge 'pkg_ent.activeTo', today
                 }
-                
+
+              isNull 'removedTimestamp'
+              
               projections {
                 property ('id')
               }
@@ -181,11 +184,9 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
               isNull 'accessEnd'
               ge 'accessEnd', today
             }
-            
             projections {
               property ('id')
             }
-            isNull 'removedTimestamp'
           }
         }
         
