@@ -14,14 +14,11 @@ Map<String,Future> licenses = [:]
 
 // Preload any orgs and licenses...
 final String licenseProperty = "remoteId${RemoteOkapiLinkListener.FETCHED_PROPERTY_SUFFIX}"
-final String orgsProperty = 'orgsUuid_object'
 for (SubscriptionAgreement sa : subscriptionAgreementList) {
   // Just access them for now.
   for (RemoteLicenseLink li : sa.linkedLicenses) {
-    System.out.println "Looking at ${li.status.value}"
     if (li.status.value == 'controlling') {
       if(li.hasProperty(licenseProperty)){
-        System.out.println 'RUNNING'
         licenses[li.id] = (li?.getAt(licenseProperty) as Future)
       }
     }
