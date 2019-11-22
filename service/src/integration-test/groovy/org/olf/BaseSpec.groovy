@@ -7,7 +7,6 @@ import spock.util.concurrent.PollingConditions
 
 abstract class BaseSpec extends HttpSpec {
   def setupSpec() {
-    OkapiHeaders f
     httpClientConfig = {
       client.clientCustomizer { HttpURLConnection conn ->
         conn.connectTimeout = 2000
