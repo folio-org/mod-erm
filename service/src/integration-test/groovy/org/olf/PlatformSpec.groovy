@@ -34,6 +34,5 @@ class PlatformSpec extends BaseSpec {
       'http://content.apa.org/journals/str'   || 'content.apa.org'
 
   }
-
 }
 
