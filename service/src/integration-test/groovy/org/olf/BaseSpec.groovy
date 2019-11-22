@@ -18,7 +18,15 @@ abstract class BaseSpec extends HttpSpec {
       (OkapiHeaders.TENANT): 'http_tests',
       (OkapiHeaders.USER_ID): 'http_test_user'
     )
-  }  
+  }
+  
+  Map<String, String> getAllHeaders() {
+    specDefaultHeaders + headersOverride
+  }
+  
+  String getCurrentTenant() {
+    allHeaders?.get(OkapiHeaders.TENANT)
+  }
 
   void 'Ensure test tenant' () {
 
