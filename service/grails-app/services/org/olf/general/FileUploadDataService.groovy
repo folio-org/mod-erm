@@ -15,7 +15,7 @@ class FileUploadDataService {
     fileUpload.fileSize = file.size
     fileUpload.fileObject = fobject
     
-    fileUpload.save()
+    fileUpload.save(flush:true)
     fileUpload
   }
   
