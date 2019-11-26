@@ -1,8 +1,6 @@
 package org.olf.general
 import grails.gorm.MultiTenant
 import grails.gorm.multitenancy.Tenants
-import java.sql.Blob
-import javax.persistence.Lob
 
 class FileUpload implements MultiTenant<FileUpload> {
 
@@ -12,7 +10,7 @@ class FileUpload implements MultiTenant<FileUpload> {
   String fileContentType
   String fileName
   Long fileSize
-  Date lastModified
+  Date lastUpdated
   SingleFileAttachment owner
 
   static constraints = {
@@ -27,7 +25,7 @@ class FileUpload implements MultiTenant<FileUpload> {
     fileContentBytes column: 'fu_file_object'
             fileName column: 'fu_filename'
             fileSize column: 'fu_filesize'
-        lastModified column: 'fu_last_mod' 
+        lastUpdated column: 'fu_last_mod'
                owner column: 'fu_owner', type: 'string', length: 36
   }
 
