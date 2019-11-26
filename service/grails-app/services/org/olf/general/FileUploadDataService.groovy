@@ -1,6 +1,7 @@
 package org.olf.general
 
 import groovy.transform.CompileStatic
+import org.hibernate.engine.jdbc.BlobProxy
 import org.springframework.web.multipart.MultipartFile
 
 @CompileStatic

@@ -15,13 +15,17 @@ class FileObject implements MultiTenant<FileObject> {
   
   @Lob
   Blob fileContents
+    
+  void setFileContents ( Blob fileContents ) {
+    this.fileContents = fileContents
+  }
   
   void setFileContents(InputStream is, long length) {
-    fileContents = BlobProxy.generateProxy(is, length)
+    setFileContents( BlobProxy.generateProxy(is, length) )
   }
   
   void setFileContents(MultipartFile file) {
-    setFileContents(file.inputStream, file.size)
+    setFileContents( file.inputStream, file.size )
   }
 
   static constraints = {
