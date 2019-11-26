@@ -2,11 +2,7 @@ package org.olf.general
 
 import grails.gorm.multitenancy.CurrentTenant
 import groovy.util.logging.Slf4j
-
-import com.k_int.okapi.OkapiTenantAwareController
-
-import grails.converters.JSON
-import groovy.util.logging.Slf4j
+import org.springframework.web.multipart.MultipartFile
 
 
 @Slf4j
@@ -17,7 +13,7 @@ class FileUploadController {
 
   def postFileUploadRaw() {
     log.debug("Called postFileUploadRaw")
-    def f = request.getFile('upload')
+    MultipartFile f = request.getFile('upload')
     if(f == null) {
       log.debug("No file found")
       notFound()
@@ -85,7 +81,7 @@ class FileUploadController {
     render ""
   }
 
-  def protected void notFound(String message="Resource not found") {
+  protected void notFound(String message="Resource not found") {
     render(status:404,text:message,contentType: 'application/json')
   }
 

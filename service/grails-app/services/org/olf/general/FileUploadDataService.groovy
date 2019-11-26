@@ -8,5 +8,5 @@ interface FileUploadDataService {
   List<FileUpload> list(Map args)
   Number count()
   void delete(Serializable id)
-  FileUpload save(String fileContentType, String fileName, Long fileSize, Date lastModified,  byte[] fileContentBytes)
+  FileUpload save(String fileContentType, String fileName, Long fileSize, Date lastModified)
 }
