@@ -1,88 +1,43 @@
 package org.olf.general
 
 import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+
+import org.olf.EntitlementController
 import org.springframework.web.multipart.MultipartFile
+
+import com.k_int.okapi.OkapiTenantAwareController
+
+import static org.springframework.http.HttpStatus.*
 
 
 @Slf4j
 @CurrentTenant
-class FileUploadController {
+class FileUploadController extends OkapiTenantAwareController<FileUpload>{
 
   FileUploadDataService fileUploadDataService
 
-  def postFileUploadRaw() {
-    log.debug("Called postFileUploadRaw")
+  @Transactional
+  def uploadFile() {
+    if(handleReadOnly()) {
+      return
+    }
+    
     MultipartFile f = request.getFile('upload')
-    if(f == null) {
-      log.debug("No file found")
-      notFound()
-      return
-    }
-    FileUpload fileUpload = fileUploadDataService.save(
-      f.contentType,
-      f.originalFilename,
-      f.size,
-      new Date(),
-      f.inputStream.bytes
-    )
-
-    if(fileUpload == null) {
-      log.debug("unable to create file upload")
-      notFound()
-      return
+    
+    FileUpload fileUpload = fileUploadDataService.save(f)
+    if (fileUpload.hasErrors()) {
+        transactionStatus.setRollbackOnly()
+        respond fileUpload.errors, view:'create' // STATUS CODE 422
+        return
     }
 
-    if(fileUpload.hasErrors()) {
-      log.debug("fileUpload has errors")
-      respond(fileUpload.hasErrors())
-      return
-    }
-
-    response.status = 201
-    respond fileUpload
+    respond fileUpload, [status: CREATED]
   }
 
-  def getFileUploadList() {
-    log.debug("Called getFileUploadList")
-    respond fileUploadDataService.list()
+  def downloadFile() {
+    FileUpload fileUpload = fileUploadDataService.get(params.fileUploadId)
+    render file: fileUpload.fileObject.fileContents.binaryStream, contentType: fileUpload.fileContentType
   }
-
-  def getFileUpload() {
-    log.debug("Called getFileUpload")
-    FileUpload fileUpload = fileUploadDataService.get(params.id)
-    if(!fileUpload || fileUpload.fileContentBytes == null) {
-      notFound()
-      return
-    }
-    respond fileUpload
-  }
-
-  def getFileUploadRaw() {
-    log.debug("Called getFileUploadRaw")
-    FileUpload fileUpload = fileUploadDataService.get(params.id)
-    if(!fileUpload || fileUpload.fileContentBytes == null) {
-      notFound()
-      return
-    }
-    render file: fileUpload.fileContentBytes, contentType: fileUpload.fileContentType
-
-  }
-
-  def deleteFileUpload() {
-    log.debug("Called deleteFileUpload")
-    if(params.id == null) {
-      notFound()
-      return
-    }
-
-    fileUploadDataService.delete(params.id)
-    response.status = 204
-    render ""
-  }
-
-  protected void notFound(String message="Resource not found") {
-    render(status:404,text:message,contentType: 'application/json')
-  }
-
 }

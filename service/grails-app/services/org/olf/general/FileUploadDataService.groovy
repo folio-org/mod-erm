@@ -1,12 +1,24 @@
 package org.olf.general
 
-import grails.gorm.services.Service
+import groovy.transform.CompileStatic
+import org.springframework.web.multipart.MultipartFile
 
-@Service(FileUpload)
-interface FileUploadDataService {
-  FileUpload get(String id)
-  List<FileUpload> list(Map args)
-  Number count()
-  void delete(Serializable id)
-  FileUpload save(String fileContentType, String fileName, Long fileSize, Date lastModified)
+@CompileStatic
+class FileUploadDataService {
+  FileUpload save(MultipartFile file) {
+    
+    // Create our object to house our file data.
+    FileObject fobject = new FileObject ()
+    fobject.fileContents = file.getInputStream()
+    
+    FileUpload fileUpload = new FileUpload()
+    fileUpload.fileContentType = file.contentType
+    fileUpload.fileName = file.originalFilename
+    fileUpload.fileSize = file.size
+    fileUpload.fileObject = fobject
+    
+    fileUpload.save()
+    fileUpload
+  }
+  
 }
