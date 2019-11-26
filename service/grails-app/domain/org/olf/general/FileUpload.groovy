@@ -16,7 +16,7 @@ class FileUpload implements MultiTenant<FileUpload> {
   static constraints = {
     fileObject nullable: false
     fileContentType nullable: true
-    lastModified nullable: true
+    lastUpdated nullable: true
     owner nullable: true
   }
 
