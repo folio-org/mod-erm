@@ -9,7 +9,7 @@ class FileUploadDataService {
     
     // Create our object to house our file data.
     FileObject fobject = new FileObject ()
-    fobject.fileContents = file.getInputStream()
+    fobject.fileContents = file
     
     FileUpload fileUpload = new FileUpload()
     fileUpload.fileContentType = file.contentType
