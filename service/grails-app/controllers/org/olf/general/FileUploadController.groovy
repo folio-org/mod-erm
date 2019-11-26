@@ -14,9 +14,13 @@ import static org.springframework.http.HttpStatus.*
 
 @Slf4j
 @CurrentTenant
-class FileUploadController extends OkapiTenantAwareController<FileUpload>{
+class FileUploadController extends OkapiTenantAwareController<FileUpload> {
 
   FileUploadDataService fileUploadDataService
+  
+  FileUploadController()  {
+    super(FileUpload)
+  }
 
   @Transactional
   def uploadFile() {
