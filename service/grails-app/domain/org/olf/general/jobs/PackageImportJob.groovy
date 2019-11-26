@@ -2,7 +2,6 @@ package org.olf.general.jobs
 
 import grails.gorm.MultiTenant
 import groovy.json.JsonSlurper
-import org.olf.general.FileUpload
 
 class PackageImportJob extends PersistentJob implements MultiTenant<PackageImportJob> {
   

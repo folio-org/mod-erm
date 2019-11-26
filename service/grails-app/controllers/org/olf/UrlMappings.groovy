@@ -1,7 +1,5 @@
 package org.olf
 
-import org.olf.general.FileUpload
-
 class UrlMappings {
 
   static mappings = {

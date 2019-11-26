@@ -1,22 +1,23 @@
 package org.olf.general
 
-import grails.gorm.multitenancy.CurrentTenant
-import grails.gorm.transactions.Transactional
-import groovy.util.logging.Slf4j
+import static org.springframework.http.HttpStatus.*
 
-import org.olf.EntitlementController
 import org.springframework.web.multipart.MultipartFile
 
 import com.k_int.okapi.OkapiTenantAwareController
+import com.k_int.web.toolkit.files.FileUpload
+import com.k_int.web.toolkit.files.FileUploadService
 
-import static org.springframework.http.HttpStatus.*
+import grails.gorm.multitenancy.CurrentTenant
+import grails.gorm.transactions.Transactional
+import groovy.util.logging.Slf4j
 
 
 @Slf4j
 @CurrentTenant
 class FileUploadController extends OkapiTenantAwareController<FileUpload> {
 
-  FileUploadDataService fileUploadDataService
+  FileUploadService fileUploadService
   
   FileUploadController()  {
     super(FileUpload)
@@ -30,7 +31,7 @@ class FileUploadController extends OkapiTenantAwareController<FileUpload> {
     
     MultipartFile f = request.getFile('upload')
     
-    FileUpload fileUpload = fileUploadDataService.save(f)
+    FileUpload fileUpload = fileUploadService.save(f)
     if (fileUpload.hasErrors()) {
         transactionStatus.setRollbackOnly()
         respond fileUpload.errors, view:'create' // STATUS CODE 422
@@ -41,7 +42,7 @@ class FileUploadController extends OkapiTenantAwareController<FileUpload> {
   }
 
   def downloadFile() {
-    FileUpload fileUpload = fileUploadDataService.get(params.fileUploadId)
+    FileUpload fileUpload = fileUploadService.get(params.fileUploadId)
     render file: fileUpload.fileObject.fileContents.binaryStream, contentType: fileUpload.fileContentType
   }
 }
