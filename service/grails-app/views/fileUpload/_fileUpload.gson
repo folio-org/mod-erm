@@ -7,6 +7,6 @@ json {
   id fileUpload.id
   contentType fileUpload.fileContentType
   size fileUpload.fileSize
-  modified fileUpload.lastModified
+  modified fileUpload.lastUpdated
   name fileUpload.fileName
 }
