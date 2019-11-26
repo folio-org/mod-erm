@@ -3,6 +3,7 @@ import grails.gorm.MultiTenant
 import grails.gorm.multitenancy.Tenants
 import java.sql.Blob
 import javax.persistence.Lob
+import org.hibernate.engine.jdbc.BlobProxy
 
 class FileObject implements MultiTenant<FileObject> {
 
@@ -13,6 +14,10 @@ class FileObject implements MultiTenant<FileObject> {
   
   @Lob
   Blob fileContents
+  
+  void setFileContents(InputStream is) {
+    fileContents = BlobProxy.generateProxy(is)
+  }
 
   static constraints = {
     fileContents nullable: false
