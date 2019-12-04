@@ -111,9 +111,7 @@ where rkb.type is not null
         try {
           // Even though we just need a read-only connection, we still need to wrap this block
           // with withNewTransaction because of https://hibernate.atlassian.net/browse/HHH-7421
-//          RemoteKB.withNewTransaction {
-            knowledgeBaseCacheService.runSync((String)remotekb_id)
-//          }
+          knowledgeBaseCacheService.runSync((String)remotekb_id)
         }
         catch ( Exception e ) {
           log.warn("problem processing remote KB link",e)
