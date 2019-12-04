@@ -89,7 +89,7 @@ where rkb.type is not null
       boolean continue_processing = false
 
       // Lock the actual RemoteKB record so that nobody else can grab it for processing
-      RemoteKB.withNewTransaction {
+      RemoteKB.withNewSession {
 
         // Get hold of the actual job, lock it, and if it's still not in process, set it's status to in-process
         RemoteKB rkb = RemoteKB.lock(remotekb_id)
@@ -111,16 +111,16 @@ where rkb.type is not null
         try {
           // Even though we just need a read-only connection, we still need to wrap this block
           // with withNewTransaction because of https://hibernate.atlassian.net/browse/HHH-7421
-          RemoteKB.withNewTransaction {
+//          RemoteKB.withNewTransaction {
             knowledgeBaseCacheService.runSync((String)remotekb_id)
-          }
+//          }
         }
         catch ( Exception e ) {
           log.warn("problem processing remote KB link",e)
         }
         finally {
           // Finally, set the state to idle
-          RemoteKB.withNewTransaction {
+          RemoteKB.withNewSession {
             RemoteKB rkb = RemoteKB.lock(remotekb_id)
 
             rkb.syncStatus = 'idle'
