@@ -39,7 +39,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     def cursor = null
     def found_records = true
 
-    if ( current_cursor  != null ) {
+    if ( current_cursor != null ) {
       cursor = current_cursor
       query_params.from=cursor
     }
@@ -73,6 +73,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             // If we processed records, and we have a resumption token, carry on.
             if ( page_result.resumptionToken ) {
               query_params.resumptionToken = page_result.resumptionToken
+              /**/ found_records = false /**/
             }
             else {
               // Reached the end of the data
@@ -91,7 +92,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
       }
     }
 
-    log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url}")
+    log.debug("GOKbOAIAdapter::freshen - exiting URI: ${base_url} with cursor ${cursor}")
   }
 
   public void freshenHoldingsData(String cursor,
