@@ -7,6 +7,7 @@ import org.olf.kb.KBCache
 import org.olf.kb.KBCacheUpdater
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.RemoteKB
+import org.springframework.transaction.TransactionDefinition
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -49,9 +50,11 @@ where ( exists ( select pci.id
 
   public void updateCursor(String rkb_name, String cursor) {
     log.debug("KnowledgeBaseCacheService::updateCursor(${rkb_name},${cursor})")
-    RemoteKB rkb = RemoteKB.findByName(rkb_name)
-    rkb.cursor = cursor
-    rkb.save(failOnError:true, flush: true)
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      RemoteKB rkb = RemoteKB.findByName(rkb_name)
+      rkb.cursor = cursor
+      rkb.save(failOnError:true, flush: true)
+    }
   }
 
 
@@ -73,8 +76,10 @@ where ( exists ( select pci.id
    */
   public Map onPackageChange(String rkb_name, PackageSchema package_data) {
     Map result = null
-    log.debug("onPackageChange(${rkb_name},...)")
-    result = packageIngestService.upsertPackage(package_data, rkb_name)
+    RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
+      log.debug("onPackageChange(${rkb_name},...)")
+      result = packageIngestService.upsertPackage(package_data, rkb_name)
+    }
     log.debug("onPackageChange(${rkb_name},...) returning ${result}")
 
     return result
