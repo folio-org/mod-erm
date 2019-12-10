@@ -5,11 +5,11 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
 import org.olf.kb.Platform
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 final Object[] tuple = binding.variables.values()[0]
-
 boolean via_package = false
-final ErmResource resource = tuple[0] as ErmResource
+final ErmResource resource = GrailsHibernateUtil.unwrapIfProxy(tuple[0]) as ErmResource
 Entitlement ent
 TitleInstance ti
 Platform the_platform
