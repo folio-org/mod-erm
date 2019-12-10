@@ -32,6 +32,7 @@ switch (resource) {
     ti = ((PlatformTitleInstance)resource).titleInstance
     the_platform = ((PlatformTitleInstance)resource).platform
     the_url = ((PlatformTitleInstance)resource).url
+    break
     
   case { it instanceof TitleInstance}:
     ti = resource as TitleInstance
