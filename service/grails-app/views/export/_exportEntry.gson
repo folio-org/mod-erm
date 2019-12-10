@@ -18,9 +18,9 @@ String the_note
 String the_url
 
 switch (resource) {
-  case { it instanceof PackageContentItem}:
+  case { it instanceof PackageContentItem }:
     via_package = tuple[1]
-    ent = (via_package ? tuple[1] : tuple[2]) as Entitlement
+    ent = GrailsHibernateUtil.unwrapIfProxy(via_package ? tuple[1] : tuple[2]) as Entitlement
     ti = ((PackageContentItem)resource).pti.titleInstance
     the_platform = ((PackageContentItem)resource).pti.platform
     the_url = ((PackageContentItem)resource).pti.url
@@ -28,7 +28,7 @@ switch (resource) {
     the_depth = ((PackageContentItem)resource).depth
     the_note = ((PackageContentItem)resource).note
     break
-  case { it instanceof PlatformTitleInstance}:
+  case { it instanceof PlatformTitleInstance }:
     ti = ((PlatformTitleInstance)resource).titleInstance
     the_platform = ((PlatformTitleInstance)resource).platform
     the_url = ((PlatformTitleInstance)resource).url
@@ -39,7 +39,7 @@ switch (resource) {
   
     // These resources can only be directly associated.
     via_package = false
-    ent = tuple[2] as Entitlement
+    ent = GrailsHibernateUtil.unwrapIfProxy(tuple[2]) as Entitlement
     break
 }
 
