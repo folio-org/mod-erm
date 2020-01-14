@@ -64,12 +64,17 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   dateMonographPublishedOnline column: 'ti_date_monograph_published_online'
                    firstAuthor column: 'ti_first_author'
               monographEdition column: 'ti_monograph_edition'
-               monographVolume column: 'ti_monographVolume'
+               monographVolume column: 'ti_monograph_volume'
   }
 
   static constraints = {
             name (nullable:false, blank:false)
             work (nullable:true, blank:false)
+            dateMonographPublishedPrint (nullable:true, blank:false)
+            dateMonographPublishedOnline (nullable:true, blank:false)
+            firstAuthor (nullable:true, blank:false)
+            monographEdition (nullable:true, blank:false)
+            monographVolume (nullable:true, blank:false)
 
   }
 
