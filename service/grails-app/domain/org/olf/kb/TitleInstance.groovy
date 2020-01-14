@@ -5,6 +5,7 @@ import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
 import com.k_int.web.toolkit.refdata.Defaults
+import java.time.LocalDate
 
 import grails.gorm.MultiTenant
 
@@ -37,6 +38,14 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   @Defaults(['Print', 'Electronic'])
   RefdataValue subType
 
+  LocalDate dateMonographPublishedPrint
+  LocalDate dateMonographPublishedOnline
+  
+  String firstAuthor
+
+  String monographEdition
+  String monographVolume
+
   static hasMany = [
     identifiers: IdentifierOccurrence,
     platformInstances: PlatformTitleInstance
@@ -48,14 +57,20 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   ]
 
   static mapping = {
-             work column:'ti_work_fk'
-             type column:'ti_type_fk'
-          subType column:'ti_subtype_fk'
+                          work column:'ti_work_fk'
+                          type column:'ti_type_fk'
+                       subType column:'ti_subtype_fk'
+   dateMonographPublishedPrint column: 'ti_date_monograph_published_print'
+  dateMonographPublishedOnline column: 'ti_date_monograph_published_online'
+                   firstAuthor column: 'ti_first_author'
+              monographEdition column: 'ti_monograph_edition'
+               monographVolume column: 'ti_monographVolume'
   }
 
   static constraints = {
             name (nullable:false, blank:false)
             work (nullable:true, blank:false)
+
   }
 
   public String getCodexSummary() {
