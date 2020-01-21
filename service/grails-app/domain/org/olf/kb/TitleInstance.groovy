@@ -38,10 +38,10 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   @Defaults(['Print', 'Electronic'])
   RefdataValue subType
 
-  LocalDate dateMonographPublishedPrint
-  LocalDate dateMonographPublishedOnline
+  LocalDate dateMonographPublished
   
   String firstAuthor
+  String firstEditor
 
   String monographEdition
   String monographVolume
@@ -60,9 +60,9 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
                           work column:'ti_work_fk'
                           type column:'ti_type_fk'
                        subType column:'ti_subtype_fk'
-   dateMonographPublishedPrint column: 'ti_date_monograph_published_print'
-  dateMonographPublishedOnline column: 'ti_date_monograph_published_online'
+        dateMonographPublished column: 'ti_date_monograph_published'
                    firstAuthor column: 'ti_first_author'
+                   firstEditor column: 'ti_first_editor'
               monographEdition column: 'ti_monograph_edition'
                monographVolume column: 'ti_monograph_volume'
   }
@@ -70,9 +70,9 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   static constraints = {
             name (nullable:false, blank:false)
             work (nullable:true, blank:false)
-            dateMonographPublishedPrint (nullable:true, blank:false)
-            dateMonographPublishedOnline (nullable:true, blank:false)
+            dateMonographPublished (nullable:true, blank:false)
             firstAuthor (nullable:true, blank:false)
+            firstEditor (nullable:true, blank:false)
             monographEdition (nullable:true, blank:false)
             monographVolume (nullable:true, blank:false)
 
