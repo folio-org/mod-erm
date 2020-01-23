@@ -96,7 +96,7 @@ interface PackageSchema extends Validateable {
     Collection<IdentifierSchema> getSiblingInstanceIdentifiers()
     Collection<CoverageStatementSchema> getCoverage()
 
-    LocalDate getDateMonographPublished()
+    String getDateMonographPublished()
     String getFirstAuthor()
     String getFirstEditor()
     String getMonographEdition()

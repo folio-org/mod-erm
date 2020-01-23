@@ -148,7 +148,7 @@ class ContentItem implements ContentItemSchema, Validateable {
   }
 
   @Override
-  public LocalDate getDateMonographPublished() {
+  public String getDateMonographPublished() {
     platformTitleInstance?.titleInstance?.dateMonographPublished
   }
 

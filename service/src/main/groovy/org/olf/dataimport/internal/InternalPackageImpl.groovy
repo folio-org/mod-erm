@@ -49,7 +49,7 @@ class InternalPackageImpl implements PackageSchema, Validateable {
     String coverageNote
     String platformUrl
 
-    LocalDate dateMonographPublished
+    String dateMonographPublished
     String firstAuthor
     String firstEditor
     String monographEdition

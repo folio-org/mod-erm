@@ -6,8 +6,6 @@ import grails.compiler.GrailsCompileStatic
 import grails.validation.Validateable
 import groovy.transform.ToString
 
-import java.time.LocalDate
-
 @ToString(includePackage=false)
 @GrailsCompileStatic
 class TitleInstance implements Validateable {
@@ -16,7 +14,7 @@ class TitleInstance implements Validateable {
   String type = 'journal'
   String subType = 'electronic'
 
-  LocalDate dateMonographPublished
+  String dateMonographPublished
   String firstAuthor
   String firstEditor
   String monographEdition
@@ -29,7 +27,7 @@ class TitleInstance implements Validateable {
     this.subType?.toLowerCase()
   }
 
-  LocalDate getDateMonographPublished() {
+  String getDateMonographPublished() {
     this.dateMonographPublished
   }
   String getFirstAuthor() {
@@ -53,6 +51,11 @@ class TitleInstance implements Validateable {
     name      nullable: true, blank: false
     type      nullable: true, blank: false
     subType   nullable: true, blank: false
+    dateMonographPublished (nullable:true, blank:false)
+    firstAuthor (nullable:true, blank:false)
+    firstEditor (nullable:true, blank:false)
+    monographEdition (nullable:true, blank:false)
+    monographVolume (nullable:true, blank:false)
   }
   
 }
