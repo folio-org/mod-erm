@@ -10,6 +10,12 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import java.time.LocalDate
 
+import org.springframework.web.multipart.MultipartFile
+import org.apache.commons.io.input.BOMInputStream
+
+import com.opencsv.CSVReader
+import com.opencsv.CSVReaderBuilder
+
 @Slf4j
 @CurrentTenant
 class PackageController extends OkapiTenantAwareController<Pkg> {
@@ -26,6 +32,36 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     return render (status: 200)
   }
   
+  def 'tsv_parse' () {
+
+    MultipartFile file = request.getFile('upload')
+
+    BOMInputStream bis = new BOMInputStream(file.getInputStream());
+    Reader fr = new InputStreamReader(bis);
+    CSVReader csvReader = new CSVReaderBuilder(fr).build();
+
+
+    // peek gets without removing from iterator
+    // readNext etc remove from csvreader
+    String[] header = (String[])(csvReader.peek())
+
+    log.debug("file header: ${header}")
+    log.debug("file header class : ${header.getClass()}")
+
+    log.debug("file header with index: ${csvReader[0]}")
+    log.debug("file header with index class: ${csvReader[0].getClass()}")
+    //log.debug("file header?: ${header.indexOf('publication_title')}")
+
+
+    String[] record;
+    while ((record = csvReader.readNext()) != null) {
+        for (String value : record) {
+            log.debug(value);
+        }
+    }
+    render [:] as JSON;
+  }
+
   def content () {
     respond doTheLookup(PackageContentItem) {
       eq 'pkg.id', params.'packageId'

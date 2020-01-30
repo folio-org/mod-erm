@@ -70,6 +70,7 @@ class UrlMappings {
     '/erm/packages'(resources: 'package') {
       collection {
         "/import" (controller: 'package', action: 'import', method: 'POST')
+         "/tsv_parse" (controller: 'package', action: 'tsv_parse', method: 'POST')
       }
       
       "/content"         (controller: 'package', action: 'content', method: 'GET')
