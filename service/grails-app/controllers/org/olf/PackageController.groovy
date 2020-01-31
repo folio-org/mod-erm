@@ -98,6 +98,8 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
           // Currently just prints out each line as an array
           log.debug("Line: ${lineAsArray}")
 
+          //TODO StartDate can't be null, currently this parsing isn't working as expected
+
           LocalDate startDate
           if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')) {
             startDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate'))
