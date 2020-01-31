@@ -144,10 +144,9 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
             ]
           ]
           importService.importPackageUsingInternalSchema(envelope)
-          return render (status: 200)
         }
     }    
-
+    return render (status: 200)
     render [:] as JSON;
   }
 
