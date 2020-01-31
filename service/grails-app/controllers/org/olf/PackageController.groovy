@@ -40,20 +40,11 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     Reader fr = new InputStreamReader(bis);
     CSVReader csvReader = new CSVReaderBuilder(fr).build();
 
-    def importedFileArray = []
-    // We take the file and turn it into an array of arrays
-
     // peek gets line without removing from iterator
     // readNext gets line and removes it from the csvReader object
-    String[] record;
-    while ((record = csvReader.readNext()) != null) {
-        for (String value : record) {
-          importedFileArray << value.split("\t")
-        }
-    }
+    String headerValue = csvReader.readNext()[0]
+    def header = (headerValue).split("\t")
 
-    log.debug("file as an array: ${importedFileArray}")
-    
     // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
     Map acceptedFields = [
       publication_title: [field: 'title', index: -1],
@@ -83,13 +74,23 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       access_type : [field: null, index: -1]
     ]
 
-    def header = importedFileArray[0]
     // Map each key to its location in the header
     for (int i=0; i<header.length; i++) {
       final String key = header[i]
       if (acceptedFields.containsKey(key)) {
         acceptedFields[key]['index'] = i
       }
+    }
+
+    //TODO Don't do this all in one go, do work line by line
+    
+
+    String[] record;
+    while ((record = csvReader.readNext()) != null) {
+        for (String value : record) {
+          // Currently just prints out each line as an array
+          log.debug("Line: ${value.split("\t")}")
+        }
     }
       
 
