@@ -16,6 +16,8 @@ import org.apache.commons.io.input.BOMInputStream
 import com.opencsv.CSVReader
 import com.opencsv.CSVReaderBuilder
 
+import org.olf.dataimport.erm.CoverageStatement
+
 @Slf4j
 @CurrentTenant
 class PackageController extends OkapiTenantAwareController<Pkg> {
@@ -28,6 +30,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
 
   def 'import' () {
     final bindObj = this.getObjectToBind()
+    log.debug("bindObj: ${bindObj}")
     importService.importPackageUsingErmSchema(bindObj as Map)
     return render (status: 200)
   }
@@ -67,7 +70,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       date_monograph_published_print: [field: 'dateMonographPublished', index: -1],
       date_monograph_published_online: [field: 'dateMonographPublished', index: -1],
       monograph_volume: [field: 'monographVolume', index: -1],
-      monograph_edition: [field: 'monographVolume', index: -1],
+      monograph_edition: [field: 'monographEdition', index: -1],
       first_editor: [field: 'firstEditor', index: -1],
       parent_publication_title_id: [field: null, index: -1],
       preceding_publication_title_id: [field: null, index: -1],
@@ -82,22 +85,74 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       }
     }
 
+    log.debug("ValuesList: ${acceptedFields.values()}")
+    log.debug("Finding title bit ${acceptedFields.values().find { it.field.equals('title') }}")
+
     //TODO Don't do this all in one go, do work line by line
     
 
     String[] record;
     while ((record = csvReader.readNext()) != null) {
         for (String value : record) {
+          def lineAsArray = value.split("\t")
           // Currently just prints out each line as an array
-          log.debug("Line: ${value.split("\t")}")
-        }
-    }
-      
+          log.debug("Line: ${lineAsArray}")
 
-    log.debug("Accepted Fields: ${acceptedFields}")
-    
+          LocalDate startDate
+          if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')) {
+            startDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate'))
+          }
+
+          LocalDate endDate
+          if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')) {
+            endDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate'))
+          }
+
+          Map envelope = [
+            // TODO fill this header out properly
+            header :[
+              packageSource: '123.456',
+              packageName: 'myPackage',
+              packageSlug: '123456789'
+            ],
+            packageContents: [
+              [
+                title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+                siblingInstanceIdentifiers: getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers'),
+                instanceIdentifiers: getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers'),
+                coverage: new CoverageStatement(
+                  startDate: startDate,
+                  startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
+                  startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
+                  endDate: endDate,
+                  endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
+                  endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
+                ),
+                url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
+                firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
+                embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
+                coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
+                coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
+                // TODO work out what's happening with the two types here
+
+                //TitleInstance.type: getFieldFromLine(lineAsArray, acceptedFields, 'TitleInstance.type')
+                dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
+                monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
+                monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
+                firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor'),
+              ]
+            ]
+          ]
+          importService.importPackageUsingInternalSchema(envelope)
+          return render (status: 200)
+        }
+    }    
 
     render [:] as JSON;
+  }
+
+  private getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
+    return lineAsArray[(acceptedFields.values().find { it.field.equals(fieldName) })['index']];
   }
 
   def content () {
