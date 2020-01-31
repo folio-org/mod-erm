@@ -84,18 +84,15 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     ]
 
     def header = importedFileArray[0]
-    acceptedFields.each{key, value ->
     // Map each key to its location in the header
-      int index = -1;
-      for (int i=0; i<header.length; i++) {
-        if (header[i].equals(key)) {
-          index = i;
-          acceptedFields[key]['index'] = index
-          break;
-        }
+    for (int i=0; i<header.length; i++) {
+      final String key = header[i]
+      if (acceptedFields.containsKey(key)) {
+        acceptedFields[key]['index'] = i
       }
     }
-    
+      
+
     log.debug("Accepted Fields: ${acceptedFields}")
     
 
