@@ -53,53 +53,50 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     }
 
     log.debug("file as an array: ${importedFileArray}")
-    def header = importedFileArray[0]
     
     // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
     Map acceptedFields = [
-      publication_title: ['title', -1],
-      print_identifier: ['siblingInstanceIdentifiers', -1],
-      online_identifier: ['instanceIdentifiers', -1],
-      date_first_issue_online: ['CoverageStatement.startDate', -1],
-      num_first_vol_online: ['CoverageStatement.startVolume', -1],
-      num_first_issue_online: ['CoverageStatement.startIssue', -1],
-      date_last_issue_online: ['CoverageStatement.endDate', -1],
-      num_last_vol_online: ['CoverageStatement.endVolume', -1],
-      num_last_issue_online: ['CoverageStatement.endIssue', -1],
-      title_url: ['url', -1],
-      first_author: ['firstAuthor', -1],
-      title_id: [null, -1],
-      embargo_info: ['embargo', -1],
-      coverage_depth: ['coverageDepth', -1],
-      notes: ['coverageNote', -1],
-      publisher_name: [null, -1],
-      publication_type: ['TitleInstance.type', -1],
-      date_monograph_published_print: ['dateMonographPublished', -1],
-      date_monograph_published_online: ['dateMonographPublished', -1],
-      monograph_volume: ['monographVolume', -1],
-      monograph_edition: ['monographVolume', -1],
-      first_editor: ['firstEditor', -1],
-      parent_publication_title_id: [null, -1],
-      preceding_publication_title_id: [null, -1],
-      access_type : [null, -1]
+      publication_title: [field: 'title', index: -1],
+      print_identifier: [field: 'siblingInstanceIdentifiers', index: -1],
+      online_identifier: [field: 'instanceIdentifiers', index: -1],
+      date_first_issue_online: [field: 'CoverageStatement.startDate', index: -1],
+      num_first_vol_online: [field: 'CoverageStatement.startVolume', index: -1],
+      num_first_issue_online: [field: 'CoverageStatement.startIssue', index: -1],
+      date_last_issue_online: [field: 'CoverageStatement.endDate', index: -1],
+      num_last_vol_online: [field: 'CoverageStatement.endVolume', index: -1],
+      num_last_issue_online: [field: 'CoverageStatement.endIssue', index: -1],
+      title_url: [field: 'url', index: -1],
+      first_author: [field: 'firstAuthor', index: -1],
+      title_id: [field: null, index: -1],
+      embargo_info: [field: 'embargo', index: -1],
+      coverage_depth: [field: 'coverageDepth', index: -1],
+      notes: [field: 'coverageNote', index: -1],
+      publisher_name: [field: null, index: -1],
+      publication_type: [field: 'TitleInstance.type', index: -1],
+      date_monograph_published_print: [field: 'dateMonographPublished', index: -1],
+      date_monograph_published_online: [field: 'dateMonographPublished', index: -1],
+      monograph_volume: [field: 'monographVolume', index: -1],
+      monograph_edition: [field: 'monographVolume', index: -1],
+      first_editor: [field: 'firstEditor', index: -1],
+      parent_publication_title_id: [field: null, index: -1],
+      preceding_publication_title_id: [field: null, index: -1],
+      access_type : [field: null, index: -1]
     ]
 
-    log.debug("Accepted Fields: ${acceptedFields}")
-    log.debug("Accepted Fields: ${acceptedFields.getClass()}")
-    log.debug("Accepted Fields: ${acceptedFields.publication_title}")
-
-/*     def fieldIndicesForFile = [:]
+    def header = importedFileArray[0]
     acceptedFields.each{key, value ->
-    // Create mapping of field
+    // Map each key to its location in the header
       int index = -1;
       for (int i=0; i<header.length; i++) {
-        if (TYPES[i].equals(carName)) {
-            index = i;
-            break;
+        if (header[i].equals(key)) {
+          index = i;
+          acceptedFields[key]['index'] = index
+          break;
         }
       }
-    } */
-
+    }
+    
+    log.debug("Accepted Fields: ${acceptedFields}")
     
 
     render [:] as JSON;
