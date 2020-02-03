@@ -161,7 +161,7 @@ class ImportService implements DataBinder {
     pkg.header = [
       packageSource: '123.456',
       packageSlug: '123456',
-      packageName: 'myPackage'
+      packageName: 'myPackage2'
     ]
 
     String[] record;
@@ -239,20 +239,23 @@ class ImportService implements DataBinder {
     return (packageImported)
   }
 
-   private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
-      //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
-      log.debug("#######################")
-      log.debug("trying to get the relevant field: ${fieldName}")
-      
-      log.debug("Trying to get from array: ${lineAsArray}")
-      
-      log.debug("Accepted field values: ${acceptedFields.values()}")
-      log.debug("Accepted field values filtered: ${acceptedFields.values().find { it['field']?.equals(fieldName) }}")
-      String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
-      log.debug("found index: ${index}")
-      log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
-      log.debug("#######################")
-   return lineAsArray[index.toInteger()];
+  private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
+    //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
+    log.debug("#######################")
+    log.debug("trying to get the relevant field: ${fieldName}")
+    
+    log.debug("Trying to get from array: ${lineAsArray}")
+    
+    log.debug("Accepted field values: ${acceptedFields.values()}")
+    log.debug("Accepted field values filtered: ${acceptedFields.values().find { it['field']?.equals(fieldName) }}")
+    String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
+    log.debug("found index: ${index}")
+    log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
+
+    if (lineAsArray[index.toInteger()] == '') {
+      return null;
+    }
+  return lineAsArray[index.toInteger()];
   }
 
 }
