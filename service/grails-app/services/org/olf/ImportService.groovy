@@ -6,11 +6,17 @@ import groovy.transform.CompileStatic
 import groovy.util.logging.Slf4j
 import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.dataimport.internal.InternalPackageImpl
+import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema
+import org.olf.dataimport.erm.Identifier
 import org.slf4j.MDC
 import org.springframework.context.MessageSource
 import org.springframework.validation.ObjectError
 import org.springframework.context.i18n.LocaleContextHolder
+
+import com.opencsv.CSVReader
+import org.olf.dataimport.erm.CoverageStatement
+import java.time.LocalDate
 
 @CompileStatic
 @Slf4j
@@ -104,4 +110,149 @@ class ImportService implements DataBinder {
     
     packageImported
   }
+
+  boolean importPackageFromKbart (CSVReader file) {
+    boolean packageImported = false
+    log.debug("Attempting to import package from KBART file")
+
+    // peek gets line without removing from iterator
+    // readNext gets line and removes it from the csvReader object
+    String headerValue = file.readNext()[0]
+    def header = (headerValue).split("\t")
+
+    // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
+    Map acceptedFields = [
+      publication_title: [field: 'title', index: -1],
+      print_identifier: [field: 'siblingInstanceIdentifiers', index: -1],
+      online_identifier: [field: 'instanceIdentifiers', index: -1],
+      date_first_issue_online: [field: 'CoverageStatement.startDate', index: -1],
+      num_first_vol_online: [field: 'CoverageStatement.startVolume', index: -1],
+      num_first_issue_online: [field: 'CoverageStatement.startIssue', index: -1],
+      date_last_issue_online: [field: 'CoverageStatement.endDate', index: -1],
+      num_last_vol_online: [field: 'CoverageStatement.endVolume', index: -1],
+      num_last_issue_online: [field: 'CoverageStatement.endIssue', index: -1],
+      title_url: [field: 'url', index: -1],
+      first_author: [field: 'firstAuthor', index: -1],
+      title_id: [field: null, index: -1],
+      embargo_info: [field: 'embargo', index: -1],
+      coverage_depth: [field: 'coverageDepth', index: -1],
+      notes: [field: 'coverageNote', index: -1],
+      publisher_name: [field: null, index: -1],
+      publication_type: [field: 'instanceMedia', index: -1],
+      date_monograph_published_print: [field: 'dateMonographPublishedPrint', index: -1],
+      date_monograph_published_online: [field: 'dateMonographPublished', index: -1],
+      monograph_volume: [field: 'monographVolume', index: -1],
+      monograph_edition: [field: 'monographEdition', index: -1],
+      first_editor: [field: 'firstEditor', index: -1],
+      parent_publication_title_id: [field: null, index: -1],
+      preceding_publication_title_id: [field: null, index: -1],
+      access_type : [field: null, index: -1]
+    ]
+
+    // Map each key to its location in the header
+    for (int i=0; i<header.length; i++) {
+      final String key = header[i]
+      if (acceptedFields.containsKey(key)) {
+        acceptedFields[key]['index'] = i
+      }
+    }
+    
+    final InternalPackageImpl pkg = new InternalPackageImpl()
+    pkg.header = [
+      packageSource: '123.456',
+      packageSlug: '123456',
+      packageName: 'myPackage'
+    ]
+
+    String[] record;
+    while ((record = file.readNext()) != null) {
+      for (String value : record) {
+        def lineAsArray = value.split("\t")
+        // Currently just prints out each line as an array
+        log.debug("Line: ${lineAsArray}")
+
+        //TODO StartDate can't be null, currently this parsing isn't working as expected
+
+        LocalDate startDate
+        if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')) {
+          startDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate'))
+        }
+
+        LocalDate endDate
+        if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')) {
+          endDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate'))
+        }
+
+        Identifier siblingInstanceIdentifier = new Identifier()
+        Identifier instanceIdentifier = new Identifier()
+
+        if (getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia') == 'monograph' || getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia') == 'book') {
+            siblingInstanceIdentifier.namespace = 'ISBN'
+            instanceIdentifier.namespace = 'ISBN'
+        } else {          
+            siblingInstanceIdentifier.namespace = 'ISSN'
+            instanceIdentifier.namespace = 'ISSN'
+        }
+
+        siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
+        instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
+        
+        PackageContentImpl pkgLine = new PackageContentImpl(
+          title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+          siblingInstanceIdentifiers: [
+            siblingInstanceIdentifier
+          ],
+          instanceIdentifiers: [
+            instanceIdentifier
+          ],
+          coverage: [
+            new CoverageStatement(
+              startDate: startDate,
+              startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
+              startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
+              endDate: endDate,
+              endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
+              endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
+            )
+          ],
+          url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
+          firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
+          embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
+          coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
+          coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
+          instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+
+          dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
+          dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+
+          monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
+          monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
+          firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
+        )
+
+        // We add this information to our package
+        pkg.packageContents << pkgLine
+      }
+    }
+    def result = packageIngestService.upsertPackage(pkg)
+    log.debug("DEBUG INGEST RESULT: ${result}")
+    return (packageImported)
+  }
+
+   private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
+      //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
+      log.debug("#######################")
+      log.debug("trying to get the relevant field: ${fieldName}")
+      
+      log.debug("Trying to get from array: ${lineAsArray}")
+      
+      log.debug("Accepted field values: ${acceptedFields.values()}")
+      log.debug("Accepted field values filtered: ${acceptedFields.values().find { it['field']?.equals(fieldName) }}")
+      String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
+      log.debug("found index: ${index}")
+      log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
+      log.debug("#######################")
+   return lineAsArray[index.toInteger()];
+  }
+
 }
