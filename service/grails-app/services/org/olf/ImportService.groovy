@@ -263,7 +263,7 @@ class ImportService implements DataBinder {
       ]);
     } else {
       if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
-        log.error("Unexpected coverage information for type: monograph")
+        log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: monograph")
       }
       return [];
     } 
