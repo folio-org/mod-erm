@@ -161,11 +161,14 @@ class ImportService implements DataBinder {
     // Mandatory fields' existence should be checked
     List mandatoryFields = ['title', 'instanceIdentifiers', 'url', 'instanceMedia']
 
-    mandatoryFields.each {
-      if (shouldExist(acceptedFields, it) == false) {
-        log.error("The import file is missing one or more of the mandatory fields: [publication_title, online_identifier, title_url, publication_type]")
+    def missingFields = mandatoryFields.findAll {field ->
+      !shouldExist(acceptedFields, field)[0]
+    }.collect { f ->
+      shouldExist(acceptedFields, f)[1]
+    }
+    if (missingFields.size() != 0) {
+      log.error("The import file is missing the mandatory fields: ${missingFields}")
       return (false);
-      }
     }
     
     final InternalPackageImpl pkg = new InternalPackageImpl()
@@ -247,14 +250,14 @@ class ImportService implements DataBinder {
     return index;
   }
 
-  private boolean shouldExist(Map acceptedFields, String fieldName) {
+  private List shouldExist(Map acceptedFields, String fieldName) {
     boolean result = false
+    String importField = acceptedFields.find { it.value['field']?.equals(fieldName) }?.key
+
     if (getIndexFromFieldName(acceptedFields, fieldName) != '-1') {
       result = true
-    } else {
-      log.error("Mandatory field ${fieldName} could not be located")
     }
-    return result;
+    return [result, importField];
   }
 
   private List buildCoverage(String[] lineAsArray, Map acceptedFields) {

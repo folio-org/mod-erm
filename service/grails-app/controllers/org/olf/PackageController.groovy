@@ -43,7 +43,12 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     CSVReader csvReader = new CSVReaderBuilder(fr).build();
 
     def completed = importService.importPackageFromKbart(csvReader)
-    log.debug("KBART import success: ${completed}")
+
+    if (completed) {
+      log.debug("KBART import success")
+    } else {
+      log.debug("KBART import failed")
+    }
     return render (status: 200)
     render [:] as JSON;
   }
