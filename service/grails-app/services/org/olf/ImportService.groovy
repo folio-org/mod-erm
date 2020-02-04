@@ -156,6 +156,17 @@ class ImportService implements DataBinder {
         acceptedFields[key]['index'] = i
       }
     }
+
+    // At this point we have a mapping of internal fields to KBART fields and their indexes in the imported file
+    // Mandatory fields' existence should be checked
+    List mandatoryFields = ['title', 'instanceIdentifiers', 'url', 'instanceMedia']
+
+    mandatoryFields.each {
+      if (shouldExist(acceptedFields, it) == false) {
+        log.error("The import file is missing one or more of the mandatory fields: [publication_title, online_identifier, title_url, publication_type]")
+      return (false);
+      }
+    }
     
     final InternalPackageImpl pkg = new InternalPackageImpl()
     pkg.header = [
@@ -218,6 +229,7 @@ class ImportService implements DataBinder {
     }
     def result = packageIngestService.upsertPackage(pkg)
     log.debug("DEBUG INGEST RESULT: ${result}")
+    //TODO Use this information to return true if the package imported successfully or false otherwise
     return (packageImported)
   }
 
@@ -225,13 +237,28 @@ class ImportService implements DataBinder {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
     log.debug("#######################")
     log.debug("trying to get the relevant field: ${fieldName}")
-    String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
+    String index = getIndexFromFieldName(acceptedFields, fieldName)
     log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
     if (lineAsArray[index.toInteger()] == '') {
       log.debug("(indexed field is an empty string)")
       return null;
     }
   return lineAsArray[index.toInteger()];
+  }
+
+  private String getIndexFromFieldName(Map acceptedFields, String fieldName) {
+    String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
+    return index;
+  }
+
+  private boolean shouldExist(Map acceptedFields, String fieldName) {
+    boolean result = false
+    if (getIndexFromFieldName(acceptedFields, fieldName) != '-1') {
+      result = true
+    } else {
+      log.error("Mandatory field ${fieldName} could not be located")
+    }
+    return result;
   }
 
   private List buildCoverage(String[] lineAsArray, Map acceptedFields) {
