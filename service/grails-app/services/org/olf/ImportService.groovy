@@ -179,8 +179,6 @@ class ImportService implements DataBinder {
     while ((record = file.readNext()) != null) {
       for (String value : record) {
         def lineAsArray = value.split("\t")
-        // Currently just prints out each line as an array
-        log.debug("Line: ${lineAsArray}")
 
         Identifier siblingInstanceIdentifier = new Identifier()
         Identifier instanceIdentifier = new Identifier()
@@ -227,20 +225,18 @@ class ImportService implements DataBinder {
         pkg.packageContents << pkgLine
       }
     }
+
     def result = packageIngestService.upsertPackage(pkg)
-    log.debug("DEBUG INGEST RESULT: ${result}")
     //TODO Use this information to return true if the package imported successfully or false otherwise
+    packageImported = true
+    
     return (packageImported)
   }
 
   private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
-    log.debug("#######################")
-    log.debug("trying to get the relevant field: ${fieldName}")
     String index = getIndexFromFieldName(acceptedFields, fieldName)
-    log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
     if (lineAsArray[index.toInteger()] == '') {
-      log.debug("(indexed field is an empty string)")
       return null;
     }
   return lineAsArray[index.toInteger()];
