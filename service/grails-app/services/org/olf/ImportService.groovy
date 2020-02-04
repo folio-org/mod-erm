@@ -171,22 +171,13 @@ class ImportService implements DataBinder {
         // Currently just prints out each line as an array
         log.debug("Line: ${lineAsArray}")
 
-        //TODO StartDate can't be null, currently this parsing isn't working as expected
-
-        LocalDate startDate
-        if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')) {
-          startDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate'))
-        }
-
-        LocalDate endDate
-        if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')) {
-          endDate = LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate'))
-        }
-
         Identifier siblingInstanceIdentifier = new Identifier()
         Identifier instanceIdentifier = new Identifier()
 
-        if (getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia') == 'monograph' || getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia') == 'book') {
+        if (
+          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'monograph' ||
+          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'book'
+        ) {
             siblingInstanceIdentifier.namespace = 'ISBN'
             instanceIdentifier.namespace = 'ISBN'
         } else {          
@@ -205,16 +196,7 @@ class ImportService implements DataBinder {
           instanceIdentifiers: [
             instanceIdentifier
           ],
-          coverage: [
-            new CoverageStatement(
-              startDate: startDate,
-              startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
-              startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
-              endDate: endDate,
-              endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
-              endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
-            )
-          ],
+          coverage: buildCoverage(lineAsArray, acceptedFields),
           url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
           firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
           embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
@@ -243,19 +225,47 @@ class ImportService implements DataBinder {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
     log.debug("#######################")
     log.debug("trying to get the relevant field: ${fieldName}")
-    
-    log.debug("Trying to get from array: ${lineAsArray}")
-    
-    log.debug("Accepted field values: ${acceptedFields.values()}")
-    log.debug("Accepted field values filtered: ${acceptedFields.values().find { it['field']?.equals(fieldName) }}")
     String index = (acceptedFields.values().find { it['field']?.equals(fieldName) })['index']
-    log.debug("found index: ${index}")
     log.debug("indexed field: ${lineAsArray[index.toInteger()]}")
-
     if (lineAsArray[index.toInteger()] == '') {
+      log.debug("(indexed field is an empty string)")
       return null;
     }
   return lineAsArray[index.toInteger()];
   }
 
+  private List buildCoverage(String[] lineAsArray, Map acceptedFields) {
+    //TODO StartDate can't be null, currently this parsing isn't working as expected
+    String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
+    String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
+
+    LocalDate endDateLocalDate
+    if (endDate != null) {
+      endDateLocalDate = LocalDate.parse(endDate)
+    } else {
+      endDateLocalDate = null
+    }
+
+    if (
+      (getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'monograph' ||
+      getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'book') &&
+      startDate != null
+    ) {
+      return ([
+        new CoverageStatement(
+          startDate: LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')),
+          startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
+          startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
+          endDate: endDateLocalDate,
+          endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
+          endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
+        )
+      ]);
+    } else {
+      if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
+        log.error("Unexpected coverage information for type: monograph")
+      }
+      return [];
+    } 
+  }
 }
