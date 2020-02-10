@@ -34,7 +34,7 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     return render (status: 200)
   }
   
-  def 'tsv_parse' () {
+  def 'tsvParse' () {
 
     MultipartFile file = request.getFile('upload')
 
