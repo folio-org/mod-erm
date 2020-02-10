@@ -281,15 +281,12 @@ class ImportService implements DataBinder {
 
     switch(date) {
       case ~ '^\\d{4}\$':
-        log.debug("Parse date was handed just a year: ${date}")
         outputDate = LocalDate.parse(date, yearFormat);
         break;
       case ~ '^\\d{4}(-(\\d{2}))\$':
-        log.debug("Parse date was handed a year and a month: ${date}")
         outputDate = LocalDate.parse(date, monthYearFormat);
         break;
       default:
-        log.debug("Parse date was handed a full date: ${date}")
         outputDate = LocalDate.parse(date);
         break;
     }
