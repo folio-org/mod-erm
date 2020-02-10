@@ -17,6 +17,9 @@ import org.springframework.context.i18n.LocaleContextHolder
 import com.opencsv.CSVReader
 import org.olf.dataimport.erm.CoverageStatement
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
+import java.time.temporal.ChronoField
 
 @CompileStatic
 @Slf4j
@@ -215,6 +218,7 @@ class ImportService implements DataBinder {
           coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
           coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
           instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+          instanceMedium: "electronic",
 
           dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
           dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
@@ -260,6 +264,38 @@ class ImportService implements DataBinder {
     return [result, importField];
   }
 
+  private LocalDate parseDate(String date) {
+    // We know that data coming in here matches yyyy, yyyy-mm or yyyy-mm-dd
+    LocalDate outputDate
+
+    DateTimeFormatter yearFormat = new DateTimeFormatterBuilder()
+    .appendPattern("yyyy")
+    .parseDefaulting(ChronoField.MONTH_OF_YEAR, 1)
+    .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+    .toFormatter();
+
+    DateTimeFormatter monthYearFormat = new DateTimeFormatterBuilder()
+    .appendPattern("yyyy-MM")
+    .parseDefaulting(ChronoField.DAY_OF_MONTH, 1)
+    .toFormatter();
+
+    switch(date) {
+      case ~ '^\\d{4}\$':
+        log.debug("Parse date was handed just a year: ${date}")
+        outputDate = LocalDate.parse(date, yearFormat);
+        break;
+      case ~ '^\\d{4}(-(\\d{2}))\$':
+        log.debug("Parse date was handed a year and a month: ${date}")
+        outputDate = LocalDate.parse(date, monthYearFormat);
+        break;
+      default:
+        log.debug("Parse date was handed a full date: ${date}")
+        outputDate = LocalDate.parse(date);
+        break;
+    }
+    return outputDate;
+  }
+
   private List buildCoverage(String[] lineAsArray, Map acceptedFields) {
     //TODO StartDate can't be null, currently this parsing isn't working as expected
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
@@ -267,19 +303,26 @@ class ImportService implements DataBinder {
 
     LocalDate endDateLocalDate
     if (endDate != null) {
-      endDateLocalDate = LocalDate.parse(endDate)
+      endDateLocalDate = parseDate(endDate)
     } else {
       endDateLocalDate = null
+    }
+
+    LocalDate startDateLocalDate
+    if (startDate != null) {
+      startDateLocalDate = parseDate(startDate)
+    } else {
+      startDateLocalDate = null
     }
 
     if (
       (getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'monograph' ||
       getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'book') &&
-      startDate != null
+      startDateLocalDate != null
     ) {
       return ([
         new CoverageStatement(
-          startDate: LocalDate.parse(getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')),
+          startDate: startDateLocalDate,
           startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
           startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
           endDate: endDateLocalDate,
