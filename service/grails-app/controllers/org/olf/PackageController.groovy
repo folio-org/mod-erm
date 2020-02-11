@@ -44,8 +44,6 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
       packageReference: request.getParameter("packageReference")
     ]
     
-    log.debug("Package extraInfo: ${packageInfo}")
-
     BOMInputStream bis = new BOMInputStream(file.getInputStream());
     Reader fr = new InputStreamReader(bis);
     CSVReader csvReader = new CSVReaderBuilder(fr).build();
