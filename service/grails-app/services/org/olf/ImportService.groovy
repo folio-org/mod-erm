@@ -118,12 +118,20 @@ class ImportService implements DataBinder {
     boolean packageImported = false
     log.debug("Attempting to import package from KBART file")
 
+    String packageName
+    String packageSource
+    String packageReference
+    
     if (packageInfo.packageName == null ||
         packageInfo.packageSource == null ||
         packageInfo.packageReference == null
       ) {
         log.error("Import is missing key package information")
         return packageImported
+      } else {
+        packageName = packageInfo.packageName
+        packageSource = packageInfo.packageSource
+        packageReference = packageInfo.packageReference
       }
 
     // peek gets line without removing from iterator
@@ -184,9 +192,9 @@ class ImportService implements DataBinder {
     
     final InternalPackageImpl pkg = new InternalPackageImpl()
     pkg.header = [
-      packageSource: packageInfo.packageSource,
-      packageSlug: packageInfo.packageReference,
-      packageName: packageInfo.packageName
+      packageName: packageName,
+      packageSource: packageSource,
+      packageSlug: packageReference
     ]
 
     String[] record;
