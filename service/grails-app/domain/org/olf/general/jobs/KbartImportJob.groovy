@@ -31,12 +31,17 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
           packageReference: job.packageReference
         ]
 
+        boolean packageInfoValid = true
         //TODO Actual validation here
-        log.debug("Check that the extra fields Map is correct: ${packageInfo}")
-        
+        if (packageInfo.packageName == null ||
+        packageInfo.packageSource == null ||
+        packageInfo.packageReference == null
+      ) {
+        packageInfoValid = false
+        log.error("Import is missing key package information")
+      }
 
-        if (job.fileUpload) {
-           log.debug("Incoming Job Stream: ${job.fileUpload.fileObject.fileContents.binaryStream}")
+        if (job.fileUpload && packageInfoValid) {
           BOMInputStream bis = new BOMInputStream(job.fileUpload.fileObject.fileContents.binaryStream);
           Reader fr = new InputStreamReader(bis);
           CSVReader csvReader = new CSVReaderBuilder(fr).build();
