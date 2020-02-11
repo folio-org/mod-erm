@@ -294,7 +294,6 @@ class ImportService implements DataBinder {
   }
 
   private List buildCoverage(String[] lineAsArray, Map acceptedFields) {
-    //TODO StartDate can't be null, currently this parsing isn't working as expected
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
     String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
 
@@ -312,9 +311,11 @@ class ImportService implements DataBinder {
       startDateLocalDate = null
     }
 
+    String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase()
+
     if (
-      (getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'monograph' ||
-      getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() != 'book') &&
+      (instanceMedia != 'monograph' ||
+      instanceMedia != 'book') &&
       startDateLocalDate != null
     ) {
       return ([
@@ -329,7 +330,7 @@ class ImportService implements DataBinder {
       ]);
     } else {
       if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
-        log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: monograph")
+        log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
       }
       return [];
     } 
