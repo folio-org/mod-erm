@@ -38,11 +38,19 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
 
     MultipartFile file = request.getFile('upload')
 
+    Map packageInfo = [
+      packageName: request.getParameter("packageName"),
+      packageSource: request.getParameter("packageSource"),
+      packageReference: request.getParameter("packageReference")
+    ]
+    
+    log.debug("Package extraInfo: ${extraInfo}")
+
     BOMInputStream bis = new BOMInputStream(file.getInputStream());
     Reader fr = new InputStreamReader(bis);
     CSVReader csvReader = new CSVReaderBuilder(fr).build();
 
-    def completed = importService.importPackageFromKbart(csvReader)
+    def completed = importService.importPackageFromKbart(csvReader, packageInfo)
 
     if (completed) {
       log.debug("KBART import success")

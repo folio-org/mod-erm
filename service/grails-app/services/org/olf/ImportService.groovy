@@ -114,9 +114,17 @@ class ImportService implements DataBinder {
     packageImported
   }
 
-  boolean importPackageFromKbart (CSVReader file) {
+  boolean importPackageFromKbart (CSVReader file, Map packageInfo) {
     boolean packageImported = false
     log.debug("Attempting to import package from KBART file")
+
+    if (packageInfo.packageName == null ||
+        packageInfo.packageSource == null ||
+        packageInfo.packageReference == null
+      ) {
+        log.error("Import is missing key package information")
+        return packageImported
+      }
 
     // peek gets line without removing from iterator
     // readNext gets line and removes it from the csvReader object
@@ -176,9 +184,9 @@ class ImportService implements DataBinder {
     
     final InternalPackageImpl pkg = new InternalPackageImpl()
     pkg.header = [
-      packageSource: '123.456',
-      packageSlug: '123456',
-      packageName: 'myPackage2'
+      packageSource: packageInfo.packageSource,
+      packageSlug: packageInfo.packageReference,
+      packageName: packageInfo.packageName
     ]
 
     String[] record;
