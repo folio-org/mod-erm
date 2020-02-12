@@ -2,8 +2,6 @@ package org.olf.general.jobs
 
 import grails.gorm.MultiTenant
 
-import org.olf.dataimport.erm.PackageProvider
-
 import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.input.BOMInputStream
 

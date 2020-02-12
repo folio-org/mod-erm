@@ -8,6 +8,7 @@ import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageContentImpl
 import org.olf.dataimport.internal.PackageSchema
+import org.olf.dataimport.erm.PackageProvider
 import org.olf.dataimport.erm.Identifier
 import org.slf4j.MDC
 import org.springframework.context.MessageSource
@@ -196,13 +197,14 @@ class ImportService implements DataBinder {
     }
     
     final InternalPackageImpl pkg = new InternalPackageImpl()
+    final PackageProvider pkgPrv = new PackageProvider()
+    pkgPrv.name = packageProvider
+
     pkg.header = [
       packageName: packageName,
       packageSource: packageSource,
       packageSlug: packageReference,
-      packageProvider: [
-        name: packageProvider
-      ]
+      packageProvider: pkgPrv
     ]
 
     String[] record;
