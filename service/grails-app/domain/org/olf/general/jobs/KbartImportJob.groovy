@@ -2,6 +2,8 @@ package org.olf.general.jobs
 
 import grails.gorm.MultiTenant
 
+import org.olf.dataimport.erm.PackageProvider
+
 import org.springframework.web.multipart.MultipartFile
 import org.apache.commons.io.input.BOMInputStream
 
@@ -13,7 +15,8 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
   String packageName
   String packageSource
   String packageReference
-  
+  String packageProvider
+
   final Closure getWork() {
     
     final Closure theWork = { final String eventId, final String tenantId ->
@@ -28,7 +31,8 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
         Map packageInfo = [
           packageName: job.packageName,
           packageSource: job.packageSource,
-          packageReference: job.packageReference
+          packageReference: job.packageReference,
+          packageProvider: job.packageProvider
         ]
 
         boolean packageInfoValid = true

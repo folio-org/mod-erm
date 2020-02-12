@@ -35,13 +35,14 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
   }
   
   def 'tsvParse' () {
-
+    //TODO Potentially work out how to get PackageProvider information into here
     MultipartFile file = request.getFile('upload')
 
     Map packageInfo = [
       packageName: request.getParameter("packageName"),
       packageSource: request.getParameter("packageSource"),
-      packageReference: request.getParameter("packageReference")
+      packageReference: request.getParameter("packageReference"),
+      packageProvider: request.getParameter("packageProvider")
     ]
     
     BOMInputStream bis = new BOMInputStream(file.getInputStream());

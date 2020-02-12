@@ -121,7 +121,8 @@ class ImportService implements DataBinder {
     String packageName
     String packageSource
     String packageReference
-    
+    String packageProvider
+
     if (packageInfo.packageName == null ||
         packageInfo.packageSource == null ||
         packageInfo.packageReference == null
@@ -133,6 +134,10 @@ class ImportService implements DataBinder {
         packageSource = packageInfo.packageSource
         packageReference = packageInfo.packageReference
       }
+
+    if (packageInfo.packageProvider != null) {
+      packageProvider = packageInfo.packageProvider
+    }
 
     // peek gets line without removing from iterator
     // readNext gets line and removes it from the csvReader object
@@ -194,7 +199,10 @@ class ImportService implements DataBinder {
     pkg.header = [
       packageName: packageName,
       packageSource: packageSource,
-      packageSlug: packageReference
+      packageSlug: packageReference,
+      packageProvider: [
+        name: packageProvider
+      ]
     ]
 
     String[] record;
