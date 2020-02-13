@@ -66,6 +66,8 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
   
   static constraints = {
       fileUpload (nullable:false)
+      packageProvider (nullable:true)
+
   }
 
   static mapping = {
@@ -73,5 +75,6 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
                  packageName column:'package_name'
                packageSource column:'package_source'
             packageReference column:'package_reference'
+            packageProvider column: 'package_provider'
   }
 }

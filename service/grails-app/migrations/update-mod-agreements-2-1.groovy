@@ -54,9 +54,15 @@ databaseChangeLog = {
       column(name: "id", type: "VARCHAR(255)") {
         constraints(nullable: "false")
       }
-      column(name: "package_name", type: "VARCHAR(255)")
-      column(name: "package_source", type: "VARCHAR(255)")
-      column(name: "package_reference", type: "VARCHAR(255)")
+      column(name: "package_name", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_source", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
+      column(name: "package_reference", type: "VARCHAR(255)") {
+        constraints(nullable: "false")
+      }
       column(name: "package_provider", type: "VARCHAR(255)")
     }
   }
