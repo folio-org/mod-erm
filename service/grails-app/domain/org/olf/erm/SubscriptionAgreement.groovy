@@ -244,28 +244,31 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
           })
   }
 
-  public void setAgreementStatus (RefdataValue statusValue) {
-    if (statusValue != null) {
-      if (statusValue.value != 'closed') {
-        this.reasonForClosure = null
-      }
+  def beforeValidate() {
+    checkAgreementStatus()
+  }
+  
+  public void checkAgreementStatus () {
+    
+    // Null out the reasonForClosure if agreement status is not closed
+    if (agreementStatus?.value != 'closed') {
+      reasonForClosure = null
     }
-    this.agreementStatus = statusValue
   }
 
-  public void setReasonForClosure (RefdataValue reasonValue) {
-    if (reasonValue != null) {
-      if (this.agreementStatus?.value != 'closed') {
-        this.reasonForClosure = null
-      }
-      else {
-        this.reasonForClosure = reasonValue
-      }
-    }
-    else {
-      this.reasonForClosure = reasonValue
-    }
-  }
+//  public void setReasonForClosure (RefdataValue reasonValue) {
+//    if (reasonValue != null) {
+//      if (this.agreementStatus?.value != 'closed') {
+//        this.reasonForClosure = null
+//      }
+//      else {
+//        this.reasonForClosure = reasonValue
+//      }
+//    }
+//    else {
+//      this.reasonForClosure = reasonValue
+//    }
+//  }
   
   /**
    * Need to resolve the conflict manually and add the call to the clonable method here. 
