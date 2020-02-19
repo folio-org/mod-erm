@@ -124,10 +124,9 @@ class ImportService implements DataBinder {
     String packageReference
     String packageProvider
 
-    if (packageInfo.packageName == null ||
-        packageInfo.packageSource == null ||
-        packageInfo.packageReference == null
-      ) {
+    if ( packageInfo.packageName == null ||
+         packageInfo.packageSource == null ||
+         packageInfo.packageReference == null ) {
         log.error("Import is missing key package information")
         return packageImported
       } else {
@@ -237,7 +236,7 @@ class ImportService implements DataBinder {
           instanceIdentifiers: [
             instanceIdentifier
           ],
-          coverage: buildCoverage(lineAsArray, acceptedFields),
+          coverage: buildKBARTCoverage(lineAsArray, acceptedFields),
           url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
           firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
           embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
@@ -319,7 +318,7 @@ class ImportService implements DataBinder {
     return outputDate;
   }
 
-  private List buildCoverage(String[] lineAsArray, Map acceptedFields) {
+  private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
     String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
 
