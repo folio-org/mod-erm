@@ -31,7 +31,8 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
     final bindObj = this.getObjectToBind()
     log.debug("bindObj: ${bindObj}")
     importService.importPackageUsingErmSchema(bindObj as Map)
-    return render (status: 200)
+    Pkg pkg = Pkg.findByName(bindObj?.records[0]?.name)
+    return pkg?.id (status: 200)
   }
   
   def 'tsvParse' () {
