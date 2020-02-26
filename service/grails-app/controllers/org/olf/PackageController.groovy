@@ -30,9 +30,21 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
   def 'import' () {
     final bindObj = this.getObjectToBind()
     log.debug("bindObj: ${bindObj}")
+    Map bindObjMap = bindObj as Map
+    bindObjMap?.records[0]?.name = bindObjMap?.records[0]?.replace("\0", "");
+
+    log.debug("bindObj name: ${bindObj?.records[0]?.name}")
+    log.debug("bindObjMap name: ${bindObjMap?.records[0]?.name}")
     importService.importPackageUsingErmSchema(bindObj as Map)
+    log.debug("bindObj name: ${bindObj?.records[0]?.name}")
+    log.debug("bindObjMap name: ${bindObjMap?.records[0]?.name}")
+
+    log.debug("attempting to find package in ERM")
     Pkg pkg = Pkg.findByName(bindObj?.records[0]?.name)
-    return pkg?.id (status: 200)
+    log.debug("Package found?: ${pkg}")
+    log.debug("Package records?: ${pkg?.records}")
+    log.debug("Is package id a thing? : ${pkg?.id}")
+    return pkg?.id
   }
   
   def 'tsvParse' () {
