@@ -29,22 +29,26 @@ class PackageController extends OkapiTenantAwareController<Pkg> {
 
   def 'import' () {
     final bindObj = this.getObjectToBind()
-    log.debug("bindObj: ${bindObj}")
-    Map bindObjMap = bindObj as Map
-    bindObjMap?.records[0]?.name = bindObjMap?.records[0]?.replace("\0", "");
+    log.debug("Importing package: ${bindObj}")
+    def importResult = importService.importPackageUsingErmSchema(bindObj as Map)
 
-    log.debug("bindObj name: ${bindObj?.records[0]?.name}")
-    log.debug("bindObjMap name: ${bindObjMap?.records[0]?.name}")
-    importService.importPackageUsingErmSchema(bindObj as Map)
-    log.debug("bindObj name: ${bindObj?.records[0]?.name}")
-    log.debug("bindObjMap name: ${bindObjMap?.records[0]?.name}")
-
-    log.debug("attempting to find package in ERM")
-    Pkg pkg = Pkg.findByName(bindObj?.records[0]?.name)
-    log.debug("Package found?: ${pkg}")
-    log.debug("Package records?: ${pkg?.records}")
-    log.debug("Is package id a thing? : ${pkg?.id}")
-    return pkg?.id
+    log.debug("Import complete, attempting to find package in ERM")
+    String packageId;
+    switch(importResult.packageIds.size()) {
+      case 0:
+        log.error("Package import failed, no valid id returned");
+        break;
+      case 1:
+        packageId = importResult.packageIds[0]
+        break;
+      default:
+        log.warn("More than one package imported, can't return id")
+        break;
+    }
+    
+    Map result = [packageId: packageId]
+    render (result as JSON)
+    return;
   }
   
   def 'tsvParse' () {
