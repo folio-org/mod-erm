@@ -312,8 +312,8 @@ class ImportService implements DataBinder {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
     String index = getIndexFromFieldName(acceptedFields, fieldName)
     // Remember to discount any instances where the default '-1' still exists, don't want to grab the last index by mistake,
-    // We also don't want to return an empty string, we'd rather null
-    if (index.toInteger() == -1 || lineAsArray[index.toInteger()] == '') {
+    // We also don't want to return an empty string or whitespace, we'd rather null
+    if (index.toInteger() == -1 || lineAsArray[index.toInteger()].trim() == '') {
       return null;
     }
   return lineAsArray[index.toInteger()];
@@ -336,7 +336,6 @@ class ImportService implements DataBinder {
 
   private LocalDate parseDate(String date) {
     // We know that data coming in here matches yyyy, yyyy-mm or yyyy-mm-dd
-    log.debug("Attempting to parse date: ${date}")
     if (!date?.trim()) {
       return null;
     }
