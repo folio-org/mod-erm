@@ -173,7 +173,7 @@ class JobRunnerService implements EventPublisher {
             } catch (Exception e) {
               failJob(jid)
               log.error (e.message)
-              log.error ("Job execution failed")
+              log.error ("Job execution failed", e)
               notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
             } finally {
               jobContext.remove()
