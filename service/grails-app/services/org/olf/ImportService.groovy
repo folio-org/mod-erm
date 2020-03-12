@@ -7,6 +7,7 @@ import groovy.util.logging.Slf4j
 import org.olf.dataimport.erm.ErmPackageImpl
 import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageContentImpl
+import org.olf.dataimport.internal.HeaderImpl
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.dataimport.erm.PackageProvider
 import org.olf.dataimport.erm.Identifier
@@ -209,12 +210,12 @@ class ImportService implements DataBinder {
     final PackageProvider pkgPrv = new PackageProvider()
     pkgPrv.name = packageProvider
 
-    pkg.header = [
+    pkg.header = new HeaderImpl(
       packageName: packageName,
       packageSource: packageSource,
       packageSlug: packageReference,
       packageProvider: pkgPrv
-    ]
+    )
 
     String[] record;
     while ((record = file.readNext()) != null) {
