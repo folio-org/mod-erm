@@ -298,7 +298,6 @@ class ImportService implements DataBinder {
     }
 
     if (pkg.packageContents.size() > 0) {
-      log.debug("PACKAGE CONTENTS: ${pkg.packageContents}")
       def result = packageIngestService.upsertPackage(pkg)
       //TODO Use this information to return true if the package imported successfully or false otherwise
       packageImported = true
@@ -312,7 +311,9 @@ class ImportService implements DataBinder {
   private String getFieldFromLine(String[] lineAsArray, Map acceptedFields, String fieldName) {
     //ToDo potentially work out how to make this slightly less icky, it worked a lot nicer without @CompileStatic
     String index = getIndexFromFieldName(acceptedFields, fieldName)
-    if (lineAsArray[index.toInteger()] == '') {
+    // Remember to discount any instances where the default '-1' still exists, don't want to grab the last index by mistake,
+    // We also don't want to return an empty string, we'd rather null
+    if (index.toInteger() == -1 || lineAsArray[index.toInteger()] == '') {
       return null;
     }
   return lineAsArray[index.toInteger()];
@@ -336,7 +337,9 @@ class ImportService implements DataBinder {
   private LocalDate parseDate(String date) {
     // We know that data coming in here matches yyyy, yyyy-mm or yyyy-mm-dd
     log.debug("Attempting to parse date: ${date}")
-    if (!date?.trim()) return null;
+    if (!date?.trim()) {
+      return null;
+    }
 
     LocalDate outputDate
 
@@ -368,9 +371,9 @@ class ImportService implements DataBinder {
   private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
     String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
-
-    LocalDate endDateLocalDate = parseDate(startDate)
-    LocalDate startDateLocalDate = parseDate(endDate)
+    
+    LocalDate startDateLocalDate = parseDate(startDate)
+    LocalDate endDateLocalDate = parseDate(endDate)
     
     String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase()
 
