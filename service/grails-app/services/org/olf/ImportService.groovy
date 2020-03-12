@@ -247,32 +247,10 @@ class ImportService implements DataBinder {
       siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
       instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
 
-
       // Check that these aren't invalid identifiers, if they are, return an empty list
-      siblingInstanceIdentifier.validate();
-      instanceIdentifier.validate();
-
-      List instanceIdentifiers
-      if (!instanceIdentifier.hasErrors()) {
-        instanceIdentifiers = [instanceIdentifier]
-      } else {
-        instanceIdentifier.errors.allErrors.each { ObjectError error ->
-          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
-        }
-        instanceIdentifiers = []
-      }
-
-      List siblingInstanceIdentifiers
-      if (!siblingInstanceIdentifier.hasErrors()) {
-        siblingInstanceIdentifiers = [siblingInstanceIdentifier]
-      } else {
-        siblingInstanceIdentifier.errors.allErrors.each { ObjectError error ->
-          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
-        }
-        siblingInstanceIdentifiers = []
-      }
-
-
+      List instanceIdentifiers = identifierValidator(instanceIdentifier)
+      List siblingInstanceIdentifiers = identifierValidator(siblingInstanceIdentifier)
+      
       PackageContentImpl pkgLine = new PackageContentImpl(
         title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
         siblingInstanceIdentifiers: siblingInstanceIdentifiers,
@@ -395,6 +373,20 @@ class ImportService implements DataBinder {
       }
       return [];
     }
-    
+  }
+
+  private List identifierValidator(Identifier identifier) {
+    identifier.validate();
+
+    List identifiers
+    if (!identifier.hasErrors()) {
+      identifiers = [identifier]
+    } else {
+      identifier.errors.allErrors.each { ObjectError error ->
+        log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
+      }
+      identifiers = []
+    }
+    return identifiers;
   }
 }
