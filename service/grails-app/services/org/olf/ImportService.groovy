@@ -224,9 +224,6 @@ class ImportService implements DataBinder {
       Identifier instanceIdentifier = new Identifier()
       List kbartCoverageList
 
-      boolean kbartCoverageHasErrors = false;
-      def kbartCoverageErrors
-
       // Instance/Sibling instance identifiers AND coverage rely on the media type, monograph vs serial 
       String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia')
       if (
@@ -243,27 +240,42 @@ class ImportService implements DataBinder {
       } else {          
           siblingInstanceIdentifier.namespace = 'ISSN'
           instanceIdentifier.namespace = 'ISSN'
-          CoverageStatement kbartCoverage = buildKBARTCoverage(lineAsArray, acceptedFields)
-          kbartCoverage.validate();
-
-          kbartCoverageHasErrors = kbartCoverage.hasErrors()
-          kbartCoverageErrors = kbartCoverage.errors
-
-          kbartCoverageList = [kbartCoverage]
+          kbartCoverageList = buildKBARTCoverage(lineAsArray, acceptedFields)
       }
 
       siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
       instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
 
 
+      // Check that these aren't invalid identifiers, if they are, return an empty list
+      siblingInstanceIdentifier.validate();
+      instanceIdentifier.validate();
+
+      List instanceIdentifiers
+      if (!instanceIdentifier.hasErrors()) {
+        instanceIdentifiers = [instanceIdentifier]
+      } else {
+        instanceIdentifier.errors.allErrors.each { ObjectError error ->
+          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
+        }
+        instanceIdentifiers = []
+      }
+
+      List siblingInstanceIdentifiers
+      if (!siblingInstanceIdentifier.hasErrors()) {
+        siblingInstanceIdentifiers = [siblingInstanceIdentifier]
+      } else {
+        siblingInstanceIdentifier.errors.allErrors.each { ObjectError error ->
+          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
+        }
+        siblingInstanceIdentifiers = []
+      }
+
+
       PackageContentImpl pkgLine = new PackageContentImpl(
         title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
-        siblingInstanceIdentifiers: [
-          siblingInstanceIdentifier
-        ],
-        instanceIdentifiers: [
-          instanceIdentifier
-        ],
+        siblingInstanceIdentifiers: siblingInstanceIdentifiers,
+        instanceIdentifiers: instanceIdentifiers,
         coverage: kbartCoverageList,
         url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
         firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
@@ -281,17 +293,11 @@ class ImportService implements DataBinder {
         firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
       )
 
-      if (!kbartCoverageHasErrors) {
-        // We add this information to our package
-        pkg.packageContents << pkgLine
-      } else {
-        kbartCoverageErrors.allErrors.each { ObjectError error ->
-          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
-        }
-      }
+      pkg.packageContents << pkgLine
     }
 
     if (pkg.packageContents.size() > 0) {
+      log.debug("PACKAGE CONTENTS: ${pkg.packageContents}")
       def result = packageIngestService.upsertPackage(pkg)
       //TODO Use this information to return true if the package imported successfully or false otherwise
       packageImported = true
@@ -358,7 +364,7 @@ class ImportService implements DataBinder {
     return outputDate;
   }
 
-  private CoverageStatement buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
+  private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
     String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
 
@@ -375,6 +381,17 @@ class ImportService implements DataBinder {
       endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
       endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
     )
-    return (cs);
+
+    cs.validate()
+    
+    if (!cs.hasErrors()) {
+      return ([cs]);
+    } else {
+      cs.errors.allErrors.each { ObjectError error ->
+        log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
+      }
+      return [];
+    }
+    
   }
 }
