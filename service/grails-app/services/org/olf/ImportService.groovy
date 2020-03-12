@@ -152,8 +152,7 @@ class ImportService implements DataBinder {
 
     // peek gets line without removing from iterator
     // readNext gets line and removes it from the csvReader object
-    String headerValue = file.readNext()[0]
-    def header = (headerValue).split("\t")
+    String[] header = file.readNext()
 
     // Create an object containing fields we can accept and their mappings in our domain structure, as well as indices in the imported file, with -1 if not found
     Map acceptedFields = [
@@ -219,59 +218,86 @@ class ImportService implements DataBinder {
 
     String[] record;
     while ((record = file.readNext()) != null) {
-      for (String value : record) {
-        def lineAsArray = value.split("\t")
+      def lineAsArray = record
 
-        Identifier siblingInstanceIdentifier = new Identifier()
-        Identifier instanceIdentifier = new Identifier()
+      Identifier siblingInstanceIdentifier = new Identifier()
+      Identifier instanceIdentifier = new Identifier()
+      List kbartCoverageList
 
-        if (
-          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'monograph' ||
-          getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase() == 'book'
-        ) {
-            siblingInstanceIdentifier.namespace = 'ISBN'
-            instanceIdentifier.namespace = 'ISBN'
-        } else {          
-            siblingInstanceIdentifier.namespace = 'ISSN'
-            instanceIdentifier.namespace = 'ISSN'
-        }
+      boolean kbartCoverageHasErrors = false;
+      def kbartCoverageErrors
 
-        siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
-        instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
-        
-        PackageContentImpl pkgLine = new PackageContentImpl(
-          title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
-          siblingInstanceIdentifiers: [
-            siblingInstanceIdentifier
-          ],
-          instanceIdentifiers: [
-            instanceIdentifier
-          ],
-          coverage: buildKBARTCoverage(lineAsArray, acceptedFields),
-          url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
-          firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
-          embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
-          coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
-          coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
-          instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
-          instanceMedium: "electronic",
+      // Instance/Sibling instance identifiers AND coverage rely on the media type, monograph vs serial 
+      String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia')
+      if (
+        instanceMedia.toLowerCase() == 'monograph' ||
+        instanceMedia.toLowerCase() == 'book'
+      ) {
+          siblingInstanceIdentifier.namespace = 'ISBN'
+          instanceIdentifier.namespace = 'ISBN'
+          if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
+            log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
+          }
+          kbartCoverageList = []
 
-          dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
-          dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+      } else {          
+          siblingInstanceIdentifier.namespace = 'ISSN'
+          instanceIdentifier.namespace = 'ISSN'
+          CoverageStatement kbartCoverage = buildKBARTCoverage(lineAsArray, acceptedFields)
+          kbartCoverage.validate();
 
-          monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
-          monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
-          firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
-        )
+          kbartCoverageHasErrors = kbartCoverage.hasErrors()
+          kbartCoverageErrors = kbartCoverage.errors
 
+          kbartCoverageList = [kbartCoverage]
+      }
+
+      siblingInstanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'siblingInstanceIdentifiers')
+      instanceIdentifier.value = getFieldFromLine(lineAsArray, acceptedFields, 'instanceIdentifiers')
+
+
+      PackageContentImpl pkgLine = new PackageContentImpl(
+        title: getFieldFromLine(lineAsArray, acceptedFields, 'title'),
+        siblingInstanceIdentifiers: [
+          siblingInstanceIdentifier
+        ],
+        instanceIdentifiers: [
+          instanceIdentifier
+        ],
+        coverage: kbartCoverageList,
+        url: getFieldFromLine(lineAsArray, acceptedFields, 'url'),
+        firstAuthor: getFieldFromLine(lineAsArray, acceptedFields, 'firstAuthor'),
+        embargo: getFieldFromLine(lineAsArray, acceptedFields, 'embargo'),
+        coverageDepth: getFieldFromLine(lineAsArray, acceptedFields, 'coverageDepth'),
+        coverageNote: getFieldFromLine(lineAsArray, acceptedFields, 'coverageNote'),
+        instanceMedia: getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia'),
+        instanceMedium: "electronic",
+
+        dateMonographPublished: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublished'),
+        dateMonographPublishedPrint: getFieldFromLine(lineAsArray, acceptedFields, 'dateMonographPublishedPrint'),
+
+        monographVolume: getFieldFromLine(lineAsArray, acceptedFields, 'monographVolume'),
+        monographEdition: getFieldFromLine(lineAsArray, acceptedFields, 'monographEdition'),
+        firstEditor: getFieldFromLine(lineAsArray, acceptedFields, 'firstEditor')
+      )
+
+      if (!kbartCoverageHasErrors) {
         // We add this information to our package
         pkg.packageContents << pkgLine
+      } else {
+        kbartCoverageErrors.allErrors.each { ObjectError error ->
+          log.error "${ messageSource.getMessage(error, LocaleContextHolder.locale) }"
+        }
       }
     }
 
-    def result = packageIngestService.upsertPackage(pkg)
-    //TODO Use this information to return true if the package imported successfully or false otherwise
-    packageImported = true
+    if (pkg.packageContents.size() > 0) {
+      def result = packageIngestService.upsertPackage(pkg)
+      //TODO Use this information to return true if the package imported successfully or false otherwise
+      packageImported = true
+    } else {
+      log.error("Package contents empty, skipping package creation")
+    }
     
     return (packageImported)
   }
@@ -302,6 +328,9 @@ class ImportService implements DataBinder {
 
   private LocalDate parseDate(String date) {
     // We know that data coming in here matches yyyy, yyyy-mm or yyyy-mm-dd
+    log.debug("Attempting to parse date: ${date}")
+    if (!date?.trim()) return null;
+
     LocalDate outputDate
 
     DateTimeFormatter yearFormat = new DateTimeFormatterBuilder()
@@ -329,46 +358,23 @@ class ImportService implements DataBinder {
     return outputDate;
   }
 
-  private List buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
+  private CoverageStatement buildKBARTCoverage(String[] lineAsArray, Map acceptedFields) {
     String startDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate')
     String endDate = getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endDate')
 
-    LocalDate endDateLocalDate
-    if (endDate != null) {
-      endDateLocalDate = parseDate(endDate)
-    } else {
-      endDateLocalDate = null
-    }
-
-    LocalDate startDateLocalDate
-    if (startDate != null) {
-      startDateLocalDate = parseDate(startDate)
-    } else {
-      startDateLocalDate = null
-    }
-
+    LocalDate endDateLocalDate = parseDate(startDate)
+    LocalDate startDateLocalDate = parseDate(endDate)
+    
     String instanceMedia = getFieldFromLine(lineAsArray, acceptedFields, 'instanceMedia').toLowerCase()
 
-    if (
-      (instanceMedia != 'monograph' ||
-      instanceMedia != 'book') &&
-      startDateLocalDate != null
-    ) {
-      return ([
-        new CoverageStatement(
-          startDate: startDateLocalDate,
-          startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
-          startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
-          endDate: endDateLocalDate,
-          endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
-          endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
-        )
-      ]);
-    } else {
-      if (getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startDate') != '') {
-        log.error("Unexpected coverage information for for title: ${getFieldFromLine(lineAsArray, acceptedFields, 'title')} of type: ${instanceMedia}")
-      }
-      return [];
-    } 
+    CoverageStatement cs = new CoverageStatement(
+      startDate: startDateLocalDate,
+      startVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startVolume'),
+      startIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.startIssue'),
+      endDate: endDateLocalDate,
+      endVolume: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endVolume'),
+      endIssue: getFieldFromLine(lineAsArray, acceptedFields, 'CoverageStatement.endIssue')
+    )
+    return (cs);
   }
 }
