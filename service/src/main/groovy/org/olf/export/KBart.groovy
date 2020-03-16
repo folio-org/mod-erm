@@ -266,9 +266,6 @@ public class KBart implements Serializable {
             identifierValue = " "
           }
 
-          /* if (ti.subType.value.equals("electronic")) {
-            kbart.online_identifier = identifierValue
-          } */
           if (ti.subType.value.equals("print")) {
             kbart.print_identifier = identifierValue
           }
