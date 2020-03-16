@@ -243,13 +243,13 @@ public class KBart implements Serializable {
           while (iter.hasNext()) {
             IdentifierOccurrence thisIdent = iter.next()
             Identifier ident =  thisIdent.identifier
-              if (ident.ns.value.equals("eissn")) {
+              if (ident?.ns?.value == "eissn") {
                 eissn = ident.value
-              } else if (ident.ns.value.equals("issn")) {
+              } else if (ident?.ns?.value == "issn") {
                 issn = ident.value
-              } else if (ident.ns.value.equals("isbn")) {
+              } else if (ident?.ns?.value == "isbn") {
                 isbn = ident.value
-              } else if (ident.ns.value.equals("doi")) {
+              } else if (ident?.ns?.value == "doi") {
                 doi = ident.value
               }
           }
@@ -266,7 +266,7 @@ public class KBart implements Serializable {
             identifierValue = " "
           }
 
-          if (ti.subType.value.equals("print")) {
+          if (ti.subType?.value == "print") {
             kbart.print_identifier = identifierValue
           }
           else {
