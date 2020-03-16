@@ -253,7 +253,7 @@ public class KBart implements Serializable {
                 doi = ident.value
               }
           }
-          
+
           if (eissn) {
             identifierValue = eissn
           } else if (issn) {
@@ -266,10 +266,10 @@ public class KBart implements Serializable {
             identifierValue = " "
           }
 
-          if (ti.subType.value.equals("electronic")) {
+          /* if (ti.subType.value.equals("electronic")) {
             kbart.online_identifier = identifierValue
-          }
-          else if (ti.subType.value.equals("print")) {
+          } */
+          if (ti.subType.value.equals("print")) {
             kbart.print_identifier = identifierValue
           }
           else {
