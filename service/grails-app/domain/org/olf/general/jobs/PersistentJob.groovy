@@ -21,8 +21,7 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
     
   String name
   
-  //  @CategoryId('PersistentJob.Status',defaultInternal=true) // Workaround for a bug in toolkit creating a category for each extension even when not specified.
-  @CategoryId(defaultInternal=true)
+  @CategoryId(value='PersistentJob.Status', defaultInternal=true) // Workaround for a bug in toolkit creating a category for each extension even when not specified.
   @Defaults(['Queued', 'In progress', 'Ended'])
   RefdataValue status
   
@@ -30,8 +29,7 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
   Instant started
   Instant ended
   
-  //  @CategoryId('PersistentJob.Result',defaultInternal=true) // Workaround for a bug in toolkit creating a category for each extension even when not specified.
-  @CategoryId(defaultInternal=true)
+  @CategoryId(value='PersistentJob.Result', defaultInternal=true) // Workaround for a bug in toolkit creating a category for each extension even when not specified.
   @Defaults(['Success', 'Partial success', 'Failure', 'Interrupted'])
   RefdataValue result
   
