@@ -78,6 +78,7 @@ where ( exists ( select pci.id
     Map result = null
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)")
+      // TODO this will need to rely on the trusted status of the import -- as to whether it's true or not
       result = packageIngestService.upsertPackage(package_data, rkb_name)
     }
     log.debug("onPackageChange(${rkb_name},...) returning ${result}")

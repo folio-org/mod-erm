@@ -38,8 +38,8 @@ class PackageIngestService {
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
 
-  public Map upsertPackage(PackageSchema package_data) {
-    return upsertPackage(package_data,'LOCAL',true)
+  public Map upsertPackage(PackageSchema package_data, boolean trustedSourceTI) {
+    return upsertPackage(package_data,'LOCAL',true, trustedSourceTI)
   }
 
   private static final def countChanges = ['accessStart', 'accessEnd']
@@ -53,7 +53,7 @@ class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false) {
+  public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false, boolean trustedSourceTI = false) {
 
     def result = [
       startTime: System.currentTimeMillis(),
@@ -76,7 +76,9 @@ class PackageIngestService {
        kb = new RemoteKB( name:remotekbname,
                           rectype: new Long(1),
                           active: Boolean.TRUE,
-                          readonly:readOnly).save(flush:true, failOnError:true)
+                          trustedSourceTI: Boolean.FALSE,
+                          readonly:readOnly
+                          trustedSourceTI:trustedSourceTI).save(flush:true, failOnError:true)
       }
 
       result.updateTime = System.currentTimeMillis()
