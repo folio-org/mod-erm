@@ -33,6 +33,8 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
 
   // Mark KB as protected/readonly, e.g. the LOCAL KB
   boolean readonly = false
+  // Mark KB as a trusted source of title instance metadata
+  boolean trustedSourceTI = false
   // Harvesting role
   /** Does this remote KB support harvesting */
   Boolean supportsHarvesting
@@ -64,6 +66,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
              syncStatus column:'rkb_sync_status'
               lastCheck column:'rkb_last_check'
                readonly column:'rkb_readonly'
+        trustedSourceTI column:'rkb_trusted_source_ti'
   }
 
   static constraints = {
@@ -82,6 +85,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
              syncStatus(nullable:true, blank:false)
               lastCheck(nullable:true, blank:false)
                readonly(nullable:true, blank:false, bindable:false)
+        trustedSourceTI(nullable: false, blank: false)
   }
 
 
