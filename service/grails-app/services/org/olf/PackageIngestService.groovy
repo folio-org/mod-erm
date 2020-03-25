@@ -76,8 +76,7 @@ class PackageIngestService {
        kb = new RemoteKB( name:remotekbname,
                           rectype: new Long(1),
                           active: Boolean.TRUE,
-                          trustedSourceTI: Boolean.FALSE,
-                          readonly:readOnly
+                          readonly:readOnly,
                           trustedSourceTI:trustedSourceTI).save(flush:true, failOnError:true)
       }
 
