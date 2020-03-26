@@ -26,7 +26,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   public void freshenPackageData(String source_name,
                                  String base_url,
                                  String current_cursor,
-                                 KBCache cache) {
+                                 KBCache cache
+                                 boolean trustedSourceTI) {
 
     log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}")
     def jpf_api = new HTTPBuilder(base_url)
@@ -62,7 +63,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           // println "Success! ${resp.status} ${xml}"
           log.debug("got page of data from OAI, cursor=${cursor}, ...")
 
-          Map page_result = processPage(cursor, xml, source_name, cache)
+          Map page_result = processPage(cursor, xml, source_name, cache, trustedSourceTI)
 
 
           log.debug("processPage returned, processed ${page_result.count} packages, cursor will be ${page_result.new_cursor}")
@@ -102,7 +103,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   }
 
 
-  private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache) {
+  private Map processPage(String cursor, Object oai_page, String source_name, KBCache cache, boolean trustedSourceTI) {
 
     final SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
 
@@ -131,7 +132,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
         // ToDo: Decide what to do about deleted records
       }
       else {
-        cache.onPackageChange(source_name, json_package_description)
+        cache.onPackageChange(source_name, json_package_description, trustedSourceTI)
       }
 
       if ( datestamp > result.new_cursor ) {
