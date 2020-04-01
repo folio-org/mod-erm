@@ -26,8 +26,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   public void freshenPackageData(String source_name,
                                  String base_url,
                                  String current_cursor,
-                                 KBCache cache
-                                 boolean trustedSourceTI) {
+                                 KBCache cache,
+                                 boolean trustedSourceTI = false) {
 
     log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}")
     def jpf_api = new HTTPBuilder(base_url)

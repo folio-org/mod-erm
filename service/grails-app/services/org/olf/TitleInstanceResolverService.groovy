@@ -12,6 +12,9 @@ import org.olf.kb.Work
 import grails.gorm.transactions.Transactional
 import grails.web.databinding.DataBinder
 
+
+import groovy.json.*
+
 /**
  * This service works at the module level, it's often called without a tenant context.
  */
@@ -75,7 +78,7 @@ class TitleInstanceResolverService implements DataBinder{
    *     } ]
    *   }
    */
-  public TitleInstance resolve(ContentItemSchema citation) {
+  public TitleInstance resolve(ContentItemSchema citation, boolean trustedSourceTI) {
     // log.debug("TitleInstanceResolverService::resolve(${citation})");
     TitleInstance result = null;
 
@@ -116,7 +119,7 @@ class TitleInstanceResolverService implements DataBinder{
         case(1):
           log.debug("Exact match. Enrich title.")
           result = candidate_list.get(0)
-          checkForEnrichment(result, citation)
+          checkForEnrichment(result, citation, trustedSourceTI)
           break;
         default:
           log.warn("title matched ${num_matches} records with a threshold >= ${MATCH_THRESHOLD} . Unable to continue. Matching IDs: ${candidate_list.collect { it.id }}. class one identifier count: ${num_class_one_identifiers}");
@@ -284,8 +287,23 @@ class TitleInstanceResolverService implements DataBinder{
    * an identifier, we will need to add identifiers to that record when we see a record that
    * suggests identifiers for that title match.
    */ 
-  private void checkForEnrichment(TitleInstance title, ContentItemSchema citation) {
-    return
+  private void checkForEnrichment(TitleInstance title, ContentItemSchema citation, boolean trustedSourceTI) {
+    log.debug("Checking for enrichment of Title Instance: ${title} :: trusted: ${trustedSourceTI}")
+    if (trustedSourceTI != false) {
+      log.debug("We've got to this bit now")
+      log.debug("TITLE INSTANCE title: ${title.name}")
+      log.debug("TITLE INSTANCE firstAuthor: ${title.firstAuthor}")
+      log.debug("TITLE INSTANCE firstEditor: ${title.firstEditor}")
+      log.debug("TITLE INSTANCE monographEdition: ${title.monographEdition}")
+      log.debug("TITLE INSTANCE monographVolume: ${title.monographVolume}")
+      log.debug("CITATION title: ${citation.title}")
+      log.debug("CITATION dateMonographPublished: ${citation.dateMonographPublished}")
+      log.debug("CITATION firstAuthor: ${citation.firstAuthor}")
+      log.debug("CITATION firstEditor: ${citation.firstEditor}")
+      log.debug("CITATION monographEdition: ${citation.monographEdition}")
+      log.debug("CITATION monographVolume: ${citation.monographVolume}")
+    }
+    return null;
   }
 
   /**

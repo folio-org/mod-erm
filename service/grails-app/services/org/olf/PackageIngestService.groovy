@@ -120,7 +120,7 @@ class PackageIngestService {
 
           // resolve may return null, used to throw exception which causes the whole package to be rejected. Needs
           // discussion to work out best way to handle.
-          TitleInstance title = titleInstanceResolverService.resolve(pc)
+          TitleInstance title = titleInstanceResolverService.resolve(pc, trustedSourceTI)
 
           if ( title != null ) {
 

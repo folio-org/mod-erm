@@ -74,7 +74,7 @@ where ( exists ( select pci.id
    *
    *  @return map containing information about the packageId of the newly loaded or existing updated package
    */
-  public Map onPackageChange(String rkb_name, PackageSchema package_data, boolean trustedSourceTI) {
+  public Map onPackageChange(String rkb_name, PackageSchema package_data, boolean trustedSourceTI = false) {
     Map result = null
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)")
