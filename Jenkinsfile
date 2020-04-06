@@ -106,12 +106,10 @@ pipeline {
       }
     }
 
-    if (env.doKubeDeploy) {
       stage('Kubernetes Deploy'){
         when {
-          anyOf {
-            branch 'FOLIO-2546' // testing with branch
-          }
+          branch 'FOLIO-2546' // testing with branch
+          expression { return env.doKubeDeploy }  
         }
         steps {
           echo "Deploying to kubernetes cluster"
@@ -123,7 +121,6 @@ pipeline {
                     "}]")
         }
       }
-    }
 
   } // end stages
 
