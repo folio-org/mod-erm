@@ -80,6 +80,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   Org vendor
 
   Set<Entitlement> items
+  Set<String> alternateNames
   
   private Period currentPeriod
   Period getCurrentPeriod () {
@@ -158,6 +159,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   }
   
   static hasMany = [
+         alternateNames: AlternateName,
                   items: Entitlement,
            historyLines: SAEventHistory,
                contacts: InternalContact,
@@ -174,6 +176,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
   ]
 
   static mappedBy = [
+    alternateNames: 'owner',
     items: 'owner',
     historyLines: 'owner',
     contacts: 'owner',
@@ -204,6 +207,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
                   vendor column:'sa_vendor_fk'
        attachedLicenceId column:'sa_licence_fk'
 	   		     licenseNote column:'sa_license_note'
+          alternateNames cascade: 'all-delete-orphan'
                    items cascade: 'all-delete-orphan'
                 contacts cascade: 'all-delete-orphan'
             historyLines cascade: 'all-delete-orphan'
