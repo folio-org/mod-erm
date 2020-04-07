@@ -4,6 +4,7 @@ import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes=['type', 'length', 'unit'])
 class EmbargoStatement {
+  String id
   // Expose this enum.
   public final enum Type {
     P,

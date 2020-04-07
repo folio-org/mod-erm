@@ -4,6 +4,7 @@ import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes=['movingWallStart', 'movingWallEnd'])
 class Embargo {
+  String id
   EmbargoStatement movingWallStart
   EmbargoStatement movingWallEnd
   
