@@ -4,13 +4,14 @@ import org.olf.kb.converters.EmbargoConverter
 
 import grails.databinding.SimpleMapDataBindingSource
 import grails.persistence.Entity
+import grails.plugin.json.view.test.JsonViewTest
 import grails.testing.gorm.DataTest
 import grails.web.databinding.DataBindingUtils
 import grails.web.databinding.GrailsWebDataBinder
 import spock.lang.Specification
 import spock.lang.Unroll
 
-class EmbargoSpec extends Specification implements DataTest {
+class EmbargoSpec extends Specification implements DataTest, JsonViewTest {
 
   GrailsWebDataBinder binder
   
@@ -36,7 +37,7 @@ class EmbargoSpec extends Specification implements DataTest {
     then: 'Embargo converts to string as #expected and validity is #valid'
       assert te.embargo?.toString() == expected
       assert ((te.embargo?.validate(deepValidate:true, failOnError: true) as boolean) == valid)
-      
+    
     where:
       
       embargo       | expected      | valid
@@ -50,6 +51,19 @@ class EmbargoSpec extends Specification implements DataTest {
       'R10M;P9D'    | 'R10M;P9D'    | true
       'R4Y;R9D'     | null          | false
       'P3M;P9D'     | null          | false
+  }
+  
+  def 'Test Gson view template' () {    
+    when:"Gson is rendered"
+      def result = render(template: "/embargo/embargo", model:['embargo': Embargo.parse('R10Y;P30M')])
+      
+    then:"The json is correct"
+      result.json.movingWallStart.type == null
+      result.json.movingWallStart.length == 10
+      result.json.movingWallStart.unit == 'Years'
+      result.json.movingWallEnd.type == null
+      result.json.movingWallEnd.length == 30
+      result.json.movingWallEnd.unit == 'Months'
   }
   
 }

@@ -1,11 +1,7 @@
 package org.olf.kb
 
 import groovy.transform.EqualsAndHashCode
-import groovy.util.logging.Slf4j
-import java.time.Period
-import java.time.temporal.ChronoUnit
 
-@Slf4j
 @EqualsAndHashCode(includes=['type', 'length', 'unit'])
 class EmbargoStatement {
   // Expose this enum.
@@ -37,12 +33,10 @@ class EmbargoStatement {
   
   public static final REGEX = /(P|R)(\d+)(D|M|Y)/
   public static final EmbargoStatement parse( String embargoStatement ) {
-    log.info "Attempting to parse ${embargoStatement} as EmbargoStatement"
     def match = embargoStatement ? embargoStatement.toUpperCase() =~ "^${REGEX}\$" : null
     
     // Fail fast if null or invalid formatting.
     if (!match) {
-      log.info "Failing fast and returning null"
       return null
     }
     
@@ -53,8 +47,6 @@ class EmbargoStatement {
       unit:   Unit.valueOf(match[0][3])
     )
     
-    
-    log.info "Returning ${stmt}"
     stmt
   }
   
