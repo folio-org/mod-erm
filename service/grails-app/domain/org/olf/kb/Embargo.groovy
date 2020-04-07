@@ -39,9 +39,9 @@ class Embargo {
   }  
   
   static mapping = {
-    id column:'est_id', generator: 'uuid2', length:36
+    id column:'emb_id', generator: 'uuid2', length:36
     movingWallStart column:'emb_start_fk'
-    movingWalleEnd column:'emb_end_fk'
+    movingWallEnd column:'emb_end_fk'
   }
   
   static constraints = {
