@@ -5,6 +5,9 @@ import groovy.transform.EqualsAndHashCode
 @EqualsAndHashCode(includes=['movingWallStart', 'movingWallEnd'])
 class Embargo {
   String id
+  
+  static belongsTo = ['pci', PackageContentItem]
+  
   EmbargoStatement movingWallStart
   EmbargoStatement movingWallEnd
   
