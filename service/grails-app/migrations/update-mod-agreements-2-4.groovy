@@ -9,6 +9,6 @@ databaseChangeLog = {
   }
 
   changeSet(author: "claudia (manual)", id: "202004061829-02") {
-       addForeignKeyConstraint(baseColumnNames: "subscription_agreement_id", baseTableName: "subscription_agreement_alternate_names", constraintName: "FKbwixs452hfe48k069eip5xgx0", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement"
+       addForeignKeyConstraint(baseColumnNames: "subscription_agreement_id", baseTableName: "subscription_agreement_alternate_names", constraintName: "FKbwixs452hfe48k069eip5xgx0", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
   }
 }
