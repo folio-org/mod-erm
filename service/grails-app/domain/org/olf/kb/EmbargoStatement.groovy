@@ -1,10 +1,10 @@
 package org.olf.kb
 
+import grails.gorm.MultiTenant
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes=['type', 'length', 'unit'])
-class EmbargoStatement {
-  String id
+class EmbargoStatement implements MultiTenant<EmbargoStatement> {
   // Expose this enum.
   public final enum Type {
     P,
@@ -15,6 +15,7 @@ class EmbargoStatement {
     D, M, Y
   }
   
+  String id
   Type type
   Unit unit
   int length

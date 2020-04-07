@@ -1,15 +1,26 @@
 package org.olf.kb
 
+import grails.gorm.MultiTenant
 import groovy.transform.EqualsAndHashCode
 
 @EqualsAndHashCode(includes=['movingWallStart', 'movingWallEnd'])
-class Embargo {
-  String id
+class Embargo implements MultiTenant<Embargo> {
+  String id  
+  EmbargoStatement movingWallStart
+  EmbargoStatement movingWallEnd
   
   static belongsTo = ['pci', PackageContentItem]
   
-  EmbargoStatement movingWallStart
-  EmbargoStatement movingWallEnd
+  static mapping = {
+    id column:'emb_id', generator: 'uuid2', length:36
+    movingWallStart column:'emb_start_fk'
+    movingWallEnd column:'emb_end_fk'
+  }
+  
+  static constraints = {
+    movingWallStart nullable: true
+    movingWallEnd nullable: true
+  }
   
   public static final String REGEX = /^(((P|R)\d+(D|M|Y))|(R\d+(D|M|Y);P\d+(D|M|Y)))$/
   
@@ -36,16 +47,5 @@ class Embargo {
     String val = movingWallStart ? "${movingWallStart}" : ""
     val += movingWallEnd ? (val ? ';' : '') + "${movingWallEnd}" : ''
     val
-  }  
-  
-  static mapping = {
-    id column:'emb_id', generator: 'uuid2', length:36
-    movingWallStart column:'emb_start_fk'
-    movingWallEnd column:'emb_end_fk'
-  }
-  
-  static constraints = {
-    movingWallStart nullable: true
-    movingWallEnd nullable: true
   }
 }
