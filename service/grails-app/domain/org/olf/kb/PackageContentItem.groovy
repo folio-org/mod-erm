@@ -32,6 +32,9 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
 
   // A field primarily to deposit KBART::CoverageDepth type data
   String depth
+  
+  // KBART::Embargo data
+  Embargo embargo
 
   static mapping = {
                   pkg column:'pci_pkg_fk'
