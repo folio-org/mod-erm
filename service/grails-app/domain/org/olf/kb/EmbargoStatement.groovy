@@ -15,9 +15,17 @@ class EmbargoStatement {
   }
   
   public final enum Unit {
-    D,
-    M,
-    Y
+    D ('Days'), M ('Months'), Y ('Years')
+    
+    private String fullname;
+    private Unit(String fullname) {
+        this.fullname = fullname;
+    }
+   
+    @Override
+    public String toString(){
+        return fullname;
+    }
   }
   
   Type type
@@ -61,6 +69,6 @@ class EmbargoStatement {
   }
   
   String toString() {
-    "${type}${length}${unit}"
+    "${type}${length}${unit.name}"
   }
 }

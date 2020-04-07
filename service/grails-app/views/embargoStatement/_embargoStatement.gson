@@ -1,0 +1,8 @@
+import org.olf.kb.EmbargoStatement
+
+import groovy.transform.*
+
+@Field EmbargoStatement embargoStatement
+json g.render(embargoStatement, [excludes:['id', 'unit']) {
+  unit "${embargoStatement.unit}"
+}
