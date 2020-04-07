@@ -62,9 +62,7 @@ databaseChangeLog = {
 
   changeSet(author: "sosguthorpe (generated)", id: "1586289817497-3") {
     addColumn(tableName: "package_content_item") {
-      column(name: "pci_embargo_fk", type: "varchar(36)") {
-        constraints(nullable: "false")
-      }
+      column(name: "pci_embargo_fk", type: "varchar(36)")
     }
   }
 

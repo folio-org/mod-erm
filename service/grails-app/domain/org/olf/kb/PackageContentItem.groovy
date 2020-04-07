@@ -50,15 +50,16 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   }
 
   static constraints = {
-                  pkg(nullable:false, blank:false)
-                  pti(nullable:false, blank:false)
-          accessStart(nullable:true, blank:false)
-            accessEnd(nullable:true, blank:false)
+                  pkg(nullable:false)
+                  pti(nullable:false)
+          accessStart(nullable:true)
+            accessEnd(nullable:true)
                  note(nullable:true, blank:false)
                 depth(nullable:true, blank:false)
-       addedTimestamp(nullable:true, blank:false)
-     removedTimestamp(nullable:true, blank:false)
-    lastSeenTimestamp(nullable:true, blank:false)
+       addedTimestamp(nullable:true)
+     removedTimestamp(nullable:true)
+    lastSeenTimestamp(nullable:true)
+              embargo(nullable:true)
   }
 
   /**
