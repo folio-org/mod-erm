@@ -5,17 +5,11 @@ databaseChangeLog = {
                 constraints(nullable: "false")
             }
 
-            column(name: "an_version", type: "BIGINT") {
-                constraints(nullable: "false")
-            }
-
-            column(name: "an_owner_fk", type: "VARCHAR(36)")
-
             column(name: "an_name", type: "VARCHAR(255)")
         }
   }
 
   changeSet(author: "claudia (manual)", id: "202004061829-02") {
-        addForeignKeyConstraint(baseColumnNames: "an_owner_fk", baseTableName: "alternate_name", constraintName: "an_to_sa_fk", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
+        addForeignKeyConstraint(baseColumnNames: "an_id", baseTableName: "alternate_name", constraintName: "an_to_sa_fk", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sa_id", referencedTableName: "subscription_agreement")
   }
 }
