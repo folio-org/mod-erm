@@ -41,7 +41,7 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
                   pti column:'pci_pti_fk'
           accessStart column:'pci_access_start'
             accessEnd column:'pci_access_end'
-              embargo column:'pci_pkg_fk'
+              embargo column:'pci_embargo_fk'
                  note column:'pci_note'
                 depth column:'pci_depth'
        addedTimestamp column:'pci_added_ts'
