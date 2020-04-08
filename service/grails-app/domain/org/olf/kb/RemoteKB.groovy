@@ -97,7 +97,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
   private static final Set<String> updateableWhenReadOnly = ['trustedSourceTI']
   def beforeUpdate() {
     def dissallowedProperties = (updateableWhenReadOnly + this.dirtyPropertyNames) - updateableWhenReadOnly.intersect( this.dirtyPropertyNames )
-    if (readOnly == true && dissallowedProperties) {
+    if (readonly == true && dissallowedProperties) {
       log.debug("Denying update to KB ${this.id} / ${this.name} because 'readonly' is set to 'true' and updates were attempted to ${dissallowedProperties}")
       return false
     }
