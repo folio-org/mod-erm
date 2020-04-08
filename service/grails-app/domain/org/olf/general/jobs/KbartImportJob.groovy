@@ -17,6 +17,7 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
   String packageSource
   String packageReference
   String packageProvider
+  boolean trustedSourceTI
 
   final Closure getWork() {
     
@@ -75,7 +76,6 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
   static constraints = {
       fileUpload (nullable:false)
       packageProvider (nullable:true)
-
   }
 
   static mapping = {
@@ -84,5 +84,6 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
                packageSource column:'package_source'
             packageReference column:'package_reference'
             packageProvider column: 'package_provider'
+            trustedSourceTI column: 'trusted_source_ti'
   }
 }

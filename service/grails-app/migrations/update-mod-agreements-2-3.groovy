@@ -111,4 +111,9 @@ databaseChangeLog = {
     addNotNullConstraint(tableName: "remotekb", columnName: "rkb_trusted_source_ti", columnDataType: "boolean")
   }
 
+  changeSet(author: "efreestone (manual)", id: "202004081754-001") {
+    addColumn(tableName: "kbart_import_job") {
+      column(name: "trusted_source_ti", type: "boolean")
+    }
 }
+
