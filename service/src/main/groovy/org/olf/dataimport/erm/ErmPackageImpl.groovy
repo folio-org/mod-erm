@@ -15,6 +15,7 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   String reference
   String name
   PackageProvider packageProvider
+  Boolean trustedSourceTI
   Set<ContentItem> contentItems = []
   
   // Defaults for internal scheam so we can make them optional in the constraints.
@@ -65,6 +66,12 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
   public Collection<ContentItem> getPackageContents() {
     contentItems
   }
+
+    @Override
+  public Boolean getTrustedSourceTI() {
+    trustedSourceTI
+  }
+  
   
   String toString() {
     "${name} from ${packageProvider}"
