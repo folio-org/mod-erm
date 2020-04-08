@@ -29,12 +29,12 @@ class KbartImportJob extends PersistentJob implements MultiTenant<KbartImportJob
         // in a future session and we need to reread the event in.
         final KbartImportJob job = KbartImportJob.read(eventId)
 
-        // TODO add trustedSourceTI to package header
         Map packageInfo = [
           packageName: job.packageName,
           packageSource: job.packageSource,
           packageReference: job.packageReference,
-          packageProvider: job.packageProvider
+          packageProvider: job.packageProvider,
+          trustedSourceTI: job.trustedSourceTI
         ]
 
         boolean packageInfoValid = true
