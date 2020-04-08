@@ -106,8 +106,7 @@ class ImportService implements DataBinder {
       if (!pkg.errors.hasErrors()) {
         // Ingest the package.
 
-        //TODO this true should depend on whether or not the source is trusted in JSON file
-        Map result = packageIngestService.upsertPackage(pkg, true)
+        Map result = packageIngestService.upsertPackage(pkg)
         String upsertPackagePackageId = result.packageId
         
         packageImported = true
@@ -283,8 +282,7 @@ class ImportService implements DataBinder {
     }
 
     if (pkg.packageContents.size() > 0) {
-      // TODO The true here should depend on whether the import can be trusted or not.
-      def result = packageIngestService.upsertPackage(pkg, true)
+      def result = packageIngestService.upsertPackage(pkg)
       packageImported = true
     } else {
       log.error("Package contents empty, skipping package creation")

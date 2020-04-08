@@ -38,8 +38,10 @@ class PackageIngestService {
   // looking up an Org in vendors and stashing the vendor info in the local cache table.
   DependentModuleProxyService dependentModuleProxyService
 
-  public Map upsertPackage(PackageSchema package_data, boolean trustedSourceTI) {
-    return upsertPackage(package_data,'LOCAL',true, trustedSourceTI)
+  public Map upsertPackage(PackageSchema package_data) {
+    boolean trustedSourceTIValue = trustedSourceTI
+
+    return upsertPackage(package_data,'LOCAL',true)
   }
 
   private static final def countChanges = ['accessStart', 'accessEnd']
@@ -53,7 +55,7 @@ class PackageIngestService {
    * package into the KB.
    * @return id of package upserted
    */
-  public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false, boolean trustedSourceTI = false) {
+  public Map upsertPackage(PackageSchema package_data, String remotekbname, boolean readOnly=false) {
 
     def result = [
       startTime: System.currentTimeMillis(),
@@ -66,7 +68,6 @@ class PackageIngestService {
     ]
 
     Pkg pkg = null
-
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
@@ -77,7 +78,13 @@ class PackageIngestService {
                           rectype: new Long(1),
                           active: Boolean.TRUE,
                           readonly:readOnly,
-                          trustedSourceTI:trustedSourceTI).save(flush:true, failOnError:true)
+                          trustedSourceTI:false).save(flush:true, failOnError:true)
+      }
+
+      Boolean trustedSourceTI = package_data.header?.trustedSourceTI
+      if (trustedSourceTI == null) {
+        // If we're not explicitly handed trusted information, default to whatever the remote KB setting is
+        trustedSourceTI = kb.trustedSourceTI
       }
 
       result.updateTime = System.currentTimeMillis()

@@ -74,11 +74,11 @@ where ( exists ( select pci.id
    *
    *  @return map containing information about the packageId of the newly loaded or existing updated package
    */
-  public Map onPackageChange(String rkb_name, PackageSchema package_data, boolean trustedSourceTI = false) {
+  public Map onPackageChange(String rkb_name, PackageSchema package_data) {
     Map result = null
     RemoteKB.withTransaction([propagationBehavior: TransactionDefinition.PROPAGATION_REQUIRES_NEW]) {
       log.debug("onPackageChange(${rkb_name},...)")
-      result = packageIngestService.upsertPackage(package_data, rkb_name, false, trustedSourceTI)
+      result = packageIngestService.upsertPackage(package_data, rkb_name, false)
     }
     log.debug("onPackageChange(${rkb_name},...) returning ${result}")
 

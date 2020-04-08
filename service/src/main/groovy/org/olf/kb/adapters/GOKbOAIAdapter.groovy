@@ -127,12 +127,12 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
       log.debug("Processing OAI record :: ${result.count} ${record_identifier} ${package_name}")
 
-      PackageSchema json_package_description = gokbToERM(record)
+      PackageSchema json_package_description = gokbToERM(record, trustedSourceTI)
       if ( json_package_description.header.status == 'deleted' ) {
         // ToDo: Decide what to do about deleted records
       }
       else {
-        cache.onPackageChange(source_name, json_package_description, trustedSourceTI)
+        cache.onPackageChange(source_name, json_package_description)
       }
 
       if ( datestamp > result.new_cursor ) {
@@ -158,7 +158,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
    * the GOKb records look like this
    *   https://gokbt.gbv.de/gokb/oai/index/packages?verb=ListRecords&metadataPrefix=gokb
    */
-  private InternalPackageImpl gokbToERM(Object xml_gokb_record) {
+  private InternalPackageImpl gokbToERM(Object xml_gokb_record, boolean trustedSourceTI) {
 
     def package_record = xml_gokb_record?.metadata?.gokb?.package
 
@@ -182,6 +182,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           ],
           packageSource:'GOKb',
           packageName: package_name,
+          trustedSourceTI: trustedSourceTI,
           packageSlug: package_shortcode
         ],
         packageContents: []

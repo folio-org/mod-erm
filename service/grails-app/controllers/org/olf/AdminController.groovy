@@ -42,9 +42,7 @@ class AdminController implements DataBinder{
         return
       }
       
-      // Else do the ingest. (TRUE because this is a LOCAL import)
-      // TODO make this rely on JSON trusted tag
-      result = packageIngestService.upsertPackage(package_data, true)
+      result = packageIngestService.upsertPackage(package_data)
     }
     else {
       log.warn("No file")
