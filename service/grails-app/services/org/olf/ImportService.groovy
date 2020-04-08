@@ -136,6 +136,7 @@ class ImportService implements DataBinder {
     String packageSource
     String packageReference
     String packageProvider
+    Boolean trustedSourceTI = packageInfo.trustedSourceTI
 
     if ( packageInfo.packageName == null ||
          packageInfo.packageSource == null ||
@@ -215,7 +216,8 @@ class ImportService implements DataBinder {
       packageName: packageName,
       packageSource: packageSource,
       packageSlug: packageReference,
-      packageProvider: pkgPrv
+      packageProvider: pkgPrv,
+      trustedSourceTI: trustedSourceTI
     )
 
     String[] record;
