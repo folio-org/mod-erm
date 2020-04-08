@@ -289,19 +289,39 @@ class TitleInstanceResolverService implements DataBinder{
    */ 
   private void checkForEnrichment(TitleInstance title, ContentItemSchema citation, boolean trustedSourceTI) {
     log.debug("Checking for enrichment of Title Instance: ${title} :: trusted: ${trustedSourceTI}")
-    if (trustedSourceTI != false) {
-      log.debug("We've got to this bit now")
-      log.debug("TITLE INSTANCE title: ${title.name}")
-      log.debug("TITLE INSTANCE firstAuthor: ${title.firstAuthor}")
-      log.debug("TITLE INSTANCE firstEditor: ${title.firstEditor}")
-      log.debug("TITLE INSTANCE monographEdition: ${title.monographEdition}")
-      log.debug("TITLE INSTANCE monographVolume: ${title.monographVolume}")
-      log.debug("CITATION title: ${citation.title}")
-      log.debug("CITATION dateMonographPublished: ${citation.dateMonographPublished}")
-      log.debug("CITATION firstAuthor: ${citation.firstAuthor}")
-      log.debug("CITATION firstEditor: ${citation.firstEditor}")
-      log.debug("CITATION monographEdition: ${citation.monographEdition}")
-      log.debug("CITATION monographVolume: ${citation.monographVolume}")
+    if (trustedSourceTI == true) {
+      log.debug("Trusted source for TI enrichment--enriching")
+
+      if (title.name != citation.title) {
+        title.name = citation.title
+      }
+
+      if (title.dateMonographPublished != citation.dateMonographPublished) {
+        title.dateMonographPublished = citation.dateMonographPublished
+      }
+
+      if (title.firstAuthor != citation.firstAuthor) {
+        title.firstAuthor = citation.firstAuthor
+      }
+      
+      if (title.firstAuthor != citation.firstAuthor) {
+        title.firstAuthor = citation.firstAuthor
+      }
+
+      if (title.firstEditor != citation.firstEditor) {
+        title.firstEditor = citation.firstEditor
+      }
+
+      if (title.monographEdition != citation.monographEdition) {
+        title.monographEdition = citation.monographEdition
+      }
+
+      if (title.monographVolume != citation.monographVolume) {
+        title.monographVolume = citation.monographVolume
+      }
+      title.save(flush: true)
+    } else {
+      log.debug("Not a trusted source for TI enrichment--skipping")
     }
     return null;
   }
