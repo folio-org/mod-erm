@@ -83,6 +83,11 @@ class PackageIngestService {
       if (trustedSourceTI == null) {
         // If we're not explicitly handed trusted information, default to whatever the remote KB setting is
         trustedSourceTI = kb.trustedSourceTI
+        if (trustedSourceTI == null) {
+          // If it somehow remains unset, default to false, but with warning
+          log.warn("Could not find trustedSourceTI setting for KB, defaulting to false")
+          trustedSourceTI = false
+        }
       }
 
       result.updateTime = System.currentTimeMillis()
