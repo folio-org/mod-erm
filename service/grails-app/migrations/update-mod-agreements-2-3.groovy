@@ -115,5 +115,6 @@ databaseChangeLog = {
     addColumn(tableName: "kbart_import_job") {
       column(name: "trusted_source_ti", type: "boolean")
     }
+  }
 }
 
