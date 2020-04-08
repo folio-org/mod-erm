@@ -39,8 +39,6 @@ class PackageIngestService {
   DependentModuleProxyService dependentModuleProxyService
 
   public Map upsertPackage(PackageSchema package_data) {
-    boolean trustedSourceTIValue = trustedSourceTI
-
     return upsertPackage(package_data,'LOCAL',true)
   }
 
@@ -68,6 +66,7 @@ class PackageIngestService {
     ]
 
     Pkg pkg = null
+    Boolean trustedSourceTI = package_data.header?.trustedSourceTI
     Pkg.withNewTransaction { status ->
       // ERM caches many remote KB sources in it's local package inventory
       // Look up which remote kb via the name
@@ -81,7 +80,6 @@ class PackageIngestService {
                           trustedSourceTI:false).save(flush:true, failOnError:true)
       }
 
-      Boolean trustedSourceTI = package_data.header?.trustedSourceTI
       if (trustedSourceTI == null) {
         // If we're not explicitly handed trusted information, default to whatever the remote KB setting is
         trustedSourceTI = kb.trustedSourceTI
