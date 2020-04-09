@@ -254,31 +254,6 @@ class PackageIngestService {
         String message = "Skipping ${pc.title}. System error: ${e.message}"
         log.error(message,e)
       }
-
-      // {
-      //   "title": "Nordic Psychology",
-      //   "instanceMedium": "electronic",
-      //   "instanceMedia": "journal",
-      //   "instanceIdentifiers": {
-      //   "namespace": "jusp",
-      //   "value": "12342"
-      //   },
-      //   "siblingInstanceIdentifiers": {
-      //   "namespace": "issn",
-      //   "value": "1901-2276"
-      //   },
-      //   "coverage": {
-      //   "startVolume": "58",
-      //   "startIssue": "1",
-      //   "startDate": "2006-03-31T23:00:00Z",
-      //   "endVolume": "63",
-      //   "endIssue": "4",
-      //   "endDate": "2011-12-31T00:00:00Z"
-      //   },
-      //   "embargo": null,
-      //   "coverageDepth": "fulltext",
-      //   "coverageNote": null
-      //   }
       result.titleCount++
       result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
       if ( result.titleCount % 100 == 0 ) {
