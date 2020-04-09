@@ -5,6 +5,7 @@ import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.general.jobs.JobRunnerService
 import org.olf.general.jobs.LogEntry
+import org.olf.kb.Embargo
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.Platform
@@ -174,6 +175,17 @@ class PackageIngestService {
                 log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
                 isUpdate = true
               }
+              
+              String embStr = pc.embargo?.trim()
+              
+              // Pre attempt to parse. And log error.
+              Embargo emb = null
+              if (embStr) {
+                emb = Embargo.parse(embStr)
+                if (!emb) {
+                  log.error "Could not parse ${embStr} as Embargo"
+                }
+              }
 
               // Add/Update common properties.
               pci.with {
@@ -183,6 +195,7 @@ class PackageIngestService {
                 accessEnd = pc.accessEnd
                 addedTimestamp = result.updateTime
                 lastSeenTimestamp = result.updateTime
+                embargo = emb
               }
 
               // ensure that accessStart is earlier than accessEnd, otherwise stop processing the current item
