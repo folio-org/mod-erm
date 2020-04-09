@@ -33,6 +33,7 @@ class ErmPackageImpl implements PackageHeaderSchema, PackageSchema, Validateable
     endDate nullable: true
     _intenalId nullable: true, blank: false
     status nullable: true, blank: false
+    trustedSourceTI nullable: true
     
     source    nullable: false, blank: false
     reference nullable: false, blank: false
