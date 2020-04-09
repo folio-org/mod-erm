@@ -241,6 +241,7 @@ public class SubscriptionAgreement implements CustomProperties,MultiTenant<Subsc
                   vendor(nullable:true, blank:false)
        attachedLicenceId(nullable:true, blank:false)
              licenseNote(nullable:true, blank:false)
+          alternateNames(sort:'name')
                  periods(minSize: 1, validator:Period.PERIOD_COLLECTION_VALIDATOR, sort:'startDate')
               
           linkedLicenses(validator: { Collection<RemoteLicenseLink> license_links ->
