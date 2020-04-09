@@ -19,6 +19,7 @@ if ( controllerName == 'subscriptionAgreement' && actionName.toLowerCase() == 's
 
 final def should_expand = [
   'agreementType',
+  'alternateNames',
   'renewalPriority',
   'agreementStatus',
   'reasonForClosure',
