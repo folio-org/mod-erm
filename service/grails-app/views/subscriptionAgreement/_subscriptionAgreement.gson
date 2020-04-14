@@ -1,6 +1,7 @@
 import groovy.transform.*
 import org.olf.erm.SubscriptionAgreement
 import org.olf.erm.SubscriptionAgreementOrg
+import org.olf.erm.AlternateName
 
 @Field SubscriptionAgreement subscriptionAgreement
 
@@ -19,7 +20,7 @@ if ( controllerName == 'subscriptionAgreement' && actionName.toLowerCase() == 's
 
 final def should_expand = [
   'agreementType',
-  'alternateNames',
+//  'alternateNames',
   'renewalPriority',
   'agreementStatus',
   'reasonForClosure',
@@ -45,13 +46,19 @@ if (params.controller != 'usageDataProvider' ) {
   should_expand << 'usageDataProviders'
 }
 
-json g.render(subscriptionAgreement, [expand: should_expand]) {
+def altNames = subscriptionAgreement.alternateNames
+
+json g.render(subscriptionAgreement, [expand: should_expand, excludes:'alternateName']) {
   currentPeriod g.render(subscriptionAgreement.currentPeriod)
   startDate subscriptionAgreement.startDate
   endDate subscriptionAgreement.endDate
   cancellationDeadline subscriptionAgreement.cancellationDeadline
-
+  
   if (actionName.toLowerCase() == 'export' && subscriptionAgreement.respondsTo('getResourceList')) {
     resources (g.render (template: '/export/results', model: [resources: (subscriptionAgreement.invokeMethod('getResourceList', null) ?: [])]))
+  }
+  
+  if (altNames) {
+    altNames.toSorted { AlternateName a, AlternateName b -> a.name <=> b.name }
   }
 }
