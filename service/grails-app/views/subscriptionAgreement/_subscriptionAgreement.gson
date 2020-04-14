@@ -46,9 +46,9 @@ if (params.controller != 'usageDataProvider' ) {
   should_expand << 'usageDataProviders'
 }
 
-def altNames = subscriptionAgreement.alternateNames
+def altNames = subscriptionAgreement.alternateNames?.toSorted { AlternateName a, AlternateName b -> a.name <=> b.name }
 
-json g.render(subscriptionAgreement, [expand: should_expand, excludes:'alternateName']) {
+json g.render(subscriptionAgreement, [expand: should_expand, excludes:['alternateName']]) {
   currentPeriod g.render(subscriptionAgreement.currentPeriod)
   startDate subscriptionAgreement.startDate
   endDate subscriptionAgreement.endDate
@@ -59,6 +59,6 @@ json g.render(subscriptionAgreement, [expand: should_expand, excludes:'alternate
   }
   
   if (altNames) {
-    altNames.toSorted { AlternateName a, AlternateName b -> a.name <=> b.name }
+    altNames g.render(altNames)
   }
 }
