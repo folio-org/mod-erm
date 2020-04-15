@@ -5,6 +5,7 @@ import org.olf.dataimport.internal.PackageSchema.ContentItemSchema
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
 import org.olf.general.jobs.JobRunnerService
 import org.olf.general.jobs.LogEntry
+import org.olf.kb.Embargo
 import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.Platform
@@ -167,25 +168,45 @@ class PackageIngestService {
                 // N.B. addedTimestamp removedTimestamp lastSeenTimestamp
                 def pci_qr = PackageContentItem.executeQuery('select pci from PackageContentItem as pci where pci.pti = :pti and pci.pkg.id = :pkg and pci.removedTimestamp is null',
                   [pti:pti, pkg:result.packageId])
-                PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
+              PackageContentItem pci = pci_qr.size() == 1 ? pci_qr.get(0) : null;
 
-                boolean isUpdate = false
-                boolean isNew = false
-                if ( pci == null ) {
-                  log.debug("Record ${result.titleCount} - Create new package content item")
-                  pci = new PackageContentItem(
-                    pti:pti,
-                    pkg:Pkg.get(result.packageId),
-                    addedTimestamp:result.updateTime)
-                  isNew = true
+              boolean isUpdate = false
+              boolean isNew = false
+              if ( pci == null ) {
+                log.debug("Record ${result.titleCount} - Create new package content item")
+                pci = new PackageContentItem(
+                  pti:pti,
+                  pkg:Pkg.get(result.packageId),
+                  addedTimestamp:result.updateTime)
+                isNew = true
+              }
+              else {
+                // Note that we have seen the package content item now - so we don't delete it at the end.
+                log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
+                isUpdate = true
+              }
+              
+              String embStr = pc.embargo?.trim()
+              
+              // Pre attempt to parse. And log error.
+              Embargo emb = null
+              if (embStr) {
+                emb = Embargo.parse(embStr)
+                if (!emb) {
+                  log.error "Could not parse ${embStr} as Embargo"
                 }
-                else {
-                  // Note that we have seen the package content item now - so we don't delete it at the end.
-                  log.debug("Record ${result.titleCount} - Update package content item (${pci.id})")
-                  isUpdate = true
-                }
+              }
 
-                String embStr = pc.embargo?.trim()
+              // Add/Update common properties.
+              pci.with {
+                note = pc.coverageNote
+                depth = pc.coverageDepth
+                accessStart = pc.accessStart
+                accessEnd = pc.accessEnd
+                addedTimestamp = result.updateTime
+                lastSeenTimestamp = result.updateTime
+                embargo = emb
+              }
 
                 // Pre attempt to parse. And log error.
                 Embargo emb = null
@@ -281,6 +302,16 @@ class PackageIngestService {
         if ( result.titleCount % 100 == 0 ) {
           log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
         }
+
+      } catch ( Exception e ) {
+        String message = "Skipping ${pc.title}. System error: ${e.message}"
+        log.error(message,e)
+      }
+      result.titleCount++
+      result.averageTimePerTitle=(System.currentTimeMillis()-result.startTime)/result.titleCount
+      if ( result.titleCount % 100 == 0 ) {
+        log.debug ("Processed ${result.titleCount} titles, average per title: ${result.averageTimePerTitle}")
+
       }
       def finishedTime = (System.currentTimeMillis()-result.startTime)/1000
 
