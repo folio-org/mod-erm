@@ -13,8 +13,24 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
   String url
   
   String getName() {
+    String truncTIName = titleInstance.name
+    String truncPlatName = platform.name
+
+    if (titleInstance.name.length() > 70) {
+      truncTIName = titleInstance.name.take(70) << "..."
+    }
+    if (platform.name.length() > 70) {
+      truncPlatName = platform.name.take(70) << "..."
+    }
+
+    return "'${truncTIName}' on Platform '${truncPlatName}'"
+  }
+
+  String getLongName() {
     "'${titleInstance.name}' on Platform '${platform.name}'"
   }
+
+  static transients = ['longName']
   
   static hasMany = [
     packageOccurences: PackageContentItem,

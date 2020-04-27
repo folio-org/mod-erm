@@ -14,8 +14,30 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   PlatformTitleInstance pti
   
   String getName() {
-    "${pti.name} in Package ${pkg.name}"
+    String truncTIName = pti.titleInstance.name
+    String truncPlatName = pti.platform.name
+
+    String truncPkgName = pkg.name
+
+    if (pti.titleInstance.name.length() > 70) {
+      truncTIName = pti.titleInstance.name.take(70) << "..."
+    }
+    if (pti.platform.name.length() > 70) {
+      truncPlatName = pti.platform.name.take(70) << "..."
+    }
+
+    if (pkg.name.length() > 70) {
+      truncPkgName = pkg.name.take(70) << "..."
+    }
+
+    return "'${truncTIName}' on Platform '${truncPlatName}' in Package ${truncPkgName}"
   }
+
+  String getLongName() {
+    "'${pti.titleInstance.name}' on Platform '${pti.platform.name}' in Package ${pkg.name}"
+  }
+
+  static transients = ['longName']
 
   // Track this package content item - when did we first detect it (added) when did we last
   // see it, and when did we determine it has been removed?
