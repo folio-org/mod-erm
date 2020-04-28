@@ -15,34 +15,21 @@ import grails.gorm.MultiTenant
 public class TitleInstance extends ErmResource implements MultiTenant<TitleInstance> {
 
   String getLongName() {
-    String monographEdition = this.monographEdition
-    String monographVolume = this.monographVolume
-    String dateMonographPublished = this.dateMonographPublished
+    String detailString = ''
 
-    String returnString = this.name
-    String detailString = null
-
-    if (monographVolume != null) {
-      detailString = " ${monographVolume}"
+    if (this.monographVolume != null) {
+      detailString = " ${this.monographVolume}"
     }
 
-    if (detailString != null && dateMonographPublished != null) {
-      detailString += ", ${dateMonographPublished}"
-    } else if (dateMonographPublished != null) {
-      detailString = " ${dateMonographPublished}"
+    if (this.dateMonographPublished != null) {
+      detailString += "${detailString ? ', ' : ''}${dateMonographPublished}"
     }
 
-    if (detailString != null && monographEdition != null) {
-      detailString += " (${monographEdition})"
-    } else if (monographEdition != null) {
-      detailString = " (${monographEdition})"
+    if (this.monographEdition != null) {
+      detailString += " (${this.monographEdition})"
     }
-
-    if (detailString != null) {
-      returnString += ".${detailString}"
-    }
-    return returnString;
     
+    "${name}${ detailString ? '.' + detailString : '' }"
   }
 
   

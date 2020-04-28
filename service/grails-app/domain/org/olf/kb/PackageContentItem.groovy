@@ -3,6 +3,7 @@ package org.olf.kb
 import java.time.LocalDate
 
 import grails.gorm.MultiTenant
+import org.olf.general.StringUtils
 
 
 /**
@@ -14,23 +15,7 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   PlatformTitleInstance pti
   
   String getName() {
-    String truncTIName = pti.titleInstance.name
-    String truncPlatName = pti.platform.name
-
-    String truncPkgName = pkg.name
-
-    if (pti.titleInstance.name.length() > 70) {
-      truncTIName = pti.titleInstance.name.take(70) << "..."
-    }
-    if (pti.platform.name.length() > 70) {
-      truncPlatName = pti.platform.name.take(70) << "..."
-    }
-
-    if (pkg.name.length() > 70) {
-      truncPkgName = pkg.name.take(70) << "..."
-    }
-
-    return "'${truncTIName}' on Platform '${truncPlatName}' in Package ${truncPkgName}"
+    "'${ StringUtils.truncate( pti?.titleInstance?.name, 70 ) }' on Platform '${ StringUtils.truncate( pti?.platform?.name, 70 ) }' in Package ${ StringUtils.truncate( pkg.name, 70 ) }"
   }
 
   String getLongName() {
