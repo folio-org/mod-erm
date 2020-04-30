@@ -304,10 +304,6 @@ class TitleInstanceResolverService implements DataBinder{
         title.firstAuthor = citation.firstAuthor
       }
       
-      if (title.firstAuthor != citation.firstAuthor) {
-        title.firstAuthor = citation.firstAuthor
-      }
-
       if (title.firstEditor != citation.firstEditor) {
         title.firstEditor = citation.firstEditor
       }
@@ -319,7 +315,11 @@ class TitleInstanceResolverService implements DataBinder{
       if (title.monographVolume != citation.monographVolume) {
         title.monographVolume = citation.monographVolume
       }
-      title.save(flush: true)
+        if(! title.save(flush: true) ) {
+          title.errors.fieldErrors.each {
+            log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
+          }
+        }
     } else {
       log.debug("Not a trusted source for TI enrichment--skipping")
     }
