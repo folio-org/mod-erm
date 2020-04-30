@@ -256,6 +256,10 @@
           "permissionsRequired": [ "erm.resources.item.entitlement.get" ]
         },{
           "methods": ["GET"],
+          "pathPattern": "/erm/resource/{id}/entitlements/related",
+          "permissionsRequired": [ "erm.resources.item.entitlement.get" ]
+        },{
+          "methods": ["GET"],
           "pathPattern": "/erm/resource/{id}/entitlementOptions",
           "permissionsRequired": [ "erm.resources.item.entitlementOptions.get" ]
         },
