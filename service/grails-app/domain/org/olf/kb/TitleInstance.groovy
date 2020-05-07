@@ -99,12 +99,12 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
             monographVolume (nullable:true, blank:false)
   }
   
-  static transients = ['siblingIdentitfiers']
+  static transients = ['siblingIdentifiers']
   
-  private Set<IdentifierOccurrence> theSiblingIdentitfiers = null
-  public Set<IdentifierOccurrence> getSiblingIdentitfiers() {
-    if (theSiblingIdentitfiers == null) {
-      theSiblingIdentitfiers = []
+  private Set<IdentifierOccurrence> theSiblingIdentifiers = null
+  public Set<IdentifierOccurrence> siblingIdentifiers() {
+    if (theSiblingIdentifiers == null) {
+      theSiblingIdentifiers = []
       final String theWork = this.work?.id
       final String me = this.id
       if (me && theWork) {
@@ -115,11 +115,11 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
             
           eq ('the_work.id', theWork)
           ne ('the_title.id', me)
-        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentitfiers << ido }
+        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentifiers << ido }
       }
     }
     
-    theSiblingIdentitfiers
+    theSiblingIdentifiers
   }
 
   public String getCodexSummary() {
