@@ -1,6 +1,7 @@
 package org.olf.kb
 
 import javax.persistence.Transient
+import org.hibernate.FetchMode
 import org.hibernate.sql.JoinType
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.CategoryId
@@ -96,6 +97,29 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
             firstEditor (nullable:true, blank:false)
             monographEdition (nullable:true, blank:false)
             monographVolume (nullable:true, blank:false)
+  }
+  
+  static transients = ['siblingIdentitfiers']
+  
+  private Set<Identifier> theSiblingIdentitfiers = null
+  public List<TitleInstance> getSiblingIdentitfiers() {
+    if (theSiblingIdentitfiers == null) {
+      theSiblingIdentitfiers = []
+      final Work theWork = this.work
+      final String me = this.id
+      if (me && theWork) {
+        
+        IdentifierOccurrence.createCriteria().list {
+          fetchMode 'identifier', FetchMode.JOIN
+          createAlias 'title.work', 'the_work'
+            
+          eq 'the_work', theWork
+          ne 'title.id', me
+        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentitfiers << ido.identifier }
+      }
+    }
+    
+    theSiblingIdentitfiers
   }
 
   public String getCodexSummary() {
