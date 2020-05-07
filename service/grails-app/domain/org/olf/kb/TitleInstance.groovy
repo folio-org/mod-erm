@@ -101,8 +101,8 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   
   static transients = ['siblingIdentitfiers']
   
-  private Set<Identifier> theSiblingIdentitfiers = null
-  public Set<Identifier> getSiblingIdentitfiers() {
+  private Set<IdentifierOccurrence> theSiblingIdentitfiers = null
+  public Set<IdentifierOccurrence> getSiblingIdentitfiers() {
     if (theSiblingIdentitfiers == null) {
       theSiblingIdentitfiers = []
       final String theWork = this.work?.id
@@ -115,7 +115,7 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
             
           eq ('the_work.id', theWork)
           ne ('the_title.id', me)
-        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentitfiers << ido.identifier }
+        }?.each { IdentifierOccurrence ido -> this.theSiblingIdentitfiers << ido }
       }
     }
     
