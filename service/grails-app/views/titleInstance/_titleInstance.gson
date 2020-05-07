@@ -9,5 +9,5 @@ json g.render(titleInstance, [expand: ['identifiers', 'type', 'subType', 'covera
   'class' titleInstance.class.name
   longName titleInstance.longName
   
-  siblingIdentitfiers g.render (titleInstance.siblingIdentitfiers)
+  siblingIdentifiers g.render (titleInstance.siblingIdentifiers)
 }

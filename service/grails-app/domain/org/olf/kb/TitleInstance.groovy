@@ -102,7 +102,7 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   static transients = ['siblingIdentifiers']
   
   private Set<IdentifierOccurrence> theSiblingIdentifiers = null
-  public Set<IdentifierOccurrence> siblingIdentifiers() {
+  public Set<IdentifierOccurrence> getSiblingIdentifiers() {
     if (theSiblingIdentifiers == null) {
       theSiblingIdentifiers = []
       final String theWork = this.work?.id
