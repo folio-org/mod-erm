@@ -105,16 +105,16 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   public Set<Identifier> getSiblingIdentitfiers() {
     if (theSiblingIdentitfiers == null) {
       theSiblingIdentitfiers = []
-      final Work theWork = this.work
+      final String theWork = this.work?.id
       final String me = this.id
       if (me && theWork) {
         
         IdentifierOccurrence.createCriteria().list {
-          fetchMode 'identifier', FetchMode.JOIN
-          createAlias 'title.work', 'the_work'
+          createAlias ('title', 'the_title')
+            createAlias ('the_title.work', 'the_work')
             
-          eq 'the_work', theWork
-          ne 'title.id', me
+          eq ('the_work.id', theWork)
+          ne ('the_title.id', me)
         }?.each { IdentifierOccurrence ido -> this.theSiblingIdentitfiers << ido.identifier }
       }
     }
