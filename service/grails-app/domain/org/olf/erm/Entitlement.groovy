@@ -10,9 +10,6 @@ import org.olf.kb.PackageContentItem
 import org.olf.kb.Pkg
 import org.olf.kb.PlatformTitleInstance
 
-//TODO REMOVE THIS BEFORE SUBMITTING
-import groovy.json.JsonOutput
-
 import com.k_int.okapi.remote_resources.OkapiLookup
 import com.k_int.web.toolkit.domain.traits.Clonable
 import grails.databinding.BindInitializer
@@ -205,7 +202,6 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
           map.accessStatusType = accessStatusType
         }
       }
-      log.debug("DEBUG MAP: ${JsonOutput.prettyPrint(JsonOutput.toJson(map))}")
       
       // Merge external coverages.
       final boolean isPackage = theType?.toLowerCase() == 'package'
