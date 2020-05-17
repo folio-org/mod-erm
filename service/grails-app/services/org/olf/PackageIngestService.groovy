@@ -279,14 +279,16 @@ class PackageIngestService implements DataBinder {
                   // We define coverage to be a list in the exchange format, but sometimes it comes just as a JSON map. Convert that
                   // to the list of maps that coverageService.extend expects
                   Iterable<CoverageStatementSchema> cov = pc.coverage instanceof Iterable ? pc.coverage : [ pc.coverage ]
-
-                  coverageService.extend(pti, cov)
-                  coverageService.extend(pci, cov)
-                  coverageService.extend(title, cov)
+                  coverageService.setCoverageFromSchema (pci, cov)
+                  
+                  
+//                  coverageService.extend(pti, cov)
+//                  coverageService.extend(pci, cov)
+//                  coverageService.extend(title, cov)
                 }
 
                 // Save needed either way
-                pci.save(flush:true, failOnError:true)
+//                pci.save(flush:true, failOnError:true)
               }
               else {
                 String message = "Skipping ${pc.title}. Unable to identify platform from ${platform_url_to_use} and ${pc.platformName}"

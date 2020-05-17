@@ -1,8 +1,12 @@
 package org.olf
 
+import java.time.LocalDate
+
 import javax.servlet.http.HttpServletRequest
+
 import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent
 import org.grails.datastore.mapping.engine.event.PostInsertEvent
+import org.grails.datastore.mapping.engine.event.PostUpdateEvent
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
@@ -19,11 +23,12 @@ import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.transaction.TransactionStatus
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
-import grails.events.annotation.Subscriber
+
 import grails.events.annotation.gorm.Listener
+import grails.gorm.DetachedCriteria
+import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import java.time.LocalDate
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -261,26 +266,22 @@ public class CoverageService {
   }
   
   /**
-   * Given an PlatformTitleInstance calculate the coverage based on the higher level
-   * PackageContentItem coverage values linked to this PTI
-   *
-   * @param pti The PlatformTitleInstance
+   * Set coverage from schema
    */
-  @Transactional
-  public void setCoverageFromSchema (final PackageContentItem pci, final Iterable<CoverageStatementSchema> coverage_statements) {
+  public void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
     
     boolean changed = false
     
     // Handle this in an isolated transaction so we can rollback this part only if needed.
-    PackageContentItem.withNewTransaction { TransactionStatus t ->
-      final PackageContentItem thePci = PackageContentItem.get(pci.id)
-      try {
+//    PackageContentItem.withNewTransaction { TransactionStatus t ->
+//      try {
         
         // Clear the existing coverage, or initialize to empty set.
-        if (thePci.coverage) {
-          thePci.coverage?.clear()
+        if (resource.coverage) {
+          resource.coverage?.each { resource.removeFromCoverage(it) }
+          resource.save(flush:true) // Necessary to remove the orphans.
         } else {
-          thePci.coverage = []
+          resource.coverage = []
         }
         
         for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -294,11 +295,11 @@ public class CoverageService {
               endIssue    : ("${cs.endIssue}".trim() ? cs.endIssue : null)
             ])
   
-            thePci.addToCoverage( new_cs )
+            resource.addToCoverage( new_cs )
             
             // Validate the object at each step.
-            if (!thePci.validate()) {
-              thePci.errors.allErrors.each { ObjectError error ->
+            if (!resource.validate()) {
+              resource.errors.allErrors.each { ObjectError error ->
                 log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
               }
               throw new IllegalArgumentException('Adding coverage statement invalidates PCI')
@@ -311,20 +312,19 @@ public class CoverageService {
           }
         }
         
-        thePci.save(flush:true, failOnError:true)
+        resource.save(flush:true, failOnError:true)
         log.debug("New coverage saved")
-        changed = true
-      } catch (Exception e) {
-        // If anything goes wrong we should rollback.
-        t.setRollbackOnly()
-        log.error("Coverage changes to PCI ${pci.id} not saved", e)
-        changed = false
-      }
-    }
+//      } catch (Exception e) {
+//        // If anything goes wrong we should rollback.
+//        t.setRollbackOnly()
+//        log.error("Coverage changes to Resource ${resource.id} not saved", e)
+//        changed = false
+//      }
+//    }
     
-    if (changed) {
-      pci.refresh()
-    }
+//    if (changed) {
+//      resource.refresh()
+//    }
     
     // Do nothing if not changed.
   }
@@ -335,9 +335,27 @@ public class CoverageService {
    *
    * @param pti The PlatformTitleInstance
    */
-  @Transactional
   public void calculateCoverage( final PlatformTitleInstance pti ) {
     
+    // Use a sub query to select all the coverage statements linked to PCIs,
+    // linked to this pti
+    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+      'in' 'resource.id', new DetachedCriteria(PackageContentItem).build {
+        readOnly (true)
+        
+        createAlias 'pti', 'pci_pti'
+          eq 'pci_pti.id', pti.id
+
+        projections {
+          property ('id')
+        }
+      }
+    }
+    
+    
+    allCoverage = collateCoverageStatements(allCoverage)
+    
+    setCoverageFromSchema(pti, allCoverage)
   }
   
   /**
@@ -346,9 +364,26 @@ public class CoverageService {
    *
    * @param ti The TitleInstance
    */
-  @Transactional
   public void calculateCoverage( final TitleInstance ti ) {
     
+    // Use a sub query to select all the coverage statements linked to PTIs,
+    // linked to this TI
+    List<CoverageStatement> allCoverage = CoverageStatement.createCriteria().list {
+      'in' 'resource.id', new DetachedCriteria(PlatformTitleInstance).build {
+        readOnly (true)
+        
+        createAlias 'titleInstance', 'pti_ti'
+          eq 'pti_ti.id', ti.id
+
+        projections {
+          property ('id')
+        }
+      }
+    }
+    
+    allCoverage = collateCoverageStatements(allCoverage)
+    
+    setCoverageFromSchema(ti, allCoverage)
   }
   
   private int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date) {    
@@ -381,12 +416,9 @@ public class CoverageService {
     for (CoverageStatementSchema cs : coverage_statements) {      
       // Use an iterator for in-place editing of the collection.      
       boolean absorbed = subsume(results.listIterator(), cs)
-      
-      // Add if not dealt with previously.
-      if (!absorbed) {
-        results << cs
-      }
     }
+    
+    results
   }
   
   private boolean subsume (ListIterator<CoverageStatementSchema> iterator, CoverageStatementSchema statement) {
@@ -490,9 +522,7 @@ public class CoverageService {
     absorbed
   }
   
-  @Transactional
-  @Listener
-  void afterInsert(PostInsertEvent event) {
+  private void changeListener(AbstractPersistenceEvent event) {
     PackageContentItem pci = asPCI(event)
     if ( pci ) {
       log.debug 'PCI updated'
@@ -515,5 +545,17 @@ public class CoverageService {
     if ( pci ) {
       log.debug 'TI updated'
     }
+  }
+  
+  @CurrentTenant
+  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
+  void afterUpdate(PostUpdateEvent event) {
+    changeListener(event)
+  }
+  
+  @CurrentTenant
+  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
+  void afterInsert(PostInsertEvent event) {
+    changeListener(event)
   }
 }
