@@ -76,4 +76,12 @@ public class PackageContentItem extends ErmResource implements MultiTenant<Packa
   public String generateCoverageSummary() {
     return coverageStatements.join('; ');
   }
+  
+  def afterSave() {
+    checkCoverage()
+  }
+  
+  def afterUpdate() {
+    checkCoverage()
+  }
 }

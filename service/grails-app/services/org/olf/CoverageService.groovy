@@ -3,10 +3,7 @@ package org.olf
 import java.time.LocalDate
 
 import javax.servlet.http.HttpServletRequest
-
-import org.grails.datastore.mapping.engine.event.AbstractPersistenceEvent
-import org.grails.datastore.mapping.engine.event.PostInsertEvent
-import org.grails.datastore.mapping.engine.event.PostUpdateEvent
+import org.grails.datastore.mapping.validation.ValidationException
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
 import org.olf.dataimport.internal.PackageSchema.CoverageStatementSchema
@@ -20,14 +17,11 @@ import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
 import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
-import org.springframework.transaction.TransactionStatus
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
 
-import grails.events.annotation.gorm.Listener
 import grails.gorm.DetachedCriteria
-import grails.gorm.multitenancy.CurrentTenant
-import grails.gorm.transactions.Transactional
+import grails.util.Holders
 import groovy.util.logging.Slf4j
 
 /**
@@ -35,7 +29,10 @@ import groovy.util.logging.Slf4j
  */
 @Slf4j
 public class CoverageService {
-  MessageSource messageSource
+  
+  private static MessageSource getMessageSource() {
+    Holders.grailsApplication.mainContext.getBean('messageSource')
+  }
   
   private Map<String, Iterable<AbstractCoverageStatement>> addToRequestIfPresent (final Map<String, Iterable<AbstractCoverageStatement>> statements) {
     
@@ -253,35 +250,23 @@ public class CoverageService {
 //    }
 //  }
   
-  PackageContentItem asPCI (AbstractPersistenceEvent event) {
-    event.entityObject instanceof PackageContentItem ? event.entityObject : null
-  }
-  
-  PlatformTitleInstance asPTI (AbstractPersistenceEvent event) {
-    event.entityObject instanceof PackageContentItem ? event.entityObject : null
-  }
-  
-  TitleInstance asTI (AbstractPersistenceEvent event) {
-    event.entityObject instanceof TitleInstance ? event.entityObject : null
-  }
-  
   /**
    * Set coverage from schema
    */
-  public void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
+  public static void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
     
     boolean changed = false
+    final Set<CoverageStatement> statements = []
     
     // Handle this in an isolated transaction so we can rollback this part only if needed.
-//    PackageContentItem.withNewTransaction { TransactionStatus t ->
-//      try {
+//    PackageContentItem.withNewTransaction { t ->
+      try {
         
         // Clear the existing coverage, or initialize to empty set.
         if (resource.coverage) {
-          resource.coverage?.each { resource.removeFromCoverage(it) }
-          resource.save(flush:true) // Necessary to remove the orphans.
-        } else {
-          resource.coverage = []
+          statements.addAll( resource.coverage )
+          resource.coverage.each { resource.removeFromCoverage(it) }
+          resource.save(failOnError: true) // Necessary to remove the orphans.
         }
         
         for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -302,8 +287,10 @@ public class CoverageService {
               resource.errors.allErrors.each { ObjectError error ->
                 log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
               }
-              throw new IllegalArgumentException('Adding coverage statement invalidates PCI')
+              throw new ValidationException('Adding coverage statement invalidates PCI')
             }
+            
+            resource.save()
           } else {
             // Not valid coverage statement
             cs.errors.allErrors.each { ObjectError error ->
@@ -312,19 +299,21 @@ public class CoverageService {
           }
         }
         
-        resource.save(flush:true, failOnError:true)
         log.debug("New coverage saved")
-//      } catch (Exception e) {
-//        // If anything goes wrong we should rollback.
+      } catch (ValidationException e) {
+        // If anything goes wrong we should rollback.
 //        t.setRollbackOnly()
-//        log.error("Coverage changes to Resource ${resource.id} not saved", e)
-//        changed = false
-//      }
+        log.error("Coverage changes to Resource ${resource.id} not saved", e)
+        changed = false
+      }
 //    }
     
-//    if (changed) {
-//      resource.refresh()
-//    }
+    if (!changed) {
+      // Revert the coverage set.
+      if (!resource.coverage) resource.coverage = []
+      resource.coverage.addAll( statements )
+      resource.save(failOnError: true)
+    }
     
     // Do nothing if not changed.
   }
@@ -335,7 +324,7 @@ public class CoverageService {
    *
    * @param pti The PlatformTitleInstance
    */
-  public void calculateCoverage( final PlatformTitleInstance pti ) {
+  public static void calculateCoverage( final PlatformTitleInstance pti ) {
     
     // Use a sub query to select all the coverage statements linked to PCIs,
     // linked to this pti
@@ -351,8 +340,7 @@ public class CoverageService {
         }
       }
     }
-    
-    
+        
     allCoverage = collateCoverageStatements(allCoverage)
     
     setCoverageFromSchema(pti, allCoverage)
@@ -364,7 +352,7 @@ public class CoverageService {
    *
    * @param ti The TitleInstance
    */
-  public void calculateCoverage( final TitleInstance ti ) {
+  public static void calculateCoverage( final TitleInstance ti ) {
     
     // Use a sub query to select all the coverage statements linked to PTIs,
     // linked to this TI
@@ -386,7 +374,7 @@ public class CoverageService {
     setCoverageFromSchema(ti, allCoverage)
   }
   
-  private int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date) {    
+  private static int dateWithinCoverage(CoverageStatementSchema cs, LocalDate date) {    
     if (cs.startDate == null && cs.endDate == null) return 0
     if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
     
@@ -402,7 +390,7 @@ public class CoverageService {
     (date > cs.endDate ? 1 : -1)
   }
   
-  private List<CoverageStatementSchema> collateCoverageStatements( final Iterable<CoverageStatementSchema> coverage_statements ) {
+  private static List<CoverageStatementSchema> collateCoverageStatements( final Iterable<CoverageStatementSchema> coverage_statements ) {
     
     // Define our list
     List<CoverageStatementSchema> results = []
@@ -421,7 +409,7 @@ public class CoverageService {
     results
   }
   
-  private boolean subsume (ListIterator<CoverageStatementSchema> iterator, CoverageStatementSchema statement) {
+  private static boolean subsume (ListIterator<CoverageStatementSchema> iterator, CoverageStatementSchema statement) {
     boolean absorbed = false
     while (!absorbed && iterator.hasNext()) {
       CoverageStatementSchema current = iterator.next()
@@ -520,42 +508,83 @@ public class CoverageService {
     }
     
     absorbed
+  }  
+  
+  private static PackageContentItem asPCI (ErmResource res) {
+    res instanceof PackageContentItem ? res : null
   }
   
-  private void changeListener(AbstractPersistenceEvent event) {
-    PackageContentItem pci = asPCI(event)
+  private static PlatformTitleInstance asPTI (ErmResource res) {
+    res instanceof PlatformTitleInstance ? res : null
+  }
+  
+  private static TitleInstance asTI (ErmResource res) {
+    res instanceof TitleInstance ? res : null
+  }
+  
+  public static void changeListener(ErmResource res) {
+    PackageContentItem pci = asPCI(res)
     if ( pci ) {
       log.debug 'PCI updated'
-      if (pci.isDirty('coverage')) {
-        log.debug "PCI coverage changed. Regenerate PTI's coverage"
+//      if (pci.isDirty('coverage')) {
+        log.debug "Regenerate PTI's coverage"
         calculateCoverage( pci.pti )
-      }
+//      }
     }
-    
-    PlatformTitleInstance pti = asPTI(event)
-    if ( pci ) {
+
+    PlatformTitleInstance pti = asPTI(res)
+    if ( pti ) {
       log.debug 'PTI updated'
-      if (pci.isDirty('coverage')) {
-        log.debug "PTI coverage changed. Regenerate PTI's coverage"
+//      if (pti.isDirty('coverage')) {
+        log.debug "Regenerate PTI's coverage"
         calculateCoverage( pti.titleInstance )
-      }
+//      }
     }
-    
-    TitleInstance ti = asTI(event)
-    if ( pci ) {
+
+    TitleInstance ti = asTI(res)
+    if ( ti ) {
       log.debug 'TI updated'
     }
   }
   
-  @CurrentTenant
-  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-  void afterUpdate(PostUpdateEvent event) {
-    changeListener(event)
-  }
   
-  @CurrentTenant
-  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
-  void afterInsert(PostInsertEvent event) {
-    changeListener(event)
-  }
+  // SO: Gorm doesn't throw an event for a new tenant datastore.
+  // This means tenants created programatically don't quite work yet.
+  // TODO: Implement properly in grails okapi and toolkit.
+//  private void changeListener(AbstractPersistenceEvent event) {
+//    PackageContentItem pci = asPCI(event)
+//    if ( pci ) {
+//      log.debug 'PCI updated'
+//      if (pci.isDirty('coverage')) {
+//        log.debug "PCI coverage changed. Regenerate PTI's coverage"
+//        calculateCoverage( pci.pti )
+//      }
+//    }
+//    
+//    PlatformTitleInstance pti = asPTI(event)
+//    if ( pci ) {
+//      log.debug 'PTI updated'
+//      if (pci.isDirty('coverage')) {
+//        log.debug "PTI coverage changed. Regenerate PTI's coverage"
+//        calculateCoverage( pti.titleInstance )
+//      }
+//    }
+//    
+//    TitleInstance ti = asTI(event)
+//    if ( pci ) {
+//      log.debug 'TI updated'
+//    }
+//  }
+//  
+//  @CurrentTenant
+//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
+//  void afterUpdate(PostUpdateEvent event) {
+//    changeListener(event)
+//  }
+//  
+//  @CurrentTenant
+//  @Listener([PackageContentItem, PlatformTitleInstance, TitleInstance])
+//  void afterInsert(PostInsertEvent event) {
+//    changeListener(event)
+//  }
 }

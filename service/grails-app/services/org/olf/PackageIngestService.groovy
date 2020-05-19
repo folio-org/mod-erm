@@ -228,6 +228,7 @@ class PackageIngestService implements DataBinder {
                       bindData(embargo, emb.properties, [exclude: ['id']])
                     } else {
                       // New
+                      emb.save()
                       embargo = emb
                     }
                   }

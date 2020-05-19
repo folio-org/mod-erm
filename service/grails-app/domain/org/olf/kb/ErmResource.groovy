@@ -1,9 +1,11 @@
 package org.olf.kb
 
+import org.olf.CoverageService
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
 
 import grails.gorm.MultiTenant
+import grails.gorm.multitenancy.Tenants
 import java.time.LocalDate
 
 /**
@@ -55,6 +57,23 @@ public class ErmResource implements MultiTenant<ErmResource> {
             lastUpdated (nullable:true, blank:false)
   suppressFromDiscovery (nullable:false, blank:false)
                coverage (validator: CoverageStatement.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
+  }
+  
+  protected void checkCoverage() {
+    final Serializable tenantId = Tenants.currentId()
+    ErmResource.withNewSession {
+      Tenants.withId(tenantId) {
+        CoverageService.changeListener(this)
+      }
+    }
+  }
+  
+  def afterSave() {
+    checkCoverage()
+  }
+  
+  def afterUpdate() {
+    checkCoverage()
   }
   
   String toString() {
