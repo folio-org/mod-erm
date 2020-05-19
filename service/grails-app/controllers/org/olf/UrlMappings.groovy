@@ -161,7 +161,7 @@ class UrlMappings {
 //    "/export/future/$format?"   (controller: 'export', action: 'future', method: 'GET')
 //    "/export/dropped/$format?"  (controller: 'export', action: 'dropped', method: 'GET')
 
-    // Use kiwt namespace
-    "/kiwt/validate/$domain/$prop?" (controller: 'validate', method: 'POST')
+
+    "/erm/validate/$domain/$prop?" (controller: 'validate', method: 'POST')
   }
 }
