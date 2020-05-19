@@ -3,6 +3,7 @@ package org.olf
 import java.time.LocalDate
 
 import javax.servlet.http.HttpServletRequest
+
 import org.grails.datastore.mapping.validation.ValidationException
 import org.grails.web.servlet.mvc.GrailsWebRequest
 import org.hibernate.sql.JoinType
@@ -109,146 +110,9 @@ public class CoverageService {
     addToRequestIfPresent (statements)
   }
 
-  /**
-   * Given a list of coverage statements, check that we already record the extents of the coverage
-   * for the given title.
-   * Shared functionality between title objects like
-   * org.olf.kb.TitleInstance; org.olf.kb.PlatformTitleInstance; org.olf.kb.PackageContentItem; which
-   * allows a coverage block to grow and expand as we see more coverage statements.
-   * handles split coverage and other edge cases.
-   * @param title The title (org.olf.kb.TitleInstance, org.olf.kb.PlatformTitleInstance, org.olf.kb.PackageContentItem, etc) we are talking about
-   * @param coverage_statements The array of coverage statements [ [ startDate:YYYY-MM-DD, startVolume:...], [ stateDate:....
-   */
-//  @Transactional
-//  public void extend(final ErmResource title, final Iterable<CoverageStatementSchema> coverage_statements) {
-//    log.debug("Extend coverage statements on ${title}(${title.id}) with ${coverage_statements}")
-//
-//    // Iterate through each of the statements we want to add
-//    coverage_statements.each { CoverageStatementSchema cs ->
-//      
-//      if (cs.validate()) {
-//        final List<CoverageStatement> existing_coverage = CoverageStatement.createCriteria().list {
-//          eq 'resource', title
-//          or {
-//            and {
-//              lte ( 'startDate', cs.startDate )
-//              or {
-//                isNull ( 'endDate' )
-//                gte ( 'endDate', cs.startDate )
-//              }
-//            }
-//            
-//            if (cs.endDate != null) {
-//              and {
-//                lte ( 'startDate', cs.endDate )
-//                or {
-//                  isNull ( 'endDate' )
-//                  gte ( 'endDate', cs.endDate )
-//                }
-//              }
-//            }
-//          }
-//        }
-//
-//        if ( existing_coverage.size() > 0 ) {
-//          log.warn("Located ${existing_coverage.size()} existing coverage statements overlapping with ${cs}, determine extend or create additional")
-//
-//          // All these coverage statements overlap with the statement in question - we should be able to coalesce all of them to the min() and max() values
-//          def min_start_date = cs.startDate
-//          def min_start_issue = cs.startIssue
-//          def min_start_volume = cs.startVolume
-//          def max_end_date = cs.endDate
-//          def max_end_issue = cs.endIssue
-//          def max_end_volume = cs.endVolume
-//          
-//          boolean new_coverage_is_already_subsumed = false
-//          existing_coverage.each { final CoverageStatement existing_cs ->
-//
-//            log.debug("Checking existing start: ${existing_cs.startDate} end: ${existing_cs.endDate} new start: ${cs.startDate} new end: ${cs.endDate}")
-//            log.debug("test ${existing_cs.startDate} < ${min_start_date}")
-//
-//            // We gather together the extreme ends of all the current coverage statements and the new one (Starting with the new on in the declarations above)
-//            // For each existing coverage statement, expand out the max and min
-//
-//            // EG: If this coverage statement has a start date, and the min seen is null or less than the current earliest date, then update the min_start_date
-//            if ( ( existing_cs.startDate != null ) && ( ( min_start_date == null ) || ( existing_cs.startDate < min_start_date ) ) ) min_start_date = existing_cs.startDate
-//            if ( ( existing_cs.endDate != null ) && ( ( max_end_date == null ) || ( existing_cs.endDate < max_end_date ) ) ) max_end_date = existing_cs.endDate
-//            if ( ( existing_cs.startVolume != null ) && ( ( min_start_volume == null ) || ( existing_cs.startVolume < min_start_volume ) ) ) min_start_volume = existing_cs.startVolume
-//            if ( ( existing_cs.startIssue != null ) && ( ( min_start_issue == null ) || ( existing_cs.startIssue < min_start_issue ) ) ) min_start_issue = existing_cs.startIssue
-//            if ( ( existing_cs.endVolume != null ) && ( ( max_end_volume == null ) || ( existing_cs.endVolume > max_end_volume ) ) ) max_end_volume = existing_cs.endVolume
-//            if ( ( existing_cs.endIssue != null ) && ( ( max_end_issue == null ) || ( existing_cs.endIssue > max_end_issue ) ) ) max_end_issue = existing_cs.endIssue
-//
-//            // If the new coverage statement starts AFTER the one we are currently considering AND the statement we are currently
-//            // considering has an open end OR a date < the new statement, then the new coverage statement lies within the range of the first statement.
-//            if ( ( existing_cs.startDate <= cs.startDate ) &&               // If the existing coverage starts before the new
-//                 ( ( existing_cs.endDate == null ) ||                       // and the existing is open ended
-//                   ( existing_cs.endDate != null && cs.endDate == null ) || //     or the existing is not null and the new one is not set
-//                   ( existing_cs.endDate >= cs.endDate ) ) ) {              //     or the existing ends after the new coverage statement
-//              new_coverage_is_already_subsumed = true
-//              // We need to consider if we should set the END DATE in this scenario however!
-//            }
-//          }
-//  
-//          if ( new_coverage_is_already_subsumed ) {
-//            // The coverage we are being asked to merge is already covered by the existing statements. Do nothing.
-//            log.debug("Coverage is already subsumed - do nothing");
-//          }
-//          else {
-//            // After checking, we need to create a new coverage statement as no overlap was found
-//            log.debug("Remove existing coverage ${existing_coverage}");
-//
-//            // Delete existing coverage statements
-//            existing_coverage.each { final CoverageStatement existing_cs ->
-//             // We should remove the coverage from the ErmResource so that re-saving does not add it back in
-//             title?.coverage?.remove(existing_cs)
-//             existing_cs.delete(flush:true)
-//            }
-//
-//            def new_cs = new CoverageStatement()
-//            new_cs.resource = title
-//            new_cs.startDate = min_start_date
-//            new_cs.endDate = max_end_date
-//            new_cs.startVolume = nullIfBlank(min_start_volume)
-//            new_cs.startIssue = nullIfBlank(min_start_issue)
-//            new_cs.endVolume = nullIfBlank(max_end_volume)
-//            new_cs.endIssue = nullIfBlank(max_end_issue)
-//
-//            log.debug("   -> Replace with New coverage: ${new_cs}")
-//            new_cs.save(flush:true, failOnError:true)
-//          }
-//        }
-//        else {
-//          // no existing coverage -- create it
-//          log.debug("New coverage is not subsumed by existing - create a new coverage statement");
-//          def new_cs = new CoverageStatement()
-//          new_cs.resource = title
-//          new_cs.startDate = cs.startDate
-//          new_cs.endDate = cs.endDate
-//          new_cs.startVolume = ("${cs.startVolume}".trim() ? cs.startVolume : null)
-//          new_cs.startIssue = ("${cs.startIssue}".trim() ? cs.startIssue : null)
-//          new_cs.endVolume = ("${cs.endVolume}".trim() ? cs.endVolume : null)
-//          new_cs.endIssue = ("${cs.endIssue}".trim() ? cs.endIssue : null)
-//          new_cs.save(flush:true, failOnError:true)
-//        }
-//      } else {
-//        
-//        // Not valid coverage statement
-//        cs.errors.allErrors.each { ObjectError error ->
-//          log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
-//        }
-//      }
-//    }
-//  }
-
   public String nullIfBlank( final String value ) {
     return (value?.trim()?.length() ?: 0) > 0 ? value : null
   }
-
-//  public void coalesceCoverageStatements() {
-//    CoverageStatement.executeQuery('select cs.resource.id,count(*) from CoverageStatement as cs group by cs.startDate, cs,endDate').each {
-//      log.debug("statements for ${it[0]} has ${it[1]} possibly duplicate coverage statements");
-//    }
-//  }
   
   /**
    * Set coverage from schema
@@ -257,56 +121,50 @@ public class CoverageService {
     
     boolean changed = false
     final Set<CoverageStatement> statements = []
-    
-    // Handle this in an isolated transaction so we can rollback this part only if needed.
-//    PackageContentItem.withNewTransaction { t ->
-      try {
-        
-        // Clear the existing coverage, or initialize to empty set.
-        if (resource.coverage) {
-          statements.addAll( resource.coverage )
-          resource.coverage.each { resource.removeFromCoverage(it) }
-          resource.save(failOnError: true) // Necessary to remove the orphans.
-        }
-        
-        for ( CoverageStatementSchema cs : coverage_statements ) {
-          if (cs.validate()) {
-            CoverageStatement new_cs = new CoverageStatement([
-              startDate   : cs.startDate,
-              endDate     : cs.endDate,
-              startVolume : ("${cs.startVolume}".trim() ? cs.startVolume : null),
-              startIssue  : ("${cs.startIssue}".trim() ? cs.startIssue : null),
-              endVolume   : ("${cs.endVolume}".trim() ? cs.endVolume : null),
-              endIssue    : ("${cs.endIssue}".trim() ? cs.endIssue : null)
-            ])
-  
-            resource.addToCoverage( new_cs )
-            
-            // Validate the object at each step.
-            if (!resource.validate()) {
-              resource.errors.allErrors.each { ObjectError error ->
-                log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
-              }
-              throw new ValidationException('Adding coverage statement invalidates PCI')
-            }
-            
-            resource.save()
-          } else {
-            // Not valid coverage statement
-            cs.errors.allErrors.each { ObjectError error ->
+    try {
+      
+      // Clear the existing coverage, or initialize to empty set.
+      if (resource.coverage) {
+        statements.addAll( resource.coverage )
+        resource.coverage.each { resource.removeFromCoverage(it) }
+        resource.save(failOnError: true) // Necessary to remove the orphans.
+      }
+      
+      for ( CoverageStatementSchema cs : coverage_statements ) {
+        if (cs.validate()) {
+          CoverageStatement new_cs = new CoverageStatement([
+            startDate   : cs.startDate,
+            endDate     : cs.endDate,
+            startVolume : ("${cs.startVolume}".trim() ? cs.startVolume : null),
+            startIssue  : ("${cs.startIssue}".trim() ? cs.startIssue : null),
+            endVolume   : ("${cs.endVolume}".trim() ? cs.endVolume : null),
+            endIssue    : ("${cs.endIssue}".trim() ? cs.endIssue : null)
+          ])
+
+          resource.addToCoverage( new_cs )
+          
+          // Validate the object at each step.
+          if (!resource.validate()) {
+            resource.errors.allErrors.each { ObjectError error ->
               log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
             }
+            throw new ValidationException('Adding coverage statement invalidates PCI')
+          }
+          
+          resource.save()
+        } else {
+          // Not valid coverage statement
+          cs.errors.allErrors.each { ObjectError error ->
+            log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
           }
         }
-        
-        log.debug("New coverage saved")
-      } catch (ValidationException e) {
-        // If anything goes wrong we should rollback.
-//        t.setRollbackOnly()
-        log.error("Coverage changes to Resource ${resource.id} not saved", e)
-        changed = false
       }
-//    }
+      
+      log.debug("New coverage saved")
+    } catch (ValidationException e) {
+      log.error("Coverage changes to Resource ${resource.id} not saved", e)
+      changed = false
+    }
     
     if (!changed) {
       // Revert the coverage set.
@@ -315,7 +173,7 @@ public class CoverageService {
       resource.save(failOnError: true)
     }
     
-    // Do nothing if not changed.
+    // Do nothing if changed.
   }
   
   /**
@@ -525,20 +383,14 @@ public class CoverageService {
   public static void changeListener(ErmResource res) {
     PackageContentItem pci = asPCI(res)
     if ( pci ) {
-      log.debug 'PCI updated'
-//      if (pci.isDirty('coverage')) {
-        log.debug "Regenerate PTI's coverage"
-        calculateCoverage( pci.pti )
-//      }
+      log.debug "PCI updated, regenerate PTI's coverage"
+      calculateCoverage( pci.pti )
     }
 
     PlatformTitleInstance pti = asPTI(res)
     if ( pti ) {
-      log.debug 'PTI updated'
-//      if (pti.isDirty('coverage')) {
-        log.debug "Regenerate PTI's coverage"
-        calculateCoverage( pti.titleInstance )
-//      }
+      log.debug "PTI updated regenerate PTI's coverage"
+      calculateCoverage( pti.titleInstance )
     }
 
     TitleInstance ti = asTI(res)
