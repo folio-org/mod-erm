@@ -69,6 +69,14 @@ public class ErmResource implements MultiTenant<ErmResource> {
     }.curry(tenantId, me))
   }
   
+  def afterInsert() {
+    checkCoverage()
+  }
+  
+  def afterUpdate() {
+    checkCoverage()
+  }
+  
   String toString() {
     name
   }

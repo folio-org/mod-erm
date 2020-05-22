@@ -42,13 +42,5 @@ public class PlatformTitleInstance extends ErmResource implements MultiTenant<Pl
                platform(nullable:false, blank:false)
                     url(nullable:true, blank:false)
   }
-  
-  def afterInsert() {
-    checkCoverage()
-  }
-  
-  def afterUpdate() {
-    checkCoverage()
-  }
 
 }

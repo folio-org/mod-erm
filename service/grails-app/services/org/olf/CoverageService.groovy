@@ -380,7 +380,25 @@ public class CoverageService {
   }
   
   public static void changeListener(Serializable resId) {
-    final ErmResource res = ErmResource.get(resId)
+    
+    // Inserts currently aren't in the database when we try and re-read it back...
+    // I don't like this, but we keep checking for a couple of seconds.
+    final long totalTimeToWait = 1000 * 3 // 3 seconds.
+    final int increment = 200 // 200 milliseconds
+    long timeWaited = 0
+    
+    ErmResource res = ErmResource.get(resId)
+    while (res == null && timeWaited < totalTimeToWait) {
+      log.debug "Wait for the resource ${resId}"
+      sleep(increment)
+      timeWaited += increment
+      res = ErmResource.get(resId)
+    }
+    
+    if (res == null) {
+      log.error "Could not read resource with ID ${resId}"
+    }
+    
     final PackageContentItem pci = asPCI(res)
     if ( pci ) {
       log.debug "PCI updated, regenerate PTI's coverage"
