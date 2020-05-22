@@ -29,8 +29,8 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
                                  KBCache cache,
                                  boolean trustedSourceTI = false) {
 
-    log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}")
-    def jpf_api = new HTTPBuilder(base_url)
+    log.debug("GOKbOAIAdapter::freshen - fetching from URI: ${base_url}/packages")
+    def jpf_api = new HTTPBuilder("${base_url}/packages")
 
     def query_params = [
         'verb': 'ListRecords',
@@ -51,7 +51,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     while ( found_records ) {
 
 
-      log.debug("** GET ${base_url} ${query_params}")
+      log.debug("** GET ${base_url}/packages ${query_params}")
 
       jpf_api.request(Method.GET) { req ->
         // uri.path=''
@@ -253,6 +253,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           def tipp_url = tipp_entry.url?.text()
           def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
           def tipp_platform_name = tipp_entry.platform?.name?.text()
+          def title_source_identifier = "org.gokb.cred.${tipp_entry?.title?.type}:${tipp_entry?.title?.@id?.toString()}"
 
           String access_start = tipp_entry.access?.@start?.toString()
           String access_end = tipp_entry.access?.@end?.toString()
@@ -269,6 +270,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             "title": tipp_title,
             "instanceMedium": tipp_medium,
             "instanceMedia": tipp_media,
+            "sourceIdentifier": title_source_identifier,
             "instanceIdentifiers": tipp_instance_identifiers,
             "siblingInstanceIdentifiers": tipp_sibling_identifiers,
             "coverage": tipp_coverage,
@@ -306,6 +308,64 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   public boolean activate(Map params, KBCache cache) {
     throw new RuntimeException("Not supported by this KB provider")
     return false
+  }
+
+  public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String subType) {
+    if (type.toLowerCase() == "book" && type.toLowerCase() == "monograph") {
+      log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
+      Map ti = [:];
+
+      log.debug("GOKbOAIAdapter::getTitleInstance - fetching from URI: ${base_url}/titles")
+      def jpf_api = new HTTPBuilder("${base_url}/titles")
+
+      def query_params = [
+          'verb': 'GetRecord',
+          'identifier': goKbIdentifier,
+          'metadataPrefix': 'gokb'
+      ]
+
+      log.debug("** GET ${base_url}/titles ${query_params}")
+
+      jpf_api.request(Method.GET) { req ->
+        headers.Accept = 'application/xml'
+        uri.query=query_params
+
+        response.success = { resp, xml ->
+          log.debug("got titleInstance data from OAI, ...")
+
+          ti = gokbToERMSecondary(xml.GetRecord.record, subType)
+        }
+
+        response.failure = { resp ->
+          log.error "Request failed with status ${resp.status}"
+        }
+      }
+      return ti;
+    } else {
+      log.debug("No secondary enrichment call needed for type: ${type}")
+    }
+  }
+
+  private Map gokbToERMSecondary(Object xml_gokb_record, String subType) {
+    /* We take in the subType here as we may need to do different things
+     * with the data depending on whether it refers to an electronic/print TI
+    */
+    Map ermTitle = [:]
+    def title_record = xml_gokb_record?.metadata?.gokb?.title
+
+    ermTitle.monographEdition = title_record?.editionStatement
+    ermTitle.monographVolume = title_record?.volumeNumber
+    ermTitle.dateMonographPublished = subType.toLowerCase() == "electronic" ?
+      title_record?.dateFirstOnline :
+      title_record?.dateFirstInPrint
+    ermTitle.firstAuthor = title_record?.firstAuthor
+    ermTitle.firstEditor = title_record?.firstEditor
+
+    return ermTitle;
+  }
+
+  public boolean requiresSecondaryEnrichmentCall() {
+    true
   }
 
   public String makePackageReference(Map params) {

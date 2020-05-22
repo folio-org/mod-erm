@@ -163,5 +163,7 @@ databaseChangeLog = {
   changeSet(author: "efreestone (manual)", id: "20200519-1626-001") {
     addUniqueConstraint(tableName: "subscription_agreement", constraintName: "UC_SUBSCRIPTION_AGREEMENT_NAME_COL", columnNames: "sa_name")
   }
+
+  //TODO Add migration to remove "packages" away from existing GoKBAdapter sources
 }
 
