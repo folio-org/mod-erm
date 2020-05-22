@@ -289,7 +289,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
                  type column: 'ent_type'
                  note column: 'ent_note', type: 'text'
               enabled column: 'ent_enabled'
-       suppressFromDiscovery: 'ent_suppress_discovery'
+suppressFromDiscovery column: 'ent_suppress_discovery'
        contentUpdated column: 'ent_content_updated'
            activeFrom column: 'ent_active_from'
              activeTo column: 'ent_active_to'
