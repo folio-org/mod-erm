@@ -3,7 +3,7 @@ package org.olf.kb
 import org.olf.CoverageService
 import org.olf.erm.Entitlement
 import com.k_int.web.toolkit.refdata.RefdataValue
-
+import grails.async.Promises
 import grails.gorm.MultiTenant
 import grails.gorm.multitenancy.Tenants
 import java.time.LocalDate
@@ -61,19 +61,12 @@ public class ErmResource implements MultiTenant<ErmResource> {
   
   protected void checkCoverage() {
     final Serializable tenantId = Tenants.currentId()
-    ErmResource.withNewSession {
-      Tenants.withId(tenantId) {
-        CoverageService.changeListener(this)
+    final Serializable me = this.id
+    Promises.task ({ final Serializable tid, final Serializable resId ->
+      Tenants.withId(tid) {
+        CoverageService.changeListener(resId)
       }
-    }
-  }
-  
-  def afterSave() {
-    checkCoverage()
-  }
-  
-  def afterUpdate() {
-    checkCoverage()
+    }.curry(tenantId, me))
   }
   
   String toString() {

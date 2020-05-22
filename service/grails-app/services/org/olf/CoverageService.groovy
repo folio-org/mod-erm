@@ -126,8 +126,8 @@ public class CoverageService {
       // Clear the existing coverage, or initialize to empty set.
       if (resource.coverage) {
         statements.addAll( resource.coverage )
-        resource.coverage.each { resource.removeFromCoverage(it) }
-        resource.save(failOnError: true) // Necessary to remove the orphans.
+        resource.coverage.collect().each { resource.removeFromCoverage(it) }
+        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
       }
       
       for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -148,7 +148,7 @@ public class CoverageService {
             resource.errors.allErrors.each { ObjectError error ->
               log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
             }
-            throw new ValidationException('Adding coverage statement invalidates PCI')
+            throw new ValidationException('Adding coverage statement invalidates Resource', resource.errors)
           }
           
           resource.save()
@@ -161,19 +161,18 @@ public class CoverageService {
       }
       
       log.debug("New coverage saved")
+      changed = true
     } catch (ValidationException e) {
       log.error("Coverage changes to Resource ${resource.id} not saved", e)
-      changed = false
     }
     
     if (!changed) {
       // Revert the coverage set.
       if (!resource.coverage) resource.coverage = []
       resource.coverage.addAll( statements )
-      resource.save(failOnError: true)
     }
     
-    // Do nothing if changed.
+    resource.save(failOnError: true, flush:true) // Save.
   }
   
   /**
@@ -380,20 +379,21 @@ public class CoverageService {
     res instanceof TitleInstance ? res : null
   }
   
-  public static void changeListener(ErmResource res) {
-    PackageContentItem pci = asPCI(res)
+  public static void changeListener(Serializable resId) {
+    final ErmResource res = ErmResource.get(resId)
+    final PackageContentItem pci = asPCI(res)
     if ( pci ) {
       log.debug "PCI updated, regenerate PTI's coverage"
       calculateCoverage( pci.pti )
     }
 
-    PlatformTitleInstance pti = asPTI(res)
+    final PlatformTitleInstance pti = asPTI(res)
     if ( pti ) {
-      log.debug "PTI updated regenerate PTI's coverage"
+      log.debug "PTI updated regenerate TI's coverage"
       calculateCoverage( pti.titleInstance )
     }
 
-    TitleInstance ti = asTI(res)
+    final TitleInstance ti = asTI(res)
     if ( ti ) {
       log.debug 'TI updated'
     }

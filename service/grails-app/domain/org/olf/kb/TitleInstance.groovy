@@ -129,4 +129,12 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
   public String toString() {
     "${name} (${type?.value}/${subType?.value})"
   }
+  
+  def afterInsert() {
+    checkCoverage()
+  }
+  
+  def afterUpdate() {
+    checkCoverage()
+  }
 }
