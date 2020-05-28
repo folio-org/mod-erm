@@ -194,6 +194,42 @@ public class KBart implements Serializable {
     return header as String[]
   }
 
+  static String getIdentifierValue(Object identifiers) {
+    if (identifiers) {
+      Iterator iter = identifiers.iterator();
+      String identifierValue;
+      String doi, eissn, isbn, issn;
+      while (iter.hasNext()) {
+        IdentifierOccurrence thisIdent = iter.next()
+        Identifier ident =  thisIdent.identifier
+          if (ident?.ns?.value == "eissn") {
+            eissn = ident.value
+          } else if (ident?.ns?.value == "issn") {
+            issn = ident.value
+          } else if (ident?.ns?.value == "isbn") {
+            isbn = ident.value
+          } else if (ident?.ns?.value == "doi") {
+            doi = ident.value
+          }
+      }
+
+      if (eissn) {
+        identifierValue = eissn
+      } else if (issn) {
+        identifierValue = issn
+      } else if (isbn) {
+        identifierValue = isbn
+      } else if (doi) {
+        identifierValue = doi
+      } else {
+        identifierValue = " "
+      }
+
+      return identifierValue;
+    }
+
+    return " ";
+  }
 
   /*
    * Still a WIP.  Needs processing of obj[1] and obj[2]. For now, test data does not provide direct
@@ -237,44 +273,15 @@ public class KBart implements Serializable {
         }
 
         Object identifiers_obj = ti.identifiers
-        if (identifiers_obj) {
-          Iterator iter = ti.identifiers.iterator();
-          String identifierValue;
-          String doi, eissn, isbn, issn;
-          while (iter.hasNext()) {
-            IdentifierOccurrence thisIdent = iter.next()
-            Identifier ident =  thisIdent.identifier
-              if (ident?.ns?.value == "eissn") {
-                eissn = ident.value
-              } else if (ident?.ns?.value == "issn") {
-                issn = ident.value
-              } else if (ident?.ns?.value == "isbn") {
-                isbn = ident.value
-              } else if (ident?.ns?.value == "doi") {
-                doi = ident.value
-              }
-          }
-
-          if (eissn) {
-            identifierValue = eissn
-          } else if (issn) {
-            identifierValue = issn
-          } else if (isbn) {
-            identifierValue = isbn
-          } else if (doi) {
-            identifierValue = doi
-          } else {
-            identifierValue = " "
-          }
-
-          if (ti.subType?.value == "print") {
-            kbart.print_identifier = identifierValue
-          }
-          else {
-            kbart.online_identifier = identifierValue
-          }
+        Object siblingIdentifiers_obj = ti.siblingIdentifiers
+       
+        if (ti.subType?.value == "print") {
+          kbart.print_identifier = getIdentifierValue(identifiers_obj)
+          kbart.online_identifier = getIdentifierValue(siblingIdentifiers_obj)
+        } else {
+          kbart.online_identifier = getIdentifierValue(identifiers_obj)
+          kbart.print_identifier = getIdentifierValue(siblingIdentifiers_obj)
         }
-
 
         // get coverage statements. if there is more than one we need to clone the kbart object, one for
         // each coverage statement
@@ -314,7 +321,6 @@ public class KBart implements Serializable {
         }
         
       }
-
 
     }
     return kbartList
