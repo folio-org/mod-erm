@@ -147,10 +147,10 @@ databaseChangeLog = {
      grailsChange {
       change {
         // Return the list of names that have duplicates
-        List nonUniqueNames = sql.rows("SELECT sa.sa_name FROM diku_mod_agreements.subscription_agreement as sa GROUP BY sa.sa_name HAVING COUNT(*) > 1")
+        List nonUniqueNames = sql.rows("SELECT sa.sa_name FROM ${database.defaultSchemaName}.subscription_agreement as sa GROUP BY sa.sa_name HAVING COUNT(*) > 1".toString())
         nonUniqueNames.each{
           // For each of those names, return a list of the agreement ids that have that name
-          List rowsWithGivenName = sql.rows("SELECT sa_id FROM diku_mod_agreements.subscription_agreement as sa WHERE sa.sa_name = :name", [name: it.sa_name])
+          List rowsWithGivenName = sql.rows("SELECT sa_id FROM ${database.defaultSchemaName}.subscription_agreement as sa WHERE sa.sa_name = :name".toString(), [name: it.sa_name])
           rowsWithGivenName.eachWithIndex {agreement, i ->
             // For each of those ids, add an increment, so ["A", "A", "A"] becomes ["A_1", "A_2", "A_3"]
             sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement SET sa_name = CONCAT(sa_name, CONCAT('_', :index)) WHERE sa_id = :id", [id: agreement.sa_id, index: i + 1])
@@ -164,6 +164,96 @@ databaseChangeLog = {
     addUniqueConstraint(tableName: "subscription_agreement", constraintName: "UC_SUBSCRIPTION_AGREEMENT_NAME_COL", columnNames: "sa_name")
   }
 
-  //TODO Add migration to remove "packages" away from existing GoKBAdapter sources
+  changeSet(author: "claudia (manual)", id: "202005201645-1") {
+    addColumn(tableName: "entitlement") {
+      column(name: "ent_suppress_discovery", type: "boolean")
+    }
+  }
+  // Set all existing entitlements to not-suppressed
+  changeSet(author: "claudia (manual)", id: "202005201645-2") {
+    grailsChange {
+      change {
+	      sql.execute("""
+	        UPDATE ${database.defaultSchemaName}.entitlement SET ent_suppress_discovery = FALSE
+            WHERE ent_suppress_discovery is null
+	      """.toString())
+      }
+    }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005201645-3") {
+    addNotNullConstraint(tableName: "entitlement", columnName: "ent_suppress_discovery", columnDataType: "boolean")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005221345-1") {
+    addColumn(tableName: "erm_resource") {
+      column(name: "res_suppress_discovery", type: "boolean")
+    }
+  }
+  // Set all existing resources to not-suppressed
+  changeSet(author: "claudia (manual)", id: "202005221345-2") {
+    grailsChange {
+      change {
+	      sql.execute("""
+	        UPDATE ${database.defaultSchemaName}.erm_resource SET res_suppress_discovery = FALSE
+            WHERE res_suppress_discovery is null
+	      """.toString())
+      }
+    }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005221345-3") {
+    addNotNullConstraint(tableName: "erm_resource", columnName: "res_suppress_discovery", columnDataType: "boolean")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-1") {
+        createTable(tableName: "entitlement_tag") {
+            column(name: "entitlement_tags_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "tag_id", type: "BIGINT")
+        }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-2") {
+        addForeignKeyConstraint(baseColumnNames: "entitlement_tags_id", baseTableName: "entitlement_tag", constraintName: "ent_tag_to_ent", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "ent_id", referencedTableName: "entitlement")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-3") {
+        addForeignKeyConstraint(baseColumnNames: "tag_id", baseTableName: "entitlement_tag", constraintName: "ent_tag_to_tag", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "tag")
+  }
+
+  changeSet(author: "claudia (manual)", id: "2020052515-4") {
+        createTable(tableName: "erm_resource_tag") {
+            column(name: "erm_resource_tags_id", type: "VARCHAR(36)") {
+                constraints(nullable: "false")
+            }
+
+            column(name: "tag_id", type: "BIGINT")
+        }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-5") {
+        addForeignKeyConstraint(baseColumnNames: "erm_resource_tags_id", baseTableName: "erm_resource_tag", constraintName: "er_tag_to_er", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_resource")
+  }
+
+  changeSet(author: "claudia (manual)", id: "202005251415-6") {
+        addForeignKeyConstraint(baseColumnNames: "tag_id", baseTableName: "erm_resource_tag", constraintName: "er_tag_to_tag", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "tag")
+  }
+
+  // Migration to remove "packages" from existing GoKBAdapter sources
+  changeSet(author: "efreestone (manual)", id: "20200527-1554-001") {
+     grailsChange {
+      change {
+        // Return the list of remoteKBs of type GOKbOAIAdapter
+        List goKbRemoteKbs = sql.rows("SELECT * FROM ${database.defaultSchemaName}.remotekb WHERE rkb_type='org.olf.kb.adapters.GOKbOAIAdapter'".toString())
+        goKbRemoteKbs.each{
+          String newUri = it.rkb_uri.replace("/packages", "")
+          sql.execute("UPDATE ${database.defaultSchemaName}.remotekb SET rkb_uri = :uri", [uri: newUri])
+        }
+      }
+    }
+  }
 }
 

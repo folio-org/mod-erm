@@ -6,6 +6,7 @@ import org.olf.dataimport.internal.InternalPackageImpl
 import org.olf.dataimport.internal.PackageSchema
 import org.olf.kb.KBCache
 import org.olf.kb.KBCacheUpdater
+import org.olf.TitleEnricherService
 import org.springframework.validation.BindingResult
 
 import grails.web.databinding.DataBinder
@@ -21,7 +22,6 @@ import groovyx.net.http.*
 
 @Slf4j
 public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
-
 
   public void freshenPackageData(String source_name,
                                  String base_url,
@@ -118,6 +118,9 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     result.count = 0
 
     log.debug("GOKbOAIAdapter::processPage(${cursor},...")
+
+    // Remove the ThreadLocal<Set> containing ids of TIs enriched by this process.
+    TitleEnricherService.enrichedIds.remove()
 
     oai_page.ListRecords.record.each { record ->
       result.count++
@@ -253,7 +256,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           def tipp_url = tipp_entry.url?.text()
           def tipp_platform_url = tipp_entry.platform?.primaryUrl?.text()
           def tipp_platform_name = tipp_entry.platform?.name?.text()
-          def title_source_identifier = "org.gokb.cred.${tipp_entry?.title?.type}:${tipp_entry?.title?.@id?.toString()}"
+          def title_source_identifier = tipp_entry?.title?.@uuid?.toString()
 
           String access_start = tipp_entry.access?.@start?.toString()
           String access_end = tipp_entry.access?.@end?.toString()
@@ -311,7 +314,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   }
 
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String subType) {
-    if (type.toLowerCase() == "book" && type.toLowerCase() == "monograph") {
+    if (type.toLowerCase() == "book" || type.toLowerCase() == "monograph") {
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
       Map ti = [:];
 
@@ -353,13 +356,18 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     Map ermTitle = [:]
     def title_record = xml_gokb_record?.metadata?.gokb?.title
 
-    ermTitle.monographEdition = title_record?.editionStatement
-    ermTitle.monographVolume = title_record?.volumeNumber
+    ermTitle.monographEdition = title_record?.editionStatement.toString()
+    ermTitle.monographVolume = title_record?.volumeNumber.toString()
     ermTitle.dateMonographPublished = subType.toLowerCase() == "electronic" ?
-      title_record?.dateFirstOnline :
-      title_record?.dateFirstInPrint
-    ermTitle.firstAuthor = title_record?.firstAuthor
-    ermTitle.firstEditor = title_record?.firstEditor
+      title_record?.dateFirstOnline.toString() :
+      title_record?.dateFirstInPrint.toString()
+
+    if (ermTitle.dateMonographPublished) {
+      // Incoming date information has time we need to strip out
+      ermTitle.dateMonographPublished = ermTitle.dateMonographPublished.replace(" 00:00:00.0", "")
+    }
+    ermTitle.firstAuthor = title_record?.firstAuthor.toString()
+    ermTitle.firstEditor = title_record?.firstEditor.toString()
 
     return ermTitle;
   }
