@@ -275,6 +275,10 @@
           "methods": ["GET"],
           "pathPattern": "/erm/titles/{id}",
           "permissionsRequired": [ "erm.titles.item.get" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/titles/{id}",
+          "permissionsRequired": [ "erm.titles.item.put" ]
         },
         
         {
@@ -289,6 +293,20 @@
           "methods": ["PUT"],
           "pathPattern": "/erm/pci/{id}",
           "permissionsRequired": [ "erm.pci.item.put" ]
+        },
+        
+        {
+          "methods": ["GET"],
+          "pathPattern": "/erm/pti",
+          "permissionsRequired": [ "erm.pti.collection.get" ]
+        },{
+          "methods": ["GET"],
+          "pathPattern": "/erm/pti/{id}",
+          "permissionsRequired": [ "erm.pti.item.get" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/pti/{id}",
+          "permissionsRequired": [ "erm.pti.item.put" ]
         },
   
         {
@@ -505,6 +523,20 @@
   },
   
   {
+    "permissionName": "erm.pti.view",
+    "subPermissions": [ 
+      "erm.pti.collection.get",
+      "erm.pti.item.get"
+    ]
+  },{
+    "permissionName": "erm.pti.edit",
+    "subPermissions": [
+      "erm.pti.view",
+      "erm.pti.item.put"
+    ]
+  },
+  
+  {
     "permissionName": "erm.resources.view",
     "subPermissions": [
       "erm.resources.collection.get",
@@ -515,13 +547,23 @@
       "erm.entitlements.item.get",
       "erm.kbs.collection.get"
     ]
-  },{
+  },
+  
+  {
     "permissionName": "erm.titles.view",
     "subPermissions": [
       "erm.titles.collection.get",
       "erm.titles.item.get"
     ]
   },{
+    "permissionName": "erm.titles.edit",
+    "subPermissions": [
+      "erm.titles.view",
+      "erm.titles.item.put"
+    ]
+  },
+  
+  {
     "permissionName": "erm.custprops.view",
     "subPermissions": [ 
       "erm.custprops.collection.get",
