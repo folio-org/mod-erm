@@ -93,6 +93,10 @@
           "methods": ["GET"],
           "pathPattern": "/erm/entitlements/{id}",
           "permissionsRequired": [ "erm.entitlements.item.get" ]
+        },{
+          "methods": ["PUT"],
+          "pathPattern": "/erm/entitlements/{id}",
+          "permissionsRequired": [ "erm.entitlements.item.put" ]
         },
         
         {
@@ -543,9 +547,22 @@
       "erm.resources.item.get",
       "erm.resources.item.entitlement.get",
       "erm.resources.item.entitlementOptions.get",
-      "erm.entitlements.collection.get",
-      "erm.entitlements.item.get",
+      "erm.entitlements.view",
       "erm.kbs.collection.get"
+    ]
+  },
+  
+  {
+    "permissionName": "erm.entitlements.view",
+    "subPermissions": [
+      "erm.entitlements.collection.get",
+      "erm.entitlements.item.get"
+    ]
+  },{
+    "permissionName": "erm.entitlements.edit",
+    "subPermissions": [
+      "erm.entitlements.view",
+      "erm.entitlements.item.put"
     ]
   },
   
