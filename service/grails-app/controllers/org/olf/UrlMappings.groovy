@@ -89,7 +89,7 @@ class UrlMappings {
     }
 
     "/erm/pci"(resources:'packageContentItem')
-    "/erm/entitlements"(resources:'entitlement') {
+    "/erm/entitlements"(resources:'entitlement', excludes: ['patch', 'save', 'create', 'edit', 'delete']) {
       collection {
         "/external" ( action: 'external' )
       }
