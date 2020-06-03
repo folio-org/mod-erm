@@ -314,9 +314,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
   }
 
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String subType) {
-    Map ti = [:];
+
     if (type.toLowerCase() == "book" || type.toLowerCase() == "monograph") {
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
+      Map ti = [:];
 
       log.debug("GOKbOAIAdapter::getTitleInstance - fetching from URI: ${base_url}/titles")
       def jpf_api = new HTTPBuilder("${base_url}/titles")
@@ -343,10 +344,10 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           log.error "Request failed with status ${resp.status}"
         }
       }
+      return ti;
     } else {
       log.debug("No secondary enrichment call needed for type: ${type}")
     }
-    return ti;
   }
 
   private Map gokbToERMSecondary(Object xml_gokb_record, String subType) {
