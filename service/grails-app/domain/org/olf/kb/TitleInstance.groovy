@@ -121,6 +121,23 @@ public class TitleInstance extends ErmResource implements MultiTenant<TitleInsta
     
     theSiblingIdentifiers
   }
+  
+  private Set<TitleInstance> relatedTitles = null
+  public Set<TitleInstance> getRelatedTitles() {
+    if (relatedTitles == null) {
+      relatedTitles = []
+      final String theWork = this.work?.id
+      final String me = this.id
+      if (me && theWork) {
+        
+        relatedTitles.addAll( TitleInstance.createCriteria().list {            
+          eq ('work.id', theWork)
+          ne ('id', me)
+        })
+      }
+    }
+    relatedTitles
+  }
 
   public String getCodexSummary() {
     return "${this}";
