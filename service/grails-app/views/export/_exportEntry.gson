@@ -55,6 +55,9 @@ Map customCoverageMap = request?.getAttribute("${controllerName}.${actionName}.c
 List customCoverageList = customCoverageMap?.get("${resource.id}") 
 
 json {
+
+  tags g.render(resource.tags)
+
   if (via_package) {
     final def pkg = ent.resource
     
@@ -100,7 +103,7 @@ json {
     'customCoverage' false
   }
   
-  title g.render(ti, [expand: ['identifiers', 'type', 'subType'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances']])
+  title g.render(ti, [expand: ['identifiers', 'type', 'subType', 'tags'], excludes: ['entitlements', 'coverage', 'work', 'platformInstances']])
 
 }
 
