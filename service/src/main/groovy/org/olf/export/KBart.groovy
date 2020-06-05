@@ -194,6 +194,21 @@ public class KBart implements Serializable {
     return header as String[]
   }
 
+  static String findPissnIdentifier(Object identifiers) {
+    if (identifiers) {
+      Iterator iter = identifiers.iterator();
+      String identifierValue;
+      while (iter.hasNext()) {
+        IdentifierOccurrence thisIdent = iter.next()
+        Identifier ident =  thisIdent.identifier
+          if (ident?.ns?.value == "pissn") {
+            return ident.value
+          }
+      }
+    }  
+    return " ";
+  }
+
   static String getIdentifierValue(Object identifiers) {
     if (identifiers) {
       Iterator iter = identifiers.iterator();
@@ -273,14 +288,42 @@ public class KBart implements Serializable {
         }
 
         Object identifiers_obj = ti.identifiers
-        Object siblingIdentifiers_obj = ti.siblingIdentifiers
-       
+
+        /* List<String> siblingPrintIdentifiers = new ArrayList<String>();
+        List<String> siblingElectronicIdentifiers = new ArrayList<String>();
+
+        ti.relatedTitles.each { relatedTitle ->
+            if (relatedTitle.subType.value == "print" && !siblingPrintIdentifier) {
+              siblingPrintIdentifiers.add(getIdentifierValue(relatedTitle.identifiers));
+            } else if (relatedTitle.subType.value == "electronic" && !siblingElectronicIdentifier) {
+              siblingElectronicIdentifiers.add(getIdentifierValue(relatedTitle.identifiers));
+            }
+        }
+
+        // debug
+        siblingPrintIdentifiers.add('debug-value');
+        siblingPrintIdentifiers.each { printIdentifier ->
+          log.debug(printIdentifier)
+        }
+        log.debug('ganzes Array: ' + siblingPrintIdentifiers); */
+
         if (ti.subType?.value == "print") {
-          kbart.print_identifier = getIdentifierValue(identifiers_obj)
-          kbart.online_identifier = getIdentifierValue(siblingIdentifiers_obj)
-        } else {
-          kbart.online_identifier = getIdentifierValue(identifiers_obj)
-          kbart.print_identifier = getIdentifierValue(siblingIdentifiers_obj)
+          kbart.print_identifier = getIdentifierValue(identifiers_obj);
+          ti.relatedTitles.each { relatedTitle ->
+            if (relatedTitle.subType.value == "electronic" && !kbart.online_identifier) {
+              kbart.online_identifier = getIdentifierValue(relatedTitle.identifiers);
+            }
+          }
+        } else if (ti.subType?.value == "electronic") {
+          kbart.online_identifier = getIdentifierValue(identifiers_obj);
+          kbart.print_identifier = findPissnIdentifier(identifiers_obj);
+          if (!kbart.print_identifier) {
+            ti.relatedTitles.each { relatedTitle ->
+              if (relatedTitle.subType.value == "print" && !kbart.print_identifier) {
+                kbart.print_identifier = getIdentifierValue(relatedTitle.identifiers);
+              }
+            }
+          }
         }
 
         // get coverage statements. if there is more than one we need to clone the kbart object, one for
