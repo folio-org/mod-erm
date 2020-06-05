@@ -283,7 +283,7 @@ public class KBart implements Serializable {
           }
         } else if (ti.subType?.value == "electronic") {
           kbart.online_identifier = getIdentifierValue(identifiers_obj);
-          kbart.print_identifier = identifiers_obj.find { it.identifier.ns.value == "pissn"}?.identifier.value;
+          kbart.print_identifier = identifiers_obj.find { it.identifier.ns.value == "pissn"}?.identifier?.value;
           if (!kbart.print_identifier) {
             ti.relatedTitles?.each { relatedTitle ->
               if (relatedTitle.subType.value == "print" && !kbart.print_identifier) {
