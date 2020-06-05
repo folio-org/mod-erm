@@ -34,6 +34,7 @@ switch (resource) {
     break
   case { it instanceof PlatformTitleInstance }:
     PlatformTitleInstance pti = resource as PlatformTitleInstance
+    ent = GrailsHibernateUtil.unwrapIfProxy(tuple[2]) as Entitlement
     ti = pti.titleInstance
     the_platform = pti.platform
     the_url = pti.url
