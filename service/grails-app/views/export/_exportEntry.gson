@@ -68,7 +68,9 @@ json {
     }
   }
   
-  agreementLine g.render(ent, [includes:["id", "tags", "suppressFromDiscovery"], expand:["tags"]])
+  "agreementLine" g.render(ent, [includes:["id", "suppressFromDiscovery"]]) {
+    tags g.render(ent.tags)
+  }
 
   if (the_platform) {
      platform g.render(the_platform)
