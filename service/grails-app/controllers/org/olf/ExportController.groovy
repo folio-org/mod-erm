@@ -53,7 +53,7 @@ class ExportController extends OkapiTenantAwareController<TitleInstance>  {
     respondWithResults ( results )
   }
   
-  private respondWithResults (List<ErmResource> results) {
+  private respondWithResults (List<List> results) {
     
     withFormat {
       'kbart' {
