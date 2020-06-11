@@ -127,15 +127,17 @@ public class CoverageService {
    */
   public static void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
     
-    boolean changed = false
-    final Set<CoverageStatement> statements = []
+//    boolean changed = false
+//    final Set<CoverageStatement> statements = []
     try {
       
       // Clear the existing coverage, or initialize to empty set.
       if (resource.coverage) {
-        statements.addAll( resource.coverage.collect() )
+//        statements.addAll( resource.coverage.collect() )
+        
+        resource.coverage.collect()*.delete()
         resource.coverage.clear()
-        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
+//        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
       }
       
       for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -152,14 +154,13 @@ public class CoverageService {
           resource.addToCoverage( new_cs )
           
           // Validate the object at each step.
-          if (!resource.validate()) {
+          if (!resource.save( flush:true )) {
             resource.errors.allErrors.each { ObjectError error ->
               log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
             }
             throw new ValidationException('Adding coverage statement invalidates Resource', resource.errors)
           }
           
-          resource.save()
         } else {
           // Not valid coverage statement
           cs.errors.allErrors.each { ObjectError error ->
@@ -169,29 +170,24 @@ public class CoverageService {
       }
       
       log.debug("New coverage saved")
-      changed = true
+//      changed = true
     } catch (ValidationException e) {
       log.error("Coverage changes to Resource ${resource.id} not saved")
     }
     
-    if (!changed) {
-      // Revert the coverage set.
-      if (!resource.coverage) resource.coverage = []
-      statements.each {
-        resource.addToCoverage( it )
-      }
-      // Revalidate
-      resource.validate()
-    }
+//    if (!changed) {
+//      // Revert the coverage set.
+//      if (!resource.coverage) resource.coverage = []
+//      
+//      resource.coverage.clear()
+//      statements.each {
+//        resource.addToCoverage( it )
+//      }
+//    }
     
-    try {
-      resource.save(failOnError: true, flush:true) // Save.
-    } catch (ValidationException e) {
-      // Could not save ti ignore.
-      log.debug 'Could not save resource. Ignoring for now.'
-    }
+    
   }
-  
+     
   /**
    * Given an PlatformTitleInstance calculate the coverage based on the higher level
    * PackageContentItem coverage values linked to this PTI
@@ -490,7 +486,6 @@ public class CoverageService {
   public void triggerRegenration () {
     // Select all PTIs and regenerate coverage for them.
     final int batchSize = 100
-    final Date now = new Date() // Will help stop repeats.
     
     int count = 0
     List<PlatformTitleInstance> ptis =  PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
