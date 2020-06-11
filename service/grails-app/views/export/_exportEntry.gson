@@ -79,9 +79,7 @@ json {
      platform g.render(the_platform)
   }
 
-  if (the_suppress_from_discovery) {
-     suppressFromDiscovery the_suppress_from_discovery
-  }
+  suppressFromDiscovery the_suppress_from_discovery
   
   if (the_embargo) {
     embargo g.render(the_embargo)
