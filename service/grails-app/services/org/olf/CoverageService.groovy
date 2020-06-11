@@ -474,12 +474,7 @@ public class CoverageService {
         log.debug('Regeneration job already running or scheduled. Ignore.')
       }
     }
-  }
-  
-  private static final Closure ptiQuery = { 
-    order 'lastUpdated', 'asc'
-  }
-  
+  }  
   
   public void triggerRegenration () {
     // Select all PTIs and regenerate coverage for them.
