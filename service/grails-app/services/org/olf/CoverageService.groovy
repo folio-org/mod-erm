@@ -209,11 +209,7 @@ public class CoverageService {
     }.collect{ CoverageStatement cs -> 
       new org.olf.dataimport.erm.CoverageStatement([
         'startDate': cs.startDate,
-        'startIssue': cs.startIssue,
-        'startVolume': cs.startVolume,
-        'endDate': cs.endDate,
-        'endIssue': cs.endIssue,
-        'endVolume': cs.endVolume
+        'endDate': cs.endDate
       ])
     }
         
@@ -246,11 +242,7 @@ public class CoverageService {
     }.collect{ CoverageStatement cs -> 
       new org.olf.dataimport.erm.CoverageStatement([
         'startDate': cs.startDate,
-        'startIssue': cs.startIssue,
-        'startVolume': cs.startVolume,
-        'endDate': cs.endDate,
-        'endIssue': cs.endIssue,
-        'endVolume': cs.endVolume
+        'endDate': cs.endDate
       ])
     }
     
@@ -482,7 +474,7 @@ public class CoverageService {
     
     int count = 0
     List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
-      eq 'titleInstance.id', '632bc9df-8e01-4d7b-8e91-3107dbc3b43c'
+//      eq 'titleInstance.id', '632bc9df-8e01-4d7b-8e91-3107dbc3b43c'
       order 'id'
     }
     while (ptis && ptis.size() > 0) {
@@ -496,10 +488,10 @@ public class CoverageService {
       }
       
       // Next page...
-//      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
-//        order 'id'
-//      }
-      ptis = null
+      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+        order 'id'
+      }
+//      ptis = null
     }
   }
   
