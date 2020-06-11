@@ -268,11 +268,11 @@ public class CoverageService {
     if (cs.startDate == null && cs.endDate == null) return 0
     if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
     
-    if (date <= cs.endDate) {
+    if (cs.endDate == null || date <= cs.endDate) {
       return ( cs.startDate == null || date >= cs.startDate ? 0 : -1 )
     }
     
-    if (date >= cs.startDate) {
+    if (cs.startDate == null || date >= cs.startDate) {
       return ( cs.endDate == null || date <= cs.endDate ? 0 : 1 )
     }
 
@@ -481,7 +481,8 @@ public class CoverageService {
     final int batchSize = 100
     
     int count = 0
-    List<PlatformTitleInstance> ptis =  PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+    List<PlatformTitleInstance> ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+      eq 'titleInstance.id', '632bc9df-8e01-4d7b-8e91-3107dbc3b43c'
       order 'id'
     }
     while (ptis && ptis.size() > 0) {
@@ -495,9 +496,10 @@ public class CoverageService {
       }
       
       // Next page...
-      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
-        order 'id'
-      }
+//      ptis = PlatformTitleInstance.createCriteria().list ([max: batchSize, offset: batchSize * count]) { 
+//        order 'id'
+//      }
+      ptis = null
     }
   }
   
