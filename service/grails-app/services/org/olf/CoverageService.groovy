@@ -22,16 +22,16 @@ import org.springframework.context.MessageSource
 import org.springframework.context.i18n.LocaleContextHolder
 import org.springframework.validation.ObjectError
 import org.springframework.web.context.request.RequestContextHolder
+
 import com.github.zafarkhaja.semver.ParseException
-import com.github.zafarkhaja.semver.UnexpectedCharacterException
 import com.github.zafarkhaja.semver.Version
+import com.k_int.okapi.OkapiTenantResolver
+
 import grails.events.annotation.Subscriber
 import grails.gorm.DetachedCriteria
 import grails.gorm.multitenancy.Tenants
-import grails.orm.HibernateCriteriaBuilder
 import grails.util.Holders
 import groovy.util.logging.Slf4j
-import com.k_int.okapi.OkapiTenantResolver
 
 /**
  * This service works at the module level, it's often called without a tenant context.
@@ -127,17 +127,15 @@ public class CoverageService {
    */
   public static void setCoverageFromSchema (final ErmResource resource, final Iterable<CoverageStatementSchema> coverage_statements) {
     
-//    boolean changed = false
-//    final Set<CoverageStatement> statements = []
+    boolean changed = false
+    final Set<CoverageStatement> statements = []
     try {
       
       // Clear the existing coverage, or initialize to empty set.
       if (resource.coverage) {
-//        statements.addAll( resource.coverage.collect() )
-        
-        resource.coverage.collect()*.delete()
+        statements.addAll( resource.coverage.collect() )
         resource.coverage.clear()
-//        resource.save(failOnError: true, flush:true) // Necessary to remove the orphans.
+        resource.save(failOnError: true) // Necessary to remove the orphans.
       }
       
       for ( CoverageStatementSchema cs : coverage_statements ) {
@@ -154,13 +152,14 @@ public class CoverageService {
           resource.addToCoverage( new_cs )
           
           // Validate the object at each step.
-          if (!resource.save( flush:true )) {
+          if (!resource.validate()) {
             resource.errors.allErrors.each { ObjectError error ->
               log.error (messageSource.getMessage(error, LocaleContextHolder.locale))
             }
             throw new ValidationException('Adding coverage statement invalidates Resource', resource.errors)
           }
           
+          resource.save()
         } else {
           // Not valid coverage statement
           cs.errors.allErrors.each { ObjectError error ->
@@ -170,24 +169,22 @@ public class CoverageService {
       }
       
       log.debug("New coverage saved")
-//      changed = true
+      changed = true
     } catch (ValidationException e) {
       log.error("Coverage changes to Resource ${resource.id} not saved")
     }
     
-//    if (!changed) {
-//      // Revert the coverage set.
-//      if (!resource.coverage) resource.coverage = []
-//      
-//      resource.coverage.clear()
-//      statements.each {
-//        resource.addToCoverage( it )
-//      }
-//    }
+    if (!changed) {
+      // Revert the coverage set.
+      if (!resource.coverage) resource.coverage = []
+      statements.each {
+        resource.addToCoverage( it )
+      }
+    }
     
-    
+    resource.save(failOnError: true, flush:true) // Save.
   }
-     
+  
   /**
    * Given an PlatformTitleInstance calculate the coverage based on the higher level
    * PackageContentItem coverage values linked to this PTI
@@ -269,7 +266,8 @@ public class CoverageService {
     if (date == null) return defaultValue
     
     if (cs.startDate == null && cs.endDate == null) return 0
-        
+    if (date == null) return ( cs.startDate ? -1 : (cs.endDate ? 1 : 0) )
+    
     if (date <= cs.endDate) {
       return ( cs.startDate == null || date >= cs.startDate ? 0 : -1 )
     }
