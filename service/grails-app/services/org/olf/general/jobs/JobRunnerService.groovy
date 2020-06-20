@@ -4,20 +4,23 @@ import java.time.Instant
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.util.concurrent.LinkedBlockingQueue
+import java.util.concurrent.RejectedExecutionException
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.PostConstruct
+
 import org.olf.CoverageService
 import org.olf.ImportService
 import org.olf.KbHarvestService
 import org.slf4j.MDC
+
 import com.k_int.okapi.OkapiTenantAdminService
 import com.k_int.okapi.OkapiTenantResolver
-import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
+
 import grails.events.EventPublisher
 import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
@@ -40,7 +43,8 @@ class JobRunnerService implements EventPublisher {
   }
   public static final ThreadLocal<JobContext> jobContext = new ThreadLocal<JobContext>()
   
-  int globalConcurrentJobs = 3 // We need to be careful to not completely tie up all our resource
+  final int CONCURRENT_JOBS_GLOBAL = 2 // We need to be careful to not completely tie up all our resource
+  final int CONCURRENT_JOBS_TENANT = 1
   private ExecutorService executorSvc
   
   @PostConstruct
@@ -52,7 +56,7 @@ class JobRunnerService implements EventPublisher {
     // While we only have 1 tenant, this will suffice.
     executorSvc = new ThreadPoolExecutor(
       1, // Core pool Idle threads.
-      1, // Treads max.
+      CONCURRENT_JOBS_GLOBAL, // Treads max.
       1000, // Millisecond wait.
       TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
       new LinkedBlockingQueue<Runnable>() // Blocking queue
@@ -116,7 +120,7 @@ class JobRunnerService implements EventPublisher {
     
     // Enqueue each job.
     (queue_order.keySet() as List).reverse().each { Instant created ->
-      def ids = queue_order[created]
+      List<String> ids = queue_order[created]
       enqueueJob(ids[0], ids[1])
     }
   }
@@ -135,7 +139,6 @@ class JobRunnerService implements EventPublisher {
         // migrations have completed.
         log.warn "Unable to fetch jobs for schema ${tenant_schema_id}."
         // add to a deferred loading list.
-        OkapiTenantResolver f
         deferredTenants << tenant_schema_id
       }
     }
@@ -146,7 +149,7 @@ class JobRunnerService implements EventPublisher {
     
     log.debug "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
-    def me = this
+    final def me = this
     
     Tenants.withId(tenantId) {
       PersistentJob job = PersistentJob.read(jobId)
@@ -179,15 +182,82 @@ class JobRunnerService implements EventPublisher {
               notify ('jobs:log_info', jobContext.get().tenantId, jobContext.get().jobId,  "Job execution failed")
             } finally {
               jobContext.remove()
-              log.debug "Finished task with jobId ${jid} and tenantId ${tid}"
               MDC.clear()
+              jobEnded(tid, jid)
             }
           }
       }.curry(tenantId, jobId, currentWork)
       
       // Execute the work asynchronously.
-      executorSvc.execute(work)
+      enqueueTenantJob(tenantId, work)
     }
+  }
+  
+  private void enqueueTenantJob (final String tid, final Runnable work) {
+    // Always add to the holding area.
+    holdingArea.add([ tid, work ])
+    
+    // And immediately executeNext()
+    executeNext()
+  }
+  
+  private CopyOnWriteArrayList<List> holdingArea = new CopyOnWriteArrayList<List>()
+  private synchronized void executeNext() {
+    for (int i=0; i<holdingArea.size(); i++) {
+      List tuple = holdingArea[i]
+      // Tenant id in index 0
+      final String tenantId = tuple[0]
+      if (canAddTenantJob(tenantId)) {
+        
+        log.debug "Can add job to global queue."
+        
+        try {
+          // We can queue it. Index 1 is the work.
+          executorSvc.execute(tuple[1] as Runnable)
+        
+          // Increment the count
+          tenantCounts.get(tenantId).incrementAndGet()
+          
+          // Remove this element, and reset the counter, so as to always add in order.
+          holdingArea.remove(i)
+          
+          // Not zero as we are inside the loop and this value will be incremented.
+          i = -1
+          
+        } catch (RejectedExecutionException e) {
+          // The global queue is full.
+          log.warn("Executor couldn't accept the work.", e)
+        }
+      } else {
+        log.debug "Max jobs for tenant ${tenantId} queued, keep in holding area."
+      }
+    }
+  }
+  
+  private boolean canAddTenantJob( final String tenantId ) {
+    // Counts.
+    AtomicInteger val = tenantCounts[tenantId]
+    if (val == null) {
+      val = new AtomicInteger(0)
+      tenantCounts[tenantId] = val
+    }
+    int count = val.get()
+    log.debug "Currently ${count} tasks queued for tenant ${tenantId}"
+    
+    count < CONCURRENT_JOBS_TENANT
+  }
+  
+  private ConcurrentHashMap<String,AtomicInteger> tenantCounts = new ConcurrentHashMap<String,AtomicInteger>()
+  private void jobEnded(final String tid, final String jid) {
+    
+    log.debug "Finished task with jobId ${jid} and tenantId ${tid}"
+    
+    // Counts.
+    int count = tenantCounts.get(tid).decrementAndGet()
+    log.debug "Tasks queued for tenant ${tid} adjusted to ${count}"
+    
+    // Execute next
+    executeNext()
   }
   
   public void beginJob(final String jid = null) {
