@@ -65,6 +65,19 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     respond instance
   }
   
+  def listTyped () {
+    final Class type = params.type ? Class.forName("org.olf.general.jobs.${GrailsNameUtils.getClassName(params.type)}Job") : null
+    
+    if(!(type && PersistentJob.isAssignableFrom(type))) {
+      return render (status: HttpStatus.NOT_FOUND)
+    }
+    
+    // Do the lookup
+    respond doTheLookup {
+      eq 'class', type.name
+    }
+  }
+  
   def fullLog( String persistentJobId ) {
     respond doTheLookup (LogEntry, {
       eq 'origin', persistentJobId

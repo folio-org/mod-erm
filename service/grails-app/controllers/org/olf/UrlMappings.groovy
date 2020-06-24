@@ -121,6 +121,7 @@ class UrlMappings {
     
     "/erm/jobs" ( resources:'persistentJob', excludes: ['update', 'patch', 'save']) {
       collection {
+        "/type/$type" ( action: 'listTyped', method: 'GET' )
         "/$type" ( action: 'save', method: 'POST' )
       }
       
