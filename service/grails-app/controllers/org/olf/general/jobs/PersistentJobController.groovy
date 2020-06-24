@@ -20,6 +20,7 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     super(PersistentJob, true)
   }
   
+  @Transactional
   def delete() {
     def instance = queryForResource(params.id)
     
@@ -45,6 +46,7 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     render status: HttpStatus.NO_CONTENT
   }
   
+  @Transactional
   def save () {
     final Class type = params.type ? Class.forName("org.olf.general.jobs.${GrailsNameUtils.getClassName(params.type)}Job") : null
     
@@ -56,12 +58,16 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
     final RefdataValue queuedStatus = PersistentJob.lookupStatus('queued')
     
     final PersistentJob instance = type.newInstance()
-    
     bindData instance, getObjectToBind()
     instance.status = queuedStatus
+    instance.validate()
+    if (instance.hasErrors()) {
+        transactionStatus.setRollbackOnly()
+        respond instance.errors, view:'create' // STATUS CODE 422
+        return
+    }
 
-    instance.save(failOnError: true, flush:true)
-
+    saveResource instance
     respond instance
   }
   
