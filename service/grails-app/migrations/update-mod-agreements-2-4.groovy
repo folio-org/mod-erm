@@ -46,7 +46,7 @@ databaseChangeLog = {
       addForeignKeyConstraint(baseColumnNames: "erm_title_list_id", baseTableName: "comparison_job_erm_title_list", constraintName: "FKf2ssfsku9ncr10lfdqg2mv435", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_title_list")
     }
     
-    chengeSet(author: "sosguthorpe", id: "1593002234734-6") {
+    changeSet(author: "sosguthorpe", id: "1593002234734-6") {
       // Copy all agreement ID/versions into title list table
       grailsChange {
         change {
@@ -61,7 +61,7 @@ databaseChangeLog = {
     }
     
     
-    chengeSet(author: "sosguthorpe", id: "1593002234734-7") {
+    changeSet(author: "sosguthorpe", id: "1593002234734-7") {
       // Copy all resource ID/versions into title list table
       grailsChange {
         change {
