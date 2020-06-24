@@ -17,6 +17,6 @@ class ErmTitleList implements MultiTenant<ErmTitleList> {
   String id
   static mapping = {
     tablePerHierarchy false
-    id generator: 'uuid2', length:36
+    id column: 'id', generator: 'uuid2', length:36
   }
 }
