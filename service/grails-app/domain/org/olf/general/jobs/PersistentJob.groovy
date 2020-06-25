@@ -57,8 +57,6 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
   def afterInsert () {
     // Ugly work around events being raised on multi-tenant GORM entities not finding subscribers
     // from the root context.
-//    JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
-//    jrs.handleNewJob(this.id, Tenants.currentId())
     final String jobId = this.id
     final String tenantId = Tenants.currentId()
     Promise background = Promises.task {
