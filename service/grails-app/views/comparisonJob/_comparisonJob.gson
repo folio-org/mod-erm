@@ -1,0 +1,8 @@
+import org.olf.general.jobs.ComparisonJob
+
+import groovy.transform.Field
+
+@Field
+ComparisonJob comparisonJob
+
+json tmpl."/persistentJob/persistentJob" (persistentJob: comparisonJob)
