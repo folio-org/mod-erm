@@ -147,12 +147,26 @@ class JobRunnerService implements EventPublisher {
   
   public void enqueueJob(final String jobId, final String tenantId) {
     
+    final long WAIT_MAX = 3000 // 3 seconds should be enough.
+    final long WAIT_INCREMENT = 200
+    
     log.debug "Enqueueing job ${jobId} for ${tenantId}"
     // Use me within nested closures to ensure we are talking about this service.
     final def me = this
     
     Tenants.withId(tenantId) {
+      /**
+       * While this is UGLY. We can should retry here as this method should only be called once the event has been committed.
+       * As with everything though limit the amount of wait time and then rasie an error.
+       */
+      long totalTime = 0
       PersistentJob job = PersistentJob.read(jobId)
+      while (job == null) {
+        Thread.sleep(WAIT_INCREMENT) // Recheck every 200 millis.
+        totalTime += WAIT_INCREMENT
+        job = PersistentJob.read(jobId)
+        if (totalTime > WAIT_MAX) throw new IllegalStateException("Failed to read job ${jobId} for ${tenantId} after ${WAIT_MAX} milliseconds")
+      }
       Runnable work = job.getWork()
       if (Closure.isAssignableFrom(work.class)) {
         // Change the delegate to this class so we can control access to beans.
