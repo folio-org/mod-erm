@@ -1,12 +1,13 @@
 package org.olf.general.jobs
 import java.time.Instant
+
 import com.k_int.web.toolkit.files.SingleFileAttachment
 import com.k_int.web.toolkit.refdata.CategoryId
 import com.k_int.web.toolkit.refdata.Defaults
 import com.k_int.web.toolkit.refdata.RefdataValue
+
+import grails.async.Promise
 import grails.async.Promises
-import grails.events.EventPublisher
-import grails.events.annotation.Subscriber
 import grails.events.bus.EventBusAware
 import grails.gorm.MultiTenant
 import grails.gorm.dirty.checking.DirtyCheck
@@ -60,9 +61,12 @@ abstract class PersistentJob extends SingleFileAttachment implements EventBusAwa
 //    jrs.handleNewJob(this.id, Tenants.currentId())
     final String jobId = this.id
     final String tenantId = Tenants.currentId()
-    Promises.task {
+    Promise background = Promises.task {
       JobRunnerService jrs = Holders.applicationContext.getBean('jobRunnerService')
       jrs.handleNewJob(jobId, tenantId)
+    }
+    background.onError { Throwable e ->
+      log.error "Couldn't add job", e
     }
   }
   
