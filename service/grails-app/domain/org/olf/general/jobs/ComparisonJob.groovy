@@ -1,15 +1,15 @@
 package org.olf.general.jobs
 
+import org.olf.erm.ComparisonPoint
+
 import grails.gorm.MultiTenant
-import grails.gorm.multitenancy.Tenants
-import org.olf.kb.ErmTitleList
 
 class ComparisonJob extends PersistentJob implements MultiTenant<ComparisonJob>{
 
-  Set<ErmTitleList> titleLists = []
+  Set<ComparisonPoint> comparisonPoints = []
   
   static hasMany = [
-    titleLists: ErmTitleList
+    comparisonPoints: ComparisonPoint
   ]
   
   final Closure work = {
@@ -17,6 +17,6 @@ class ComparisonJob extends PersistentJob implements MultiTenant<ComparisonJob>{
   }
   
   static constraints = {
-    titleLists (minSize: 2, nullable: false)
+    comparisonPoints (minSize: 2, nullable: false)
   }
 }

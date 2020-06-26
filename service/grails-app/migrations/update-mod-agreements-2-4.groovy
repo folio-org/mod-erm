@@ -6,22 +6,38 @@ databaseChangeLog = {
     }
     changeSet(author: "sosguthorpe (generated)", id: "1593002234734-1") {
       createTable(tableName: "comparison_job") {
-        column(name: "id", type: "VARCHAR(255)") {
+        column(name: "id", type: "VARCHAR(36)") {
           constraints(nullable: "false")
         }
       }
 
       addPrimaryKey(columnNames: "id", constraintName: "comparison_jobPK", tableName: "comparison_job")
     }
-
+    
     changeSet(author: "sosguthorpe (generated)", id: "1593002234734-2") {
-      createTable(tableName: "comparison_job_erm_title_list") {
-        column(name: "comparison_job_title_lists_id", type: "VARCHAR(255)") {
-          constraints(nullable: "false")
+      createTable(tableName: "comparison_point") {
+        column(name: "cp_id", type: "VARCHAR(36)") {
+            constraints(nullable: "false")
         }
 
-        column(name: "erm_title_list_id", type: "VARCHAR(36)")
+        column(name: "version", type: "BIGINT") {
+            constraints(nullable: "false")
+        }
+
+        column(name: "date", type: "date") {
+            constraints(nullable: "false")
+        }
+
+        column(name: "job_id", type: "VARCHAR(36)") {
+            constraints(nullable: "false")
+        }
+
+        column(name: "cp_title_list_fk", type: "VARCHAR(36)") {
+            constraints(nullable: "false")
+        }
       }
+      
+      addPrimaryKey(columnNames: "cp_id", constraintName: "comparison_pointPK", tableName: "comparison_point")
     }
 
     changeSet(author: "sosguthorpe (generated)", id: "1593002234734-3") {
@@ -39,14 +55,15 @@ databaseChangeLog = {
     }
 
     changeSet(author: "sosguthorpe (generated)", id: "1593002234734-4") {
-      addForeignKeyConstraint(baseColumnNames: "comparison_job_title_lists_id", baseTableName: "comparison_job_erm_title_list", constraintName: "FKefnd56sd714idn8w9mk0d74s", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "comparison_job")
-    }
-
-    changeSet(author: "sosguthorpe (generated)", id: "1593002234734-5") {
-      addForeignKeyConstraint(baseColumnNames: "erm_title_list_id", baseTableName: "comparison_job_erm_title_list", constraintName: "FKf2ssfsku9ncr10lfdqg2mv435", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_title_list")
+      
+      addForeignKeyConstraint(baseColumnNames: "job_id", baseTableName: "comparison_point", constraintName: "FKce030h04m5jso6xgk2bontg3p",
+          deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "comparison_job")
+      
+      addForeignKeyConstraint(baseColumnNames: "cp_title_list_fk", baseTableName: "comparison_point", constraintName: "FKsngmq049d951379bow12ufkno",
+          deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "id", referencedTableName: "erm_title_list")
     }
     
-    changeSet(author: "sosguthorpe", id: "1593002234734-6") {
+    changeSet(author: "sosguthorpe", id: "1593002234734-5") {
       // Copy all agreement ID/versions into title list table
       grailsChange {
         change {
@@ -61,7 +78,7 @@ databaseChangeLog = {
     }
     
     
-    changeSet(author: "sosguthorpe", id: "1593002234734-7") {
+    changeSet(author: "sosguthorpe", id: "1593002234734-6") {
       // Copy all resource ID/versions into title list table
       grailsChange {
         change {
@@ -76,7 +93,7 @@ databaseChangeLog = {
     
     
     /** Tidy missing PK contraint **/
-    changeSet(author: "sosguthorpe (generated)", id: "1593002234734-8") {
+    changeSet(author: "sosguthorpe (generated)", id: "1593002234734-7") {
       addPrimaryKey(columnNames: "id", constraintName: "kbart_import_jobPK", tableName: "kbart_import_job")
     }
 }
