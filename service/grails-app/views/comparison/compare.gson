@@ -1,0 +1,201 @@
+import java.time.LocalDate
+
+import org.olf.dataimport.erm.PlatformTitileInstance
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
+import org.olf.kb.PackageContentItem
+import org.olf.kb.CoverageStatement
+import org.olf.kb.Embargo
+import org.olf.erm.Entitlement
+
+final Map theData = binding.variables
+List<List> sources = theData.values()[0] as List<List>
+
+final defaultObject = {
+  [
+    overlap:'none',
+    availability: [:]
+  ]
+}
+
+final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, final PackageContentItem pci,
+                             final PlatformTitleInstance pti, final TitleInstance ti, final Entitlement ent = null ->
+  final String availabilityKey = pti.id
+  final Map <String,?> availability = obj['availability'] as Map<String,?>
+  
+  Map<String, ?> availEntry = availability[availabilityKey] as Map<String, ?>
+  Map<String, ?> coverageEntries = [:]
+  if ( availEntry == null ) {
+    availEntry = [coverage:coverageEntries]
+    availability[availabilityKey] = availEntry
+  } else {
+    coverageEntries = availEntry['coverage'] as Map<String, ?>
+  }
+  
+  availEntry['platform'] = pti.platform.name
+  
+  // Add the active coverage.
+  Set<CoverageStatement> coverage = []
+  String coverageContainerId = null
+  Embargo emb = null
+  String sourceId = null
+  if (ent != null) {
+    sourceId = ent.ownerId
+    if (ent.activeFrom != null || ent.activeTo != null) {
+      coverage << new CoverageStatement(endDate: ent.activeTo, startDate: ent.activeFrom)
+      coverageContainerId = ent.id
+    }
+  } else {
+    sourceId = pci.pkgId
+  }
+  if (!coverageContainerId && pci.coverage.size() > 0) {
+    coverage = pci.coverage
+    coverageContainerId = pci.id
+    emb = pci.embargo
+  }
+  if (!coverageContainerId && pti.coverage.size() > 0) {
+    coverage = pti.coverage
+    coverageContainerId = pti.id
+  }
+  if (!coverageContainerId && ti.coverage.size() > 0) {
+    coverage = ti.coverage
+    coverageContainerId = ti.id
+  }
+  
+  // Add the coverage.
+  Map<String, ?> coverageEntry = coverageEntries[coverageContainerId] as Map<String, ?>
+  if (!coverageEntry) {
+    final List<String> propertiesToCopy = ['startDate', 'endDate', 'startVolume', 'startIssue', 'endVolume','endIssue']
+    coverageEntry = [:]
+    
+    coverageEntry['statements'] = (coverage.collect { CoverageStatement cs ->
+      propertiesToCopy.collectEntries { [(it): (cs[it])] }
+    })
+    
+    if (emb) {
+      coverageEntry['embargo'] = [:]
+      coverageEntry['embargo']['movingWallStart'] = "${emb.movingWallStart}"
+      coverageEntry['embargo']['movingWallEnd'] = "${emb.movingWallEnd}"
+    }
+    
+    coverageEntries[coverageContainerId] = coverageEntry
+  }
+  
+  Set<String> occurences = coverageEntry['occurences'] as Set<String>
+  if (!occurences) {
+    occurences = []
+    coverageEntry['occurences'] = occurences
+  }
+  
+  occurences << sourceId
+  final int occSize = occurences.size()
+  if (totalSources == occSize) {
+    obj['overlap'] = 'full'
+  } else if (occSize > 1) {
+    obj['overlap'] = 'partial'
+  } else {
+    obj['overlap'] = 'none'
+  }
+}
+
+
+/**
+ * Expected that sources will be presorted by title name and each row be made up of
+ * [ PackageContentItem, PlatformTitleInstance, TitleInstance, Entitlement ]
+ */
+
+out << '['
+if (sources) {
+  
+  boolean first = true
+  
+  // Number of sources.
+  final int sourceCount = sources.size()
+  
+  // We'll use stacks to keep track of entries that are not actionable yet.
+  PriorityQueue<Map<String,?>> objectQueue = new PriorityQueue<Map<String,?>>(new Comparator<Map<String,?>>() {
+    @Override
+    public int compare(Map<String, ?> o1, Map<String, ?> o2) {
+      o1.name.toString().compareTo(o2.name.toString())
+    }
+  })
+    
+  // The buffer 
+  List<Iterator> currentPointers = sources.collect{ it.iterator() }
+  Object[][] currentRowBuffers = (1..sourceCount).collect { null as Object[] } as Object[][]
+  
+  Object[] currentRow
+  def currentLowestValue = null
+  Map<String,?> currentObject = null
+  
+  int triggerIndex = 0
+  
+  while ( currentPointers.any { it.hasNext() } || currentRowBuffers.any{ it != null }) {
+    for (int i=0; i<sourceCount; i++) {
+      
+      // Grab the buffer
+      currentRow = currentRowBuffers[i]
+
+      // If there was nothing in the buffer then pull down the next item. 
+      if (currentRow == null) {
+        // Grab the next.
+        currentRow = currentPointers[i].hasNext() ? currentPointers[i].next() : null
+      } else {
+        // Buffer had data... Null it out.
+        currentRowBuffers[i] = null
+      }
+      
+      // Default current lowestVlaue if not set.
+      if (currentRow != null) {
+        TitleInstance ti = currentRow[2] as TitleInstance
+        if (currentObject?.name == null || ti.name.toString() <= currentObject.name.toString()) {
+        
+          // if we have a current object then we need to shelve it for now.
+          if (currentObject != null) {
+            if (currentObject.name.toString() != ti.name.toString()) {
+              objectQueue.add(currentObject)
+              currentObject = defaultObject()
+            }
+          } else {
+            currentObject = defaultObject()
+          }
+          
+          currentLowestValue = ti.name
+          while (currentRow != null && currentLowestValue == ti.name) {
+            // Keep merging the values.
+            currentObject['name'] = currentLowestValue
+            // More to come...
+            
+            mergeIntoObject(sourceCount, currentObject, currentRow[0] as PackageContentItem,
+                currentRow[1] as PlatformTitleInstance, currentRow[2] as TitleInstance,
+                (currentRow.length == 4 ? currentRow[3] : null) as Entitlement)
+            
+            // Grab the next row if there is one.
+            currentRow = currentPointers[i].hasNext() ? currentPointers[i].next() : null
+            ti = (currentRow ? currentRow[2] : null) as TitleInstance
+          }
+          
+          // Current row is now not equal to lowest and must be bigger, because the sources
+          // are ordered. So add to the buffer if set.
+          if (currentRow) currentRowBuffers[i] = currentRow
+          
+        } else {
+          // Bigger. Add the row to the buffer, and move on.
+          currentRowBuffers[i] = currentRow
+        }
+      }
+    }
+    
+    // output the current object and grab the next from the queue if there is one.
+    
+    // render the single row.
+    if (!first) out << ','
+    out << g.render(currentObject, [deep: true])
+    
+    // grab the next from the queue if there is one.
+    currentObject = objectQueue.poll()
+    currentLowestValue = currentObject?.name
+    first = false
+  }
+}
+out << ']'

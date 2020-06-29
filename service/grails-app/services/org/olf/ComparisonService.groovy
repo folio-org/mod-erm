@@ -14,7 +14,6 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class ComparisonService {
-  
   public void compare ( OutputStream out, ComparisonPoint... titleLists) {
     List results = compare (titleLists)
     // Write to output stream..
