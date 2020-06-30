@@ -30,7 +30,7 @@ class ComparisonService {
   
   public List compare ( ComparisonPoint... comparisonPoints ) {
     if (comparisonPoints.length < 1) throw new IllegalArgumentException("Require at least 2 Comparison Points to compare")
-    comparisonPoints.collect { ComparisonPoint cp -> queryForComparisonResults(cp) }
+    comparisonPoints.collect { ComparisonPoint cp -> [ 'comparisonPoint': cp, 'results': queryForComparisonResults(cp)] }
   }
   
   private List queryForComparisonResults( ComparisonPoint comparisonPoints ) {
@@ -60,8 +60,8 @@ class ComparisonService {
       WHERE
         COALESCE( pci.accessStart, pci.accessEnd ) IS NULL
 
-        OR ( (pci.accessStart IS NULL OR pci.accessStart >= :onDate) AND pci.accessEnd <= :onDate )
-        OR ( (pci.accessEnd IS NULL OR pci.accessEnd <= :onDate) AND pci.accessStart >= :onDate )
+        OR ( (pci.accessStart IS NULL OR pci.accessStart <= :onDate) AND pci.accessEnd >= :onDate )
+        OR ( (pci.accessEnd IS NULL OR pci.accessEnd >= :onDate) AND pci.accessStart <= :onDate )
       ORDER BY ti.name, pci.id, pti.id
     """, ['onDate': onDate, 'pkgId': pkgId], [readOnly: true])
   }
@@ -93,13 +93,13 @@ class ComparisonService {
             COALESCE( ent.activeTo, ent.activeFrom) IS NULL
             
             AND (
-              ( (link.accessStart IS NULL OR link.accessStart >= :onDate) AND link.accessEnd <= :onDate )
-              OR ( (link.accessEnd IS NULL OR link.accessEnd <= :onDate) AND link.accessStart >= :onDate )
+              ( (link.accessStart IS NULL OR link.accessStart <= :onDate) AND link.accessEnd >= :onDate )
+              OR ( (link.accessEnd IS NULL OR link.accessEnd >= :onDate) AND link.accessStart <= :onDate )
               OR (
                 COALESCE( link.accessStart, link.accessEnd ) IS NULL
                 AND (
-                  ( (pkg_pci.accessStart IS NULL OR pkg_pci.accessStart >= :onDate) AND pkg_pci.accessEnd <= :onDate )
-                  OR ( (pkg_pci.accessEnd IS NULL OR pkg_pci.accessEnd <= :onDate) AND pkg_pci.accessStart >= :onDate )
+                  ( (pkg_pci.accessStart IS NULL OR pkg_pci.accessStart <= :onDate) AND pkg_pci.accessEnd >= :onDate )
+                  OR ( (pkg_pci.accessEnd IS NULL OR pkg_pci.accessEnd >= :onDate) AND pkg_pci.accessStart <= :onDate )
                   OR (
                     COALESCE( pkg_pci.accessStart, pkg_pci.accessEnd ) IS NULL
                   )

@@ -1,12 +1,14 @@
+import org.olf.erm.ComparisonPoint
 import org.olf.erm.Entitlement
-import org.olf.kb.CoverageStatement
+import org.olf.kb.AbstractCoverageStatement
 import org.olf.kb.Embargo
 import org.olf.kb.PackageContentItem
 import org.olf.kb.PlatformTitleInstance
 import org.olf.kb.TitleInstance
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 
 final Map theData = binding.variables
-List<List> sources = theData.values()[0] as List<List>
+List<Map> sources = theData.values()[0] as List<Map>
 
 final defaultObject = {
   [
@@ -15,7 +17,7 @@ final defaultObject = {
   ]
 }
 
-final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, final PackageContentItem pci,
+final mergeIntoObject = { final ComparisonPoint cp, final int totalSources, final Map<String, ?> obj, final PackageContentItem pci,
                              final PlatformTitleInstance pti, final TitleInstance ti, final Entitlement ent = null ->
   final String availabilityKey = pti.id
   final Map <String,?> availability = obj['availability'] as Map<String,?>
@@ -32,31 +34,28 @@ final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, fina
   availEntry['platform'] = pti.platform.name
   
   // Add the active coverage.
-  Set<CoverageStatement> coverage = []
+  Set<AbstractCoverageStatement> coverage = []
   String coverageContainerId = null
   Embargo emb = null
-  String sourceId = null
-  if (ent != null) {
-    sourceId = ent.ownerId
-    if (ent.activeFrom != null || ent.activeTo != null) {
-      coverage << new CoverageStatement(endDate: ent.activeTo, startDate: ent.activeFrom)
-      coverageContainerId = ent.id
-    }
-  } else {
-    sourceId = pci.pkgId
+  if (ent != null && ent.coverage.size() > 0) {
+    coverage = ent.coverage as Set<AbstractCoverageStatement>
+    coverageContainerId = ent.id
   }
   if (!coverageContainerId && pci.coverage.size() > 0) {
-    coverage = pci.coverage
+    coverage = pci.coverage as Set<AbstractCoverageStatement>
     coverageContainerId = pci.id
     emb = pci.embargo
   }
   if (!coverageContainerId && pti.coverage.size() > 0) {
-    coverage = pti.coverage
+    coverage = pti.coverage as Set<AbstractCoverageStatement>
     coverageContainerId = pti.id
   }
-  if (!coverageContainerId && ti.coverage.size() > 0) {
-    coverage = ti.coverage
+  if (!coverageContainerId) {
     coverageContainerId = ti.id
+    
+    if (ti.coverage.size() > 0) {
+      coverage = ti.coverage as Set<AbstractCoverageStatement>
+    }
   }
   
   // Add the coverage.
@@ -65,14 +64,18 @@ final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, fina
     final List<String> propertiesToCopy = ['startDate', 'endDate', 'startVolume', 'startIssue', 'endVolume','endIssue']
     coverageEntry = [:]
     
-    coverageEntry['statements'] = (coverage.collect { CoverageStatement cs ->
+    coverageEntry['statements'] = (coverage.collect { AbstractCoverageStatement cs ->
       propertiesToCopy.collectEntries { [(it): (cs[it])] }
     })
     
     if (emb) {
       coverageEntry['embargo'] = [:]
-      coverageEntry['embargo']['movingWallStart'] = "${emb.movingWallStart}"
-      coverageEntry['embargo']['movingWallEnd'] = "${emb.movingWallEnd}"
+      coverageEntry['embargo']['movingWallStart'] = [:]
+      coverageEntry['embargo']['movingWallStart']['length'] = "${emb.movingWallStart.length}"
+      coverageEntry['embargo']['movingWallStart']['unit'] = "${emb.movingWallStart.unit}"
+      coverageEntry['embargo']['movingWallEnd'] = [:]
+      coverageEntry['embargo']['movingWallEnd']['length'] = "${emb.movingWallEnd.length}"
+      coverageEntry['embargo']['movingWallEnd']['unit'] = "${emb.movingWallEnd.unit}"
     }
     
     coverageEntries[coverageContainerId] = coverageEntry
@@ -84,11 +87,12 @@ final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, fina
     coverageEntry['occurences'] = occurences
   }
   
-  occurences[sourceId] = true
+  occurences[(cp.id ?: "${cp.titleList.id}---${cp.date}").toString()] = true
+  
   final int occSize = occurences.size()
   if (totalSources == occSize) {
     obj['overlap'] = 'full'
-  } else if (occSize > 1) {
+  } else if (occSize > 1 || coverageEntries.size() > 1 || availability.size() > 1) {
     obj['overlap'] = 'partial'
   } else {
     obj['overlap'] = 'none'
@@ -117,8 +121,9 @@ if (sources) {
     }
   })
     
-  // The buffer 
-  List<Iterator> currentPointers = sources.collect{ it.iterator() }
+  // The buffer
+  List<ComparisonPoint> points = sources.collect{ it['comparisonPoint'] }
+  List<Iterator> currentPointers = sources.collect{ ( it['results'] as List).iterator() }
   Object[][] currentRowBuffers = (1..sourceCount).collect { null as Object[] } as Object[][]
   
   Object[] currentRow
@@ -127,7 +132,7 @@ if (sources) {
   
   int triggerIndex = 0
   
-  while ( currentPointers.any { it.hasNext() } || currentRowBuffers.any{ it != null }) {
+  while ( currentObject || currentPointers.any { it.hasNext() } || currentRowBuffers.any{ it != null }) {
     for (int i=0; i<sourceCount; i++) {
       
       // Grab the buffer
@@ -144,7 +149,7 @@ if (sources) {
       
       // Default current lowestVlaue if not set.
       if (currentRow != null) {
-        TitleInstance ti = currentRow[2] as TitleInstance
+        TitleInstance ti = GrailsHibernateUtil.unwrapIfProxy(currentRow[2]) as TitleInstance
         if (currentObject?.name == null || ti.name.toString() <= currentObject.name.toString()) {
         
           // if we have a current object then we need to shelve it for now.
@@ -162,15 +167,14 @@ if (sources) {
             // Keep merging the values.
             currentObject['name'] = currentLowestValue
             currentObject['id'] = ti.id
-            
             // More to come...
-            mergeIntoObject(sourceCount, currentObject, currentRow[0] as PackageContentItem,
-                currentRow[1] as PlatformTitleInstance, currentRow[2] as TitleInstance,
-                (currentRow.length == 4 ? currentRow[3] : null) as Entitlement)
+            mergeIntoObject(points[i], sourceCount, currentObject, GrailsHibernateUtil.unwrapIfProxy(currentRow[0]) as PackageContentItem,
+                GrailsHibernateUtil.unwrapIfProxy(currentRow[1]) as PlatformTitleInstance, ti,
+                (currentRow.length == 4 ? GrailsHibernateUtil.unwrapIfProxy(currentRow[3]) : null) as Entitlement)
             
             // Grab the next row if there is one.
             currentRow = currentPointers[i].hasNext() ? currentPointers[i].next() : null
-            ti = (currentRow ? currentRow[2] : null) as TitleInstance
+            ti = (currentRow ? GrailsHibernateUtil.unwrapIfProxy(currentRow[2]) : null) as TitleInstance
           }
           
           // Current row is now not equal to lowest and must be bigger, because the sources
@@ -195,5 +199,7 @@ if (sources) {
     currentLowestValue = currentObject?.name
     first = false
   }
+
+  System.out.println "Queue size: ${objectQueue.size}"
 }
 out << ']'
