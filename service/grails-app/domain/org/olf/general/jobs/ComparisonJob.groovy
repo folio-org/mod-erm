@@ -31,12 +31,19 @@ class ComparisonJob extends PersistentJob implements MultiTenant<ComparisonJob>{
       ComparisonJob.withTransaction {
         
         ComparisonJob job = ComparisonJob.get(jobId)
-        job.fileContents = BlobProxy.generateProxy(new byte[0])
-        OutputStream blobOS = job.fileContents.setBinaryStream(1)
-        try {
-          (comparisonService as ComparisonService).compare(blobOS, comparisonPoints as ComparisonPoint[])
-        } finally {
-          blobOS.close()
+        File out = File.createTempFile(jobId, tenantId)
+        out.withOutputStream { OutputStream os ->
+          (comparisonService as ComparisonService).compare(os, job.comparisonPoints as ComparisonPoint[])
+        }
+
+        // Saevd to temp file get the length.
+        final long fs = out.length()
+        log.debug "File size is ${fs}"
+        
+        // Write to blob.
+        out.withInputStream { InputStream is ->
+          job.fileContents = BlobProxy.generateProxy(is, fs)
+          job.save(flush:true, failOnError: true)
         }
       }
     }.curry( this.id )

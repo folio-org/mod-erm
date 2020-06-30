@@ -4,6 +4,7 @@ package org.olf.general.jobs
 import org.springframework.http.HttpStatus
 
 import com.k_int.okapi.OkapiTenantAwareController
+import com.k_int.web.toolkit.files.FileUpload
 import com.k_int.web.toolkit.refdata.RefdataValue
 import grails.gorm.multitenancy.CurrentTenant
 import grails.gorm.transactions.Transactional
@@ -112,5 +113,26 @@ class PersistentJobController extends OkapiTenantAwareController<PersistentJob> 
 
       order 'dateCreated', 'asc'
     })
+  }
+  
+  @Transactional(readOnly=true)
+  def downloadFileObject(String persistentJobId) {
+    
+    ComparisonJob instance = ComparisonJob.read(persistentJobId)
+    
+    // Not found.
+    if (instance == null) {
+      notFound()
+      return
+    }
+    
+    // Return invalid method if the status is disallowed 
+    if (instance.statusId != instance.lookupStatus('Ended').id) {
+      render status: HttpStatus.METHOD_NOT_ALLOWED.value()
+      return
+    }
+    
+    
+    render file: instance.fileContents.binaryStream, contentType: 'text/json', fileName: "job-${persistentJobId}.json"
   }
 }

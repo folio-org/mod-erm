@@ -5,9 +5,6 @@ import org.olf.erm.SubscriptionAgreement
 class UrlMappings {
 
   static mappings = {
-
-    
-    
     
     "/erm/compare" (controller: 'comparison', action: 'compare', method: 'POST')
     
@@ -133,6 +130,7 @@ class UrlMappings {
       "/fullLog" ( controller: 'persistentJob', action: 'fullLog', method: 'GET' )
       "/errorLog" ( controller: 'persistentJob', action: 'errorLog', method: 'GET' )
       "/infoLog" ( controller: 'persistentJob', action: 'infoLog', method: 'GET' )
+      "/downloadFileObject" ( controller: 'persistentJob', action: 'downloadFileObject', method: 'GET' )
     }
 
 

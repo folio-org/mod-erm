@@ -8,7 +8,7 @@ ComparisonJob comparisonJob
 
 final List logs = ['fullLogCount', 'errorLogCount', 'infoLogCount']
 
-json g.render (comparisonJob, [excludes: logs, expand:['status', 'result', 'fileUpload', 'comparisonPoints']]) {
+json g.render (comparisonJob, [excludes: logs + ['fileContents'], expand:['status', 'result', 'fileUpload', 'comparisonPoints']]) {
   'class' GrailsHibernateUtil.unwrapIfProxy(comparisonJob).class.name
   
   logs.each {final String propName ->

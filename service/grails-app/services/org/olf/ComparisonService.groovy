@@ -5,7 +5,7 @@ import static groovy.transform.TypeCheckingMode.SKIP
 import grails.plugin.json.view.JsonViewTemplateEngine
 import groovy.text.Template
 import java.time.LocalDate
-
+import org.grails.orm.hibernate.cfg.GrailsHibernateUtil
 import org.olf.erm.ComparisonPoint
 import org.olf.erm.SubscriptionAgreement
 import org.olf.kb.ErmTitleList
@@ -20,12 +20,18 @@ class ComparisonService {
   JsonViewTemplateEngine jsonViewTemplateEngine
   
   public void compare ( OutputStream out, ComparisonPoint... titleLists ) {
-    List results = compare (titleLists)
-    // Write to output stream..
-    Template t = jsonViewTemplateEngine.resolveTemplate('/comparison/compare')
-    def writable = t.make(comparison: results)
     def sw = new OutputStreamWriter(out)
-    writable.writeTo( sw )
+    
+    try {
+      List results = compare (titleLists)
+      // Write to output stream..
+      Template t = jsonViewTemplateEngine.resolveTemplate('/comparison/compare')
+      def writable = t.make(comparison: results)
+      writable.writeTo( sw )
+      
+    } finally {
+      sw.close()
+    }
   }
   
   public List compare ( ComparisonPoint... comparisonPoints ) {
@@ -34,7 +40,7 @@ class ComparisonService {
   }
   
   private List queryForComparisonResults( ComparisonPoint comparisonPoints ) {
-    Class<? extends ErmTitleList> type = comparisonPoints.titleList.class
+    Class<? extends ErmTitleList> type = GrailsHibernateUtil.unwrapIfProxy(comparisonPoints.titleList).class
     
     switch (type) {
       case SubscriptionAgreement:

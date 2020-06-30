@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.PostConstruct
-
+import org.hibernate.SessionFactory
 import org.olf.ComparisonService
 import org.olf.CoverageService
 import org.olf.ImportService
@@ -37,6 +37,7 @@ class JobRunnerService implements EventPublisher {
   CoverageService coverageService
   ImportService importService
   ComparisonService comparisonService
+  SessionFactory sessionFactory
   
   private static final class JobContext {
     Serializable jobId
