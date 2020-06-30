@@ -2,6 +2,8 @@ package org.olf
 
 import static groovy.transform.TypeCheckingMode.SKIP
 
+import grails.plugin.json.view.JsonViewTemplateEngine
+import groovy.text.Template
 import java.time.LocalDate
 
 import org.olf.erm.ComparisonPoint
@@ -14,9 +16,16 @@ import groovy.transform.CompileStatic
 
 @CompileStatic
 class ComparisonService {
-  public void compare ( OutputStream out, ComparisonPoint... titleLists) {
+  @Autowired
+  JsonViewTemplateEngine jsonViewTemplateEngine
+  
+  public void compare ( OutputStream out, ComparisonPoint... titleLists ) {
     List results = compare (titleLists)
     // Write to output stream..
+    Template t = jsonViewTemplateEngine.resolveTemplate('/comparison/compare')
+    def writable = t.make(comparison: results)
+    def sw = new OutputStreamWriter(out)
+    writable.writeTo( sw )
   }
   
   public List compare ( ComparisonPoint... comparisonPoints ) {

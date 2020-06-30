@@ -9,6 +9,9 @@ databaseChangeLog = {
         column(name: "id", type: "VARCHAR(36)") {
           constraints(nullable: "false")
         }
+        column(name: "cj_file_contents", type: "OID") {
+          constraints(nullable: "true")
+        }
       }
 
       addPrimaryKey(columnNames: "id", constraintName: "comparison_jobPK", tableName: "comparison_job")

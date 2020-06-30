@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import javax.annotation.PostConstruct
 
+import org.olf.ComparisonService
 import org.olf.CoverageService
 import org.olf.ImportService
 import org.olf.KbHarvestService
@@ -31,11 +32,11 @@ class JobRunnerService implements EventPublisher {
   
   // Any auto injected beans here can be accessed within the `work` runnable
   // of the job itself.
-  
   OkapiTenantAdminService okapiTenantAdminService
   KbHarvestService kbHarvestService
   CoverageService coverageService
   ImportService importService
+  ComparisonService comparisonService
   
   private static final class JobContext {
     Serializable jobId

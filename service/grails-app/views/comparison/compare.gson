@@ -1,12 +1,9 @@
-import java.time.LocalDate
-
-import org.olf.dataimport.erm.PlatformTitileInstance
-import org.olf.kb.PlatformTitleInstance
-import org.olf.kb.TitleInstance
-import org.olf.kb.PackageContentItem
+import org.olf.erm.Entitlement
 import org.olf.kb.CoverageStatement
 import org.olf.kb.Embargo
-import org.olf.erm.Entitlement
+import org.olf.kb.PackageContentItem
+import org.olf.kb.PlatformTitleInstance
+import org.olf.kb.TitleInstance
 
 final Map theData = binding.variables
 List<List> sources = theData.values()[0] as List<List>
@@ -81,13 +78,13 @@ final mergeIntoObject = { final int totalSources, final Map<String, ?> obj, fina
     coverageEntries[coverageContainerId] = coverageEntry
   }
   
-  Set<String> occurences = coverageEntry['occurences'] as Set<String>
+  Map<String, Boolean> occurences = coverageEntry['occurences'] as Map<String, Boolean>
   if (!occurences) {
-    occurences = []
+    occurences = [:]
     coverageEntry['occurences'] = occurences
   }
   
-  occurences << sourceId
+  occurences[sourceId] = true
   final int occSize = occurences.size()
   if (totalSources == occSize) {
     obj['overlap'] = 'full'
@@ -164,8 +161,9 @@ if (sources) {
           while (currentRow != null && currentLowestValue == ti.name) {
             // Keep merging the values.
             currentObject['name'] = currentLowestValue
-            // More to come...
+            currentObject['id'] = ti.id
             
+            // More to come...
             mergeIntoObject(sourceCount, currentObject, currentRow[0] as PackageContentItem,
                 currentRow[1] as PlatformTitleInstance, currentRow[2] as TitleInstance,
                 (currentRow.length == 4 ? currentRow[3] : null) as Entitlement)
