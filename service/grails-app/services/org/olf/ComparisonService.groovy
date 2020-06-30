@@ -92,6 +92,14 @@ class ComparisonService {
       WHERE
         ent.owner.id = :agreementId
         
+        AND ( COALESCE(link.accessStart, pkg_pci.accessStart) IS NULL
+              OR ent.activeTo IS NULL
+              OR COALESCE(link.accessStart, pkg_pci.accessStart) <= ent.activeTo )
+          
+        AND ( COALESCE(link.accessEnd, pkg_pci.accessEnd) IS NULL
+              OR ent.activeFrom IS NULL
+              OR COALESCE( link.accessEnd, pkg_pci.accessEnd) >= ent.activeFrom )
+
         AND (
           ( (ent.activeTo IS NULL OR ent.activeTo >= :onDate) AND ent.activeFrom <= :onDate)
           OR ( (ent.activeFrom IS NULL OR ent.activeFrom <= :onDate) AND ent.activeTo >= :onDate)
