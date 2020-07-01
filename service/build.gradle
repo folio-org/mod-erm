@@ -59,6 +59,7 @@ repositories {
   jcenter()
   mavenCentral()
   maven { url "https://repo.grails.org/grails/core" }
+  maven { url 'http://maven.indexdata.com/' }
 }
 
 dependencies {
