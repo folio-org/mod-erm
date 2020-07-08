@@ -8,6 +8,6 @@ ComparisonPoint comparisonPoint
 
 json g.render (comparisonPoint, [excludes: ['titleList']]) {
   titleList g.render(GrailsHibernateUtil.unwrapIfProxy(comparisonPoint.titleList), [includes: ['id', 'name']]) {
-    'class' GrailsHibernateUtil.unwrapIfProxy(comparisonPoint.titleList).class.name
+    'class' it.class.name
   }
 }
