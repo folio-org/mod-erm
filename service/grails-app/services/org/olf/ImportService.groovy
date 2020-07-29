@@ -235,6 +235,7 @@ class ImportService implements DataBinder {
         // Skip the import 
         log.error "Missing publication_type for title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
         record = file.readNext()
+        continue
       } else {
         if ( instanceMedia.toLowerCase() == 'monograph' ) {
             siblingInstanceIdentifier.namespace = 'ISBN'
@@ -250,6 +251,7 @@ class ImportService implements DataBinder {
         } else { // only serial or monograph publication_type allowed for kbart import
             log.error "publication_type \"${instanceMedia}\" not valid for kbart import, title: ${getFieldFromLine(record, acceptedFields, 'title')}, skipping line."
             record = file.readNext()
+            continue
         }
 
         siblingInstanceIdentifier.value = getFieldFromLine(record, acceptedFields, 'siblingInstanceIdentifiers')
