@@ -322,7 +322,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
 
   public Map getTitleInstance(String source_name, String base_url, String goKbIdentifier, String type, String publicationType, String subType) {
 
-    if (publicationType.toLowerCase() == "book" || publicationType.toLowerCase() == "monograph") {
+    if (type.toLowerCase() == "monograph") {
       log.debug("Making secondary enrichment call for book/monograph title with GOKb identifier: ${goKbIdentifier}")
       Map ti = [:];
 

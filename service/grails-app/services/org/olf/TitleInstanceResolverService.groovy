@@ -253,20 +253,29 @@ class TitleInstanceResolverService implements DataBinder{
       
       if ((resource_type?.length() ?: 0) > 0) {
         result.publicationTypeFromString = resource_type
-        if ( resource_type == 'monograph' || resource_type == 'book') {
-          result.typeFromString = 'monograph'
-        } else if ( resource_type == 'serial' || resource_type == 'journal') {
-          result.typeFromString = 'serial'
-        } else {
-          /**
-          ERM-987: ... check for the existence of a coverage statement.
-          If a coverage statement exists then type == "serial", otherwise "monograph"
-          **/
-           if ( resource_coverage ) {
-            result.typeFromString = 'serial'
-          } else {
+        switch(resource_type) {
+          case 'book':
             result.typeFromString = 'monograph'
-          }
+            break
+          case 'journal':
+            result.typeFromString = 'serial'
+            break
+          case 'monograph':
+            result.typeFromString = 'monograph'
+            break
+          case 'serial':
+            result.typeFromString = 'serial'
+            break
+          default:
+            /**
+            ERM-987: ... check for the existence of a coverage statement.
+            If a coverage statement exists then type == "serial", otherwise "monograph"
+            **/
+            if ( resource_coverage ) {
+              result.typeFromString = 'serial'
+            } else {
+              result.typeFromString = 'monograph'
+            }
         }
       }
 
