@@ -83,6 +83,8 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
         provider: it.data?.attributes?.providerName
       ]
 
+      def publicationType
+
       if (it.data?.type == "packages") {
         // We're dealing with a package
 
@@ -104,7 +106,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
         }
       } else {
         // We're dealing with a title
-        def publicationType = it.data?.attributes?.publicationType
+        publicationType = it.data?.attributes?.publicationType
         if (publicationType) {
           map.publicationType = publicationType
         }
@@ -203,6 +205,10 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
         if (packageData) {
           map.packageData = packageData
         }
+      }
+
+      if ( ! publicationType ) {
+        map.publicationType = (theType)
       }
 
       // These need to be added to the map whether the type is resource OR package
