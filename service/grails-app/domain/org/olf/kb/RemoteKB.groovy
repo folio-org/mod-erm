@@ -90,7 +90,7 @@ public class RemoteKB implements MultiTenant<RemoteKB> {
 
 
   public String toString() {
-    return "RemoteKB ${name} - ${type}/${uri}/${cursor}".toString()
+    return "RemoteKB ${name} - ${type}/${uri}${cursor ? '/' + cursor : ''}".toString()
   }
 
   // When RemoteKB is readonly we want SOME properties to be editable, some not to be

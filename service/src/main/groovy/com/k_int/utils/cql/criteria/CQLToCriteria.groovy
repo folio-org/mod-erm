@@ -2,6 +2,7 @@ package com.k_int.utils.cql.criteria;
 
 import org.hibernate.criterion.*
 
+import org.z3950.zing.cql.*
 import grails.orm.HibernateCriteriaBuilder;
 import groovy.util.logging.Slf4j
 

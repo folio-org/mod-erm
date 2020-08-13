@@ -39,8 +39,7 @@ class SubscriptionAgreementController extends OkapiTenantAwareController<Subscri
   def publicLookup () {
     final List<String> referenceIds = params.list('referenceId')
     final List<String> resourceIds = params.list('resourceId')
-    final List<String> disjunctiveReferences = []
-    disjunctiveReferences += referenceIds.collect { String id ->
+    final List<String> disjunctiveReferences = [] + referenceIds.collect { String id ->
       String[] parts = id.split(/\-/)
       if (parts.length == 3) {
         // assuming progressive ID and we should search for multiples
