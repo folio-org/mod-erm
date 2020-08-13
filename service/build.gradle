@@ -1,3 +1,5 @@
+import java.nio.file.Path
+
 buildscript {
   repositories {
     jcenter()
@@ -9,6 +11,8 @@ buildscript {
     classpath "org.grails.plugins:views-gradle:2.0.1"
     classpath "gradle.plugin.com.github.erdi.webdriver-binaries:webdriver-binaries-gradle-plugin:2.0"
     classpath "org.grails.plugins:hibernate5:${gormHibernate-".RELEASE"}"
+    classpath 'org.grails.plugins:database-migration:3.1.0'
+    classpath 'com.bmuschko:gradle-docker-plugin:6.6.1'
   }
 }
 
@@ -25,12 +29,28 @@ repositories {
   maven { url "https://repo.grails.org/grails/core" }
 }
 
+sourceSets {
+  main {
+    resources {
+      srcDir 'grails-app/migrations'
+      srcDir 'src/main/okapi/tenant'
+    }
+  }
+}
+
 eclipse {
   classpath {
-    defaultOutputDir = file('build/main')
+    defaultOutputDir = new File(project.buildDir.canonicalPath, 'main')
     file {
-      whenMerged {
-        entries.each {
+      whenMerged { classpath ->
+
+        entries.collect().each {
+
+          if (it.path =='grails-app/conf' && it.output?.toLowerCase().endsWith('test')) {
+            classpath.entries.remove( it )
+            println "Removed ${it}"
+          }
+
           if (it.hasProperty('output') && it.output.startsWith('bin/')) {
             it.output = 'build/' + it.output.substring(4)
           }
@@ -64,7 +84,6 @@ dependencies {
   compile "org.grails:grails-plugin-databinding"
   compile "org.grails:grails-web-boot"
   compile "org.grails:grails-logging"
-  // compile "org.grails.plugins:cache"
   compile "org.grails.plugins:async"
   compile "org.grails.plugins:views-json"
   compile "org.grails.plugins:views-json-templates"
@@ -91,14 +110,19 @@ dependencies {
   testRuntime "org.seleniumhq.selenium:selenium-firefox-driver:3.14.0"
 
   /*** Application changes and requirements ***/
+//  compile ("org.grails.plugins:cache") {
+//    // The gpars transient depends on an older version of groovy-all.
+//    exclude group: "org.codehaus.groovy", module: "groovy-all"
+//  }
+
   compile "org.springframework.boot:spring-boot-starter-undertow" // Replaces spring-boot-starter-tomcat
   compile "org.hibernate:hibernate-core:5.4.19.Final"             // Update to latest 5.4
   runtime "com.zaxxer:HikariCP:3.4.5"                             // Replaces Tomcat JDBC pool
   runtime "org.postgresql:postgresql:42.2.14"
-  
+
   compile 'org.grails.plugins:database-migration:3.1.0'           // Required by Grails Okapi
-  compile 'org.liquibase:liquibase-core:3.10.1'                   
-  
+  compile 'org.liquibase:liquibase-core:3.10.1'
+
   compile group: 'com.k_int.grails', name: 'web-toolkit', version: '5.0.0-SNAPSHOT', changing: true
   compile group: 'com.k_int.okapi', name: 'grails-okapi', version: '4.0.0-SNAPSHOT', changing: true
 }
@@ -116,8 +140,133 @@ bootRun {
   systemProperty springProfilesActive, System.getProperty(springProfilesActive)
 }
 
-tasks.withType(GroovyCompile) {
-  configure(groovyOptions) {
-    forkOptions.jvmArgs = ['-Xmx1024m']
+task generateDescriptors(type: Copy) {
+  
+  dependsOn buildProperties
+
+  File grailsBuildInfoFile = buildProperties.outputs.files.files.find { it.name == 'grails.build.info' }
+
+  final def props = [:]
+
+  if(!(grailsBuildInfoFile)) return // No need to continue if the file is not there
+
+  doFirst {
+
+    // Place the loading within a do first as the info file from the buildProperties
+    // task will not be present until it is executed. This owuld cause a file not found
+    // during task configureation otherwise.
+    Properties properties = new Properties()
+
+    // Read properties from the file
+    grailsBuildInfoFile.withInputStream {
+      properties.load(it)
+    }
+
+    // Need to parse multi-dimensional keys.
+    ConfigSlurper cs = new ConfigSlurper()
+    props.putAll(cs.parse(properties))
+  }
+
+  from ('./src/main/okapi') {
+    include '*-template.json'
+  }
+  into './build/resources/main/okapi'
+  filteringCharset = 'UTF-8'
+  expand(props)
+  rename { String fileName ->
+    fileName.replace('-template', '')
   }
 }
+
+buildProperties.doLast {
+  
+  // Find the right file
+  File grailsBuildInfoFile = it.outputs.files.files.find { it.name == 'grails.build.info' }
+
+  if(!grailsBuildInfoFile) return // No need to continue if the file is not there
+    Properties properties = new Properties()
+
+  // Read properties from the file
+  grailsBuildInfoFile.withInputStream {
+    properties.load(it)
+  }
+
+  // Load the app version
+  String version = properties.getProperty('info.app.version')
+  def versionParts
+  if (version && (versionParts = version =~ version_regex)) {
+    versionParts[0].with {
+      properties.setProperty('info.app.majorVersion', it[3])
+      properties.setProperty('info.app.minorVersion', it[2])
+      properties.setProperty('info.app.patchVersion', it[1])
+
+      if (it[5]) {
+        properties.setProperty('info.app.testVersion', it[5])
+      }
+    }
+    version.replaceAll(/^(((\d+)\.\d+)\.\d+)(-([\w]+))?$/ , '$1')
+  }
+
+  // Add new properties from various sources
+  properties.setProperty('build.time', new Date().format("yyyy-MM-dd HH:mm:ss"))
+
+  // Get a System property
+  properties.setProperty('build.java.version', System.getProperty('java.version'))
+
+  // Write the properties back to the file
+  grailsBuildInfoFile.withOutputStream {
+    properties.store(it,null)
+  }
+}
+processResources.dependsOn generateDescriptors
+
+/**
+ * Docker build config.
+ */
+import com.bmuschko.gradle.docker.tasks.image.Dockerfile
+import com.bmuschko.gradle.docker.tasks.image.DockerBuildImage
+
+ext {
+  dockerId = "${project.dockerRepo}/${project.name}:${project.version}${dockerTagSuffix}"
+  dockerBuildDir = mkdir("${buildDir}/docker")
+}
+
+task prepareDocker(type: Copy, dependsOn: assemble) {
+  description = 'Copy files to build directory'
+  group = 'Docker'
+
+  from project.jar
+  
+  // from otherfileLoc
+
+  into dockerBuildDir
+}
+
+task createDockerfile(type: Dockerfile, dependsOn: prepareDocker) {
+  description = 'Create a Dockerfile file'
+  group = 'Docker'
+
+  destFile = project.file("${dockerBuildDir}/Dockerfile")
+
+  from 'folioci/alpine-jre-openjdk11:latest'
+  instruction 'LABEL maintainer=Knowledge Integration'
+
+  exposePort 8080
+
+  // Copying straight into the default directory should be enough
+  copyFile jar.archiveName, '/usr/verticles/application.jar'
+}
+
+task buildImage(type: DockerBuildImage, dependsOn: createDockerfile) {
+  description = 'Create Docker image to run the Grails application'
+  group = 'Docker'
+
+  inputDir = file(dockerBuildDir)
+  imageId = dockerId
+}
+
+//tasks.withType(GroovyCompile) {
+//  configure(groovyOptions) {
+//    forkOptions.jvmArgs = ['-Xmx1024m']
+//  }
+//}
