@@ -167,6 +167,8 @@ hibernate:
     use_second_level_cache: false
     use_query_cache: false
     
+  allow_update_outside_transaction: true #TODO: We should remove this in the near future and fix all dependants to wrap transactions.
+    
 okapi:
   linkListener:
     allowedControllerActions:
