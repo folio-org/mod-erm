@@ -1,10 +1,14 @@
-import grails.util.BuildSettings
-import grails.util.Environment
+import java.nio.charset.StandardCharsets
+
+import org.olf.general.jobs.JobAwareAppender
 import org.springframework.boot.logging.logback.ColorConverter
 import org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter
 
-//import org.olf.general.jobs.JobAwareAppender
-import java.nio.charset.StandardCharsets
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder
+import ch.qos.logback.core.ConsoleAppender
+import ch.qos.logback.core.FileAppender
+import grails.util.BuildSettings
+import grails.util.Environment
 
 conversionRule 'clr', ColorConverter
 conversionRule 'wex', WhitespaceThrowableProxyConverter
@@ -25,6 +29,7 @@ appender('STDOUT', ConsoleAppender) {
 
 // Default level should be info.
 root(WARN, ['STDOUT'])
+logger ('org.hibernate', INFO)
 
 // Just increase verbosity for dev/test. 
 if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environment.TEST) {
@@ -57,11 +62,11 @@ if (Environment.isDevelopmentMode() && targetDir != null) {
 }
 
 // Add the appender for classes we wish to expose within the database.
-//appender ('JOB', JobAwareAppender)
-//
-//logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
-//logger ('org.olf.TitleInstanceResolverService', DEBUG, ['JOB'])
-//logger ('org.olf.TitleEnricherService', DEBUG, ['JOB'])
-//logger ('org.olf.kb.adapters.GOKbOAIAdapter', DEBUG, ['JOB'])
-//logger ('org.olf.CoverageService', DEBUG, ['JOB'])
-//logger ('org.olf.ImportService', DEBUG, ['JOB'])
+appender ('JOB', JobAwareAppender)
+
+logger ('org.olf.PackageIngestService', DEBUG, ['JOB'])
+logger ('org.olf.TitleInstanceResolverService', DEBUG, ['JOB'])
+logger ('org.olf.TitleEnricherService', DEBUG, ['JOB'])
+logger ('org.olf.kb.adapters.GOKbOAIAdapter', DEBUG, ['JOB'])
+logger ('org.olf.CoverageService', DEBUG, ['JOB'])
+logger ('org.olf.ImportService', DEBUG, ['JOB'])
