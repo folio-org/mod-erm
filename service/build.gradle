@@ -132,8 +132,13 @@ dependencies {
   runtime "com.zaxxer:HikariCP:3.4.5"                             // Replaces Tomcat JDBC pool
   runtime "org.postgresql:postgresql:42.2.14"
 
-  compile 'org.grails.plugins:database-migration:3.1.0'           // Required by Grails Okapi
-  compile 'org.liquibase:liquibase-core:3.10.1'
+  
+  compile ('org.grails.plugins:database-migration:3.1.0') {       // Required by Grails Okapi
+    exclude group: 'org.liquibase', module: 'liquibase-core'
+  }
+  compile 'org.liquibase:liquibase-core:3.9.0'
+  // compile 'org.liquibase:liquibase-core:3.10.1'                // Liquibase changed searchpath handling. Downgrading for now. 
+//  compile 'org.liquibase:liquibase-core:3.5.5'
 
   compile 'com.opencsv:opencsv:4.6'
   compile 'commons-io:commons-io:2.6'

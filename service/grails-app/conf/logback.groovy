@@ -29,7 +29,8 @@ appender('STDOUT', ConsoleAppender) {
 
 // Default level should be info.
 root(WARN, ['STDOUT'])
-logger ('org.hibernate', INFO)
+logger ('org.hibernate.orm.deprecation', INFO)
+logger ('com.k_int.okapi.OkapiSchemaHandler', INFO)
 
 // Just increase verbosity for dev/test. 
 if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environment.TEST) {
@@ -38,14 +39,27 @@ if (Environment.isDevelopmentMode() || Environment.currentEnvironment == Environ
   root(INFO, ['STDOUT'])
   
   // Increase specific levels to debug
-  logger ('grails.app.init', DEBUG)
-  logger ('grails.app.controllers', DEBUG)
-  logger ('grails.app.domains', DEBUG)
-  logger ('grails.app.jobs', DEBUG)
-  logger ('grails.app.services', DEBUG)
+  logger 'grails.app.init', DEBUG
+  logger 'grails.app.controllers', DEBUG
+  logger 'grails.app.domains', DEBUG
+  logger 'grails.app.jobs', DEBUG
+  logger 'grails.app.services', DEBUG
+  logger 'com.zaxxer.hikari.pool.HikariPool', DEBUG
   
-  logger ('com.k_int.web.toolkit', DEBUG)
-  logger ('com.zaxxer.hikari.pool.HikariPool', DEBUG)
+  logger 'com.k_int', DEBUG
+  logger 'com.k_int.web.toolkit', DEBUG
+  logger 'org.olf', DEBUG
+  
+  
+  if (Environment.currentEnvironment == Environment.TEST) {
+    // Test only.
+//    logger 'org.hibernate', DEBUG
+    logger 'com.k_int.okapi.OkapiClient', TRACE
+    logger 'groovy.net.http.JavaHttpBuilder', DEBUG
+    logger 'org.hibernate.loader.criteria', TRACE
+    logger 'org.hibernate.SQL', DEBUG
+    logger 'org.hibernate.type.descriptor.sql.BasicBinder', TRACE
+  }
 }
 
 def targetDir = BuildSettings.TARGET_DIR
