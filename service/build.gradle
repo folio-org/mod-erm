@@ -25,7 +25,7 @@ apply plugin: 'com.github.erdi.webdriver-binaries'
 apply plugin: 'com.bmuschko.docker-remote-api'
 
 repositories {
-  mavenLocal()
+//  mavenLocal()
   jcenter()
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'http://maven.indexdata.com/' }
@@ -91,7 +91,7 @@ dependencies {
   compile "org.grails.plugins:views-json-templates"
   compile "org.grails.plugins:events"
   compile "org.grails.plugins:hibernate5"
-  // compileOnly "io.micronaut:micronaut-inject-groovy"
+  compileOnly "io.micronaut:micronaut-inject-groovy"
 
   console ("org.grails:grails-console") {
     // The gpars transient depends on an older version of groovy-all.
@@ -132,7 +132,6 @@ dependencies {
   compile "org.hibernate:hibernate-java8:5.4.19.Final"
   runtime "com.zaxxer:HikariCP:3.4.5"                             // Replaces Tomcat JDBC pool
   runtime "org.postgresql:postgresql:42.2.14"
-
   
   compile ('org.grails.plugins:database-migration:3.1.0') {       // Required by Grails Okapi
     exclude group: 'org.liquibase', module: 'liquibase-core'
@@ -145,9 +144,8 @@ dependencies {
   compile 'commons-io:commons-io:2.6'
 
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
-
-  compile group: 'com.k_int.grails', name: 'web-toolkit', version: '5.0.0-SNAPSHOT', changing: true
-  compile group: 'com.k_int.okapi', name: 'grails-okapi', version: '4.0.0-SNAPSHOT', changing: true
+  compile 'com.k_int.grails:web-toolkit-ce:5.0.0-rc.1'
+  compile 'com.k_int.okapi:grails-okapi:4.0.0-rc.1'
 }
 
 bootRun {
