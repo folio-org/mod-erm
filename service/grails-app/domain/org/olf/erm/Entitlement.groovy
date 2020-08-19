@@ -53,7 +53,7 @@ public class Entitlement implements MultiTenant<Entitlement>, Clonable<Entitleme
 
   LocalDate contentUpdated
 
-  // Type - must be set to external for externally defined packages, null or local for things defined in the local DB
+  // Type - must be set to external for externally defined packages, null or local for things defined in the local DB, or detached if added without resource, just description
   String type
 
   String note
@@ -327,31 +327,41 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
   }
 
   static constraints = {
-            owner(nullable:true,  blank:false)
+          owner(nullable:true,  blank:false)
 
           // Now that resources can be internally or externally defined, the internal resource link CAN be null,
           // but if it is, there should be authorty, and reference properties.
           resource (nullable:true, validator: { val, inst ->
-            
-            if (inst.type?.toLowerCase() == 'external') {
-              // External resource should have null internal resource reference.
-              return val != null ? ['externalEntitlement.resource.not.null'] : true
-              
-            } else if ( val ) {
-              Class c = Hibernate.getClass(val)
-              if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
-                ['allowedTypes', "${c.name}", "entitlement", "resource"]
-              }
-            } else {
-              
-              // Resource is null but type is internal.
-              return ['entitlement.resource.is.null']
+            switch (inst.type?.toLowerCase()) {
+              case 'external':
+                // External resource should have null internal resource reference.
+                return val != null ? ['externalEntitlement.resource.not.null'] : true
+                break;
+              case 'detached':
+                // Detached resource should have null internal resource reference.
+                return val != null ? ['detachedEntitlement.resource.not.null'] : true
+                break;
+              default:
+                if ( val ) {
+                  Class c = Hibernate.getClass(val)
+                  if (!Entitlement.ALLOWED_RESOURCES.contains(c)) {
+                    ['allowedTypes', "${c.name}", "entitlement", "resource"]
+                  }
+                } else {
+                  // Resource is null but type is internal.
+                  return ['entitlement.resource.is.null']
+                }
+                break;
             }
           })
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
-                     type(nullable:true, blank:false)
+                     type(nullable:true, blank:false, validator: { val, inst ->
+                        if (inst.type?.toLowerCase == 'detached') {
+                          return val ? ['detachedEntitlement.description.is.null'] : true
+                        }
+                     })
                      note(nullable:true, blank:false)
                   enabled(nullable:true, blank:false)
     suppressFromDiscovery(nullable:false, blank:false)
