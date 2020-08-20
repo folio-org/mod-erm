@@ -107,7 +107,7 @@
           "pathPattern": "/erm/entitlements/{id}",
           "permissionsRequired": [ "erm.entitlements.item.delete" ]
         },
-        
+
         {
           "methods": ["GET"],
           "pathPattern": "/erm/files",
