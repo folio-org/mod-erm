@@ -371,26 +371,36 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
                  activeTo(nullable:true, blank:false)
           
          authority(nullable:true, blank:false, validator: { val, inst ->
-            
-            if (inst.type?.toLowerCase() == 'external') {
-              // External resource should have authority.
-              return val == null ? ['externalEntitlement.authority.is.null'] : true
-              
-            } else {
-              // Authority is null but type is internal.
-              return val != null ? ['externalEntitlement.authority.not.null'] : true
+            switch (inst.type?.toLowerCase()) {
+              case 'external':
+                // External resource should have authority.
+                return val == null ? ['externalEntitlement.authority.is.null'] : true
+                break;
+              case 'detached':
+                // Authority is null but type is detached.
+                return val != null ? ['detachedEntitlement.authority.not.null'] : true
+                break;
+              default:
+                // Authority is null but type is internal.
+                return val != null ? ['externalEntitlement.authority.not.null'] : true
+                break;
             }
           })
          
          reference (nullable:true, blank:false, validator: { val, inst ->
-            
-            if (inst.type?.toLowerCase() == 'external') {
-              // External resource should have reference.
-              return val == null ? ['externalEntitlement.reference.is.null'] : true
-              
-            } else {
-              // Reference is null but type is internal.
-              return val != null ?  ['externalEntitlement.reference.not.null'] : true
+            switch (inst.type?.toLowerCase()) {
+              case 'external':
+                // External resource should have reference.
+                return val == null ? ['externalEntitlement.reference.is.null'] : true
+                break;
+              case 'detached':
+                // Reference is null but type is detached.
+                return val != null ? ['detachedEntitlement.reference.not.null'] : true
+                break;
+              default:
+                // Reference is null but type is internal.
+                return val != null ?  ['externalEntitlement.reference.not.null'] : true
+                break;
             }
           })
   }
