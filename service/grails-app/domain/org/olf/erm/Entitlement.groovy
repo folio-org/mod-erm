@@ -357,15 +357,15 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
           
           coverage (validator: HoldingsCoverage.STATEMENT_COLLECTION_VALIDATOR, sort:'startDate')
 
-                     type(nullable:true, blank:false, validator: { val, inst ->
-                        if (inst.type?.toLowerCase == 'detached') {
-                          return val ? ['detachedEntitlement.description.is.null'] : true
-                        }
-                     })
+                     type(nullable:true, blank:false)
                      note(nullable:true, blank:false)
                   enabled(nullable:true, blank:false)
     suppressFromDiscovery(nullable:false, blank:false)
-              description(nullable:true, blank:false)
+              description(nullable:true, blank:false, validator: { val, inst ->
+                        if (inst.type?.toLowerCase == 'detached') {
+                          return val ? true: ['detachedEntitlement.description.is.null']
+                        }
+                     })
            contentUpdated(nullable:true, blank:false)
                activeFrom(nullable:true, blank:false)
                  activeTo(nullable:true, blank:false)
