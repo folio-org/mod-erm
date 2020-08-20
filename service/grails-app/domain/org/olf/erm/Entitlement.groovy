@@ -362,7 +362,7 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
                   enabled(nullable:true, blank:false)
     suppressFromDiscovery(nullable:false, blank:false)
               description(nullable:true, blank:false, validator: { val, inst ->
-                        if (inst.type?.toLowerCase == 'detached') {
+                        if (inst.type?.toLowerCase() == 'detached') {
                           return val ? true: ['detachedEntitlement.description.is.null']
                         }
                      })
@@ -377,7 +377,7 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
               return val == null ? ['externalEntitlement.authority.is.null'] : true
               
             } else {
-              // Resource is null but type is internal.
+              // Authority is null but type is internal.
               return val != null ? ['externalEntitlement.authority.not.null'] : true
             }
           })
@@ -385,11 +385,11 @@ suppressFromDiscovery column: 'ent_suppress_discovery'
          reference (nullable:true, blank:false, validator: { val, inst ->
             
             if (inst.type?.toLowerCase() == 'external') {
-              // External resource should have authority.
+              // External resource should have reference.
               return val == null ? ['externalEntitlement.reference.is.null'] : true
               
             } else {
-              // Resource is null but type is internal.
+              // Reference is null but type is internal.
               return val != null ?  ['externalEntitlement.reference.not.null'] : true
             }
           })
