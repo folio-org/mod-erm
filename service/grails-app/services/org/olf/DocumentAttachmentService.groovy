@@ -12,7 +12,7 @@ import groovy.sql.Sql
 import com.k_int.okapi.OkapiTenantResolver
 
 import org.olf.general.DocumentAttachment
-import org.olf.general.jobs.SupplementaryPropertiesCleaningJob
+import org.olf.general.jobs.SupplementaryDocumentsCleaningJob
 
 @Slf4j
 public class DocumentAttachmentService {
@@ -50,13 +50,13 @@ public class DocumentAttachmentService {
     final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
     Tenants.withId(tenant_schema_id) {
 
-      SupplementaryPropertiesCleaningJob job = SupplementaryPropertiesCleaningJob.findByStatusInList([
-        SupplementaryPropertiesCleaningJob.lookupStatus('Queued'),
-        SupplementaryPropertiesCleaningJob.lookupStatus('In progress')
+      SupplementaryDocumentsCleaningJob job = SupplementaryDocumentsCleaningJob.findByStatusInList([
+        SupplementaryDocumentsCleaningJob.lookupStatus('Queued'),
+        SupplementaryDocumentsCleaningJob.lookupStatus('In progress')
       ])
 
       if (!job) {
-        job = new SupplementaryPropertiesCleaningJob(name: "Supplementary Document Cleanup ${Instant.now()}", schemaName: tenant_schema_id)
+        job = new SupplementaryDocumentsCleaningJob(name: "Supplementary Document Cleanup ${Instant.now()}", schemaName: tenant_schema_id)
         job.setStatusFromString('Queued')
         job.save(failOnError: true, flush: true)
       } else {

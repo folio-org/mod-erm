@@ -177,11 +177,14 @@ databaseChangeLog = {
     }
 
     changeSet(author: "efreestone (manual)", id: "202009161424-001") {
-    createTable(tableName: "supplementary_properties_cleaning_job") {
+    createTable(tableName: "supplementary_documents_cleaning_job") {
       column(name: "id", type: "VARCHAR(36)") {
         constraints(nullable: "false")
       }
+      column(name: "sdcj_schema_name", type: "VARCHAR(64)") {
+        constraints(nullable: "false")
+      }
     }
-    addPrimaryKey(columnNames: "id", constraintName: "supplementary_properties_cleaning_jobPK", tableName: "supplementary_properties_cleaning_job")
+    addPrimaryKey(columnNames: "id", constraintName: "supplementary_documents_cleaning_job", tableName: "supplementary_documents_cleaning_job")
   }
 }
