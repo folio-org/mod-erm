@@ -12,9 +12,9 @@ import groovy.sql.Sql
 import com.k_int.okapi.OkapiTenantResolver
 
 import org.olf.general.DocumentAttachment
+import org.olf.general.jobs.SupplementaryPropertiesCleaningJob
 
 @Slf4j
-@Transactional(readOnly=true)
 public class DocumentAttachmentService {
 
   def dataSource
@@ -23,9 +23,7 @@ public class DocumentAttachmentService {
 
   @Subscriber('okapi:tenant_enabled')
   public void onTenantEnabled (final String tenantId, final boolean existing_tenant, final boolean upgrading, final String toVersion, final String fromVersion) {
-    log.debug "LOGDEBUG PASSED IN PARAMS, UPGRADING ${upgrading}, TENANTID: ${tenantId}, TOVERSION: ${toVersion}, FROMVERSION: ${fromVersion}"
-    // TODO before merge add this if block
-    /*if (upgrading && fromVersion) {
+    if (upgrading && fromVersion) {
       try {
         if (Version.valueOf(fromVersion).compareTo(SUPP_DOCS_DUPLICATES_VERSION) <= 0) {
           // We are upgrading from a version prior to when the supplementary document duplication was fixed,
@@ -37,10 +35,7 @@ public class DocumentAttachmentService {
         // From version couldn't be parsed as semver we should ignore.
         log.debug "${fromVersion} could not be parsed as semver, not running supplementary document clean."
       }
-    }*/
-
-    //TODO remove this method call
-    triggerCleanSuppDocsForTenant(tenantId)
+    }
   }
 
   @Subscriber('okapi:tenant_clean_supplementary_docs')
@@ -54,44 +49,55 @@ public class DocumentAttachmentService {
     log.debug "LOGDEBUG triggered clean supp docs"
     final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
     Tenants.withId(tenant_schema_id) {
-      triggerCleanSuppDocs(tenant_schema_id)
+
+      SupplementaryPropertiesCleaningJob job = SupplementaryPropertiesCleaningJob.findByStatusInList([
+        SupplementaryPropertiesCleaningJob.lookupStatus('Queued'),
+        SupplementaryPropertiesCleaningJob.lookupStatus('In progress')
+      ])
+
+      if (!job) {
+        job = new SupplementaryPropertiesCleaningJob(name: "Supplementary Document Cleanup ${Instant.now()}", schemaName: tenant_schema_id)
+        job.setStatusFromString('Queued')
+        job.save(failOnError: true, flush: true)
+      } else {
+        log.debug('Supplementary document cleaning job already running or scheduled. Ignore.')
+      }
     }
   }
 
+  @Transactional
   private void triggerCleanSuppDocs(String schemaName) {
     Sql sql = new Sql(dataSource)
 
     List nonUniqueSuppDocs = sql.rows("SELECT docs.sasd_da_fk FROM ${schemaName}.subscription_agreement_supp_doc AS docs GROUP BY docs.sasd_da_fk HAVING COUNT(*) > 1".toString())
     nonUniqueSuppDocs.each { suppDoc ->
       DocumentAttachment suppDocDC = DocumentAttachment.findById(suppDoc.sasd_da_fk)
-      println("LOGDEBUG DID WE FIND SUPPDOC? ${suppDocDC}")
       
       // For each of those docs, return a list of the sa keys they're linked to (Should be more than one per, thanks to the above line)
       List agreementsWithGivenDoc = sql.rows("SELECT docs.sasd_sa_fk FROM ${schemaName}.subscription_agreement_supp_doc as docs WHERE docs.sasd_da_fk = :da_key".toString(), [da_key: suppDoc.sasd_da_fk])
       // At this point we have a list of agreements that a particular supp doc is attached to.
       // While that list is > 1 we should clone the supp_doc and create a new link in the table
-      
-      DocumentAttachment suppDocTemp = suppDocDC.clone()
-      suppDocTemp.save(flush: true, failOnError: true)
-      println("LOGDEBUG DID SUPDOCTEMP SAVE PROPERLY? ${suppDocTemp}")
-      println("LOGDEBUG SUPDOCTEMP ID ${suppDocTemp.id}")
-      
 
-     /*  while (agreementsWithGivenDoc.size() > 1) {
-        println("LOGDEBUG Agreements for da (Before) ${suppDoc.sasd_da_fk}: ${agreementsWithGivenDoc}")
+      while (agreementsWithGivenDoc.size() > 1) {
         DocumentAttachment suppDocTemp = suppDocDC.clone()
         suppDocTemp.save(flush: true, failOnError: true)
-        
+
+        String saId = agreementsWithGivenDoc[0].sasd_sa_fk
+
+        // Create new link to cloned document
+        sql.execute("""
+            INSERT INTO ${schemaName}.subscription_agreement_supp_doc (sasd_sa_fk, sasd_da_fk) VALUES (:sa_key,:da_key)
+          """.toString(),[sa_key: saId, da_key: suppDocTemp.id])
+
+        // Delete old link to cloned document
+        sql.execute("""
+          DELETE FROM ${schemaName}.subscription_agreement_supp_doc WHERE sasd_sa_fk = :sa_key AND sasd_da_fk = :da_key
+        """.toString(),[sa_key: saId, da_key: suppDoc.sasd_da_fk])
 
         // Re-assign the list after doing work
         agreementsWithGivenDoc = sql.rows("SELECT docs.sasd_sa_fk FROM ${schemaName}.subscription_agreement_supp_doc as docs WHERE docs.sasd_da_fk = :da_key".toString(), [da_key: suppDoc.sasd_da_fk])
-        println("LOGDEBUG Agreements for da (After) ${suppDoc.sasd_da_fk}: ${agreementsWithGivenDoc}")
-      } */
-
+      }
     }
-    
-    def da_list = DocumentAttachment.list()
-    log.debug "LOGDEBUG look at this list 2: ${da_list}"
   }
 
 }
