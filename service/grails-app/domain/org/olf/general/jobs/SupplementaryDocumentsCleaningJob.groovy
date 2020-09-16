@@ -12,6 +12,6 @@ class SupplementaryDocumentsCleaningJob extends PersistentJob implements MultiTe
   }
 
   static mapping = {
-    description column:'sdcj_schema_name'
+    schemaName column:'sdcj_schema_name'
   }
 }
