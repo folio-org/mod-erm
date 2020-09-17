@@ -76,8 +76,6 @@ public class DocumentAttachmentService {
       'SELECT da.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da GROUP BY da.id HAVING COUNT(*) > 1'
     )
 
-    println("LOGDEBUG nonUniqueSuppDocs: ${nonUniqueSuppDocs}")
-
     nonUniqueSuppDocs.each { suppDocId ->
       DocumentAttachment suppDoc = DocumentAttachment.findById(suppDocId)
       // For each of those docs, return a list of the sa keys they're linked to (Should be more than one per, thanks to the above line)
@@ -85,13 +83,10 @@ public class DocumentAttachmentService {
       List agreementsWithGivenDoc = DocumentAttachment.executeQuery(
         'SELECT sa.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da WHERE da.id=:daId', [daId: suppDocId]
       )
-      println("LOGDEBUG, list of agreements for suppDoc (${suppDocId}): ${agreementsWithGivenDoc}")
       
       // At this point we have a list of agreements that a particular supp doc is attached to.
       // While that list is > 1 we should clone the supp_doc and create a new link in the table
       while (agreementsWithGivenDoc.size() > 1) {
-        println("LOGDEBUG agreementsWithGivenDoc (BEFORE): ${agreementsWithGivenDoc}")
-        println("LOGDEBUG agreementsWithGivenDoc.size() (BEFORE): ${agreementsWithGivenDoc.size()}")
 
         DocumentAttachment suppDocNew = suppDoc.clone()
         suppDocNew.save(flush: true, failOnError: true)
@@ -112,8 +107,6 @@ public class DocumentAttachmentService {
         agreementsWithGivenDoc = DocumentAttachment.executeQuery(
           'SELECT sa.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da WHERE da.id=:daId', [daId: suppDocId]
         )
-        println("LOGDEBUG agreementsWithGivenDoc (AFTER): ${agreementsWithGivenDoc}")
-        println("LOGDEBUG agreementsWithGivenDoc.size() (AFTER): ${agreementsWithGivenDoc.size()}")
       }
     }
   }
