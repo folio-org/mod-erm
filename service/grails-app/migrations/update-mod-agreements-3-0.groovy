@@ -181,6 +181,9 @@ databaseChangeLog = {
       column(name: "id", type: "VARCHAR(36)") {
         constraints(nullable: "false")
       }
+      column(name: "sdcj_schema_name", type: "VARCHAR(64)") {
+        constraints(nullable: "false")
+      }
     }
     addPrimaryKey(columnNames: "id", constraintName: "supplementary_documents_cleaning_jobPK", tableName: "supplementary_documents_cleaning_job")
   }

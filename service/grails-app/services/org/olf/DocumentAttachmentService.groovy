@@ -9,6 +9,7 @@ import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
+import groovy.sql.Sql
 
 import com.k_int.okapi.OkapiTenantResolver
 
@@ -18,6 +19,7 @@ import org.olf.general.jobs.SupplementaryDocumentsCleaningJob
 
 @Slf4j
 public class DocumentAttachmentService {
+  def dataSource
 
   private static final Version SUPP_DOCS_DUPLICATES_VERSION = Version.forIntegers(3) // Version trigger.
 
@@ -62,12 +64,13 @@ public class DocumentAttachmentService {
       } else {
         log.debug('Supplementary document cleaning job already running or scheduled. Ignore.')
       } */
-      triggerCleanSuppDocs()
+      triggerCleanSuppDocs(tenant_schema_id)
     }
   }
 
   @Transactional
   private void triggerCleanSuppDocs() {
+    Sql sql = new Sql(dataSource)
     List nonUniqueSuppDocs = SubscriptionAgreement.executeQuery(
       'SELECT da.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da GROUP BY da.id HAVING COUNT(*) > 1'
     )
@@ -94,8 +97,15 @@ public class DocumentAttachmentService {
 
         SubscriptionAgreement sa = SubscriptionAgreement.findById(agreementsWithGivenDoc[0])
         sa.addToSupplementaryDocs(suppDocNew)
-        sa.removeFromSupplementaryDocs(suppDoc)
         sa.save(flush:true, failOnError: true)
+        println("LOGDEBUG addToSupplementaryDocs worked")
+
+        // Delete old link to cloned document
+        sql.execute("""
+          DELETE FROM ${schemaName}.subscription_agreement_supp_doc WHERE sasd_sa_fk = :sa_key AND sasd_da_fk = :da_key
+        """.toString(),[sa_key: saId, da_key: suppDoc.sasd_da_fk])
+
+        println("LOGDEBUG remove SQL worked")
 
         // Re-assign the list after doing work
         agreementsWithGivenDoc = DocumentAttachment.executeQuery(
