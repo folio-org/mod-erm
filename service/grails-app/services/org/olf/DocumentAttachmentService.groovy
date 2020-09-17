@@ -47,7 +47,6 @@ public class DocumentAttachmentService {
     triggerCleanSuppDocsForTenant(tenantId)
   }
 
-  @Transactional
   private void triggerCleanSuppDocsForTenant(final String tenantId) {
     final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
     Tenants.withId(tenant_schema_id) {
