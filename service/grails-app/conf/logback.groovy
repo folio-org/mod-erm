@@ -48,7 +48,7 @@ if (devEnv || Environment.currentEnvironment == Environment.TEST) {
   logger 'grails.app.domains', DEBUG
   logger 'grails.app.jobs', DEBUG
   logger 'grails.app.services', DEBUG
-  logger 'com.zaxxer.hikari.pool.HikariPool', DEBUG
+  logger 'com.zaxxer.hikari.pool.HikariPool', ERROR
   
   logger 'com.k_int', DEBUG
   logger 'com.k_int.web.toolkit', DEBUG

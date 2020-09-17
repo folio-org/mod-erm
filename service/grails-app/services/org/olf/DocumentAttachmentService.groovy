@@ -87,9 +87,11 @@ public class DocumentAttachmentService {
       // While that list is > 1 we should clone the supp_doc and create a new link in the table
       while (agreementsWithGivenDoc.size() > 1) {
 
+        // Clone the existing attachment and save that clone
         DocumentAttachment suppDocNew = suppDoc.clone()
         suppDocNew.save(flush: true, failOnError: true)
 
+        // Find the relevant SubscriptionAgreement and add the cloned DocAttachment to it
         SubscriptionAgreement sa = SubscriptionAgreement.findById(agreementsWithGivenDoc[0])
         sa.addToSupplementaryDocs(suppDocNew)
 
