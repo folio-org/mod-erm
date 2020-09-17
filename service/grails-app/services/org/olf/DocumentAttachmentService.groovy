@@ -52,7 +52,7 @@ public class DocumentAttachmentService {
     final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
     Tenants.withId(tenant_schema_id) {
 
-      /* SupplementaryDocumentsCleaningJob job = SupplementaryDocumentsCleaningJob.findByStatusInList([
+      SupplementaryDocumentsCleaningJob job = SupplementaryDocumentsCleaningJob.findByStatusInList([
         SupplementaryDocumentsCleaningJob.lookupStatus('Queued'),
         SupplementaryDocumentsCleaningJob.lookupStatus('In progress')
       ])
@@ -63,8 +63,7 @@ public class DocumentAttachmentService {
         job.save(failOnError: true, flush: true)
       } else {
         log.debug('Supplementary document cleaning job already running or scheduled. Ignore.')
-      } */
-      triggerCleanSuppDocs(tenant_schema_id)
+      }
     }
   }
 
@@ -101,8 +100,6 @@ public class DocumentAttachmentService {
         )
 
         sa.save(flush:true, failOnError: true)
-        println("LOGDEBUG transactions worked")
-
         // Re-assign the list after doing work
         agreementsWithGivenDoc = DocumentAttachment.executeQuery(
           'SELECT sa.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da WHERE da.id=:daId', [daId: suppDocId]
