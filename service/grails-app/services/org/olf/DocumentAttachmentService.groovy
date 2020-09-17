@@ -69,7 +69,7 @@ public class DocumentAttachmentService {
   }
 
   @Transactional
-  private void triggerCleanSuppDocs() {
+  private void triggerCleanSuppDocs(String schemaName) {
     Sql sql = new Sql(dataSource)
     List nonUniqueSuppDocs = SubscriptionAgreement.executeQuery(
       'SELECT da.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da GROUP BY da.id HAVING COUNT(*) > 1'
@@ -97,15 +97,15 @@ public class DocumentAttachmentService {
 
         SubscriptionAgreement sa = SubscriptionAgreement.findById(agreementsWithGivenDoc[0])
         sa.addToSupplementaryDocs(suppDocNew)
-        sa.save(flush:true, failOnError: true)
-        println("LOGDEBUG addToSupplementaryDocs worked")
 
         // Delete old link to cloned document
-        sql.execute("""
-          DELETE FROM ${schemaName}.subscription_agreement_supp_doc WHERE sasd_sa_fk = :sa_key AND sasd_da_fk = :da_key
-        """.toString(),[sa_key: saId, da_key: suppDoc.sasd_da_fk])
+        sql.execute(
+          "DELETE FROM ${schemaName}.subscription_agreement_supp_doc WHERE sasd_sa_fk = :sa_key AND sasd_da_fk = :da_key".toString(),
+          [sa_key: sa.id, da_key: suppDoc]
+        )
 
-        println("LOGDEBUG remove SQL worked")
+        sa.save(flush:true, failOnError: true)
+        println("LOGDEBUG transactions worked")
 
         // Re-assign the list after doing work
         agreementsWithGivenDoc = DocumentAttachment.executeQuery(
