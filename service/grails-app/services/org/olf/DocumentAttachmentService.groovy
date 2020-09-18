@@ -9,17 +9,16 @@ import grails.events.annotation.Subscriber
 import grails.gorm.multitenancy.Tenants
 import grails.gorm.transactions.Transactional
 import groovy.util.logging.Slf4j
-import groovy.sql.Sql
 
 import com.k_int.okapi.OkapiTenantResolver
 
 import org.olf.erm.SubscriptionAgreement
 import org.olf.general.DocumentAttachment
+import org.olf.general.SupplementaryDocumentLink
 import org.olf.general.jobs.SupplementaryDocumentsCleaningJob
 
 @Slf4j
 public class DocumentAttachmentService {
-  def dataSource
 
   private static final Version SUPP_DOCS_DUPLICATES_VERSION = Version.forIntegers(3) // Version trigger.
 
@@ -67,9 +66,7 @@ public class DocumentAttachmentService {
   }
 
   @Transactional
-  private void triggerCleanSuppDocs(String schemaName) {
-    println()
-    Sql sql = new Sql(dataSource)
+  private void triggerCleanSuppDocs() {
     List nonUniqueSuppDocs = SubscriptionAgreement.executeQuery(
       'SELECT da.id FROM SubscriptionAgreement AS sa INNER JOIN sa.supplementaryDocs AS da GROUP BY da.id HAVING COUNT(*) > 1'
     )
@@ -94,11 +91,14 @@ public class DocumentAttachmentService {
         SubscriptionAgreement sa = SubscriptionAgreement.findById(agreementsWithGivenDoc[0])
         sa.addToSupplementaryDocs(suppDocNew)
 
-        // Delete old link to cloned document
+        /* // Delete old link to cloned document
         sql.execute(
           "DELETE FROM ${schemaName}.subscription_agreement_supp_doc WHERE sasd_sa_fk = :sa_key AND sasd_da_fk = :da_key".toString(),
           [sa_key: sa.id, da_key: suppDocId]
-        )
+        ) */
+        def something = SupplementaryDocumentLink.executeQuery("SELECT * FROM SupplementaryDocumentLink")
+        println("LOGDEBUG SOMETHING: ${something}")
+        throw new Exception()
 
         sa.save(flush:true, failOnError: true)
         // Re-assign the list after doing work
