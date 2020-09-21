@@ -50,7 +50,7 @@ public class DocumentAttachmentService {
     final String tenant_schema_id = OkapiTenantResolver.getTenantSchemaName(tenantId)
     Tenants.withId(tenant_schema_id) {
 
-      /* SupplementaryDocumentsCleaningJob job = SupplementaryDocumentsCleaningJob.findByStatusInList([
+      SupplementaryDocumentsCleaningJob job = SupplementaryDocumentsCleaningJob.findByStatusInList([
         SupplementaryDocumentsCleaningJob.lookupStatus('Queued'),
         SupplementaryDocumentsCleaningJob.lookupStatus('In progress')
       ])
@@ -61,8 +61,7 @@ public class DocumentAttachmentService {
         job.save(failOnError: true, flush: true)
       } else {
         log.debug('Supplementary document cleaning job already running or scheduled. Ignore.')
-      } */
-      triggerCleanSuppDocs()
+      }
     }
   }
 
@@ -93,7 +92,7 @@ public class DocumentAttachmentService {
         sa.addToSupplementaryDocs(suppDocNew)
 
         // Delete old link to cloned document
-        SupplementaryDocumentLink.executeQuery(
+        def something = SupplementaryDocumentLink.executeUpdate(
           "DELETE FROM SupplementaryDocumentLink AS sdl WHERE sdl.saKey = :saId AND sdl.daKey = :daId",
           [saId: sa.id , daId: suppDocId]
         )
