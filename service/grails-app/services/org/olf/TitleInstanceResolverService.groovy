@@ -249,40 +249,15 @@ class TitleInstanceResolverService implements DataBinder{
 
         work: work
       )
+
+      // We can trust these by the check above for file imports and through logic in the adapters to set pubType and type correctly
+      result.typeFromString = resource_type
+      result.publicationTypeFromString = resource_pub_type
       
       if ((medium?.length() ?: 0) > 0) {
         result.subTypeFromString = medium
       }
       
-      //TODO Remove this block (and same below)
-      if ((resource_type?.length() ?: 0) > 0) {
-        result.publicationTypeFromString = resource_pub_type
-        switch(resource_type) {
-          case 'book':
-            result.typeFromString = 'monograph'
-            break
-          case 'journal':
-            result.typeFromString = 'serial'
-            break
-          case 'monograph':
-            result.typeFromString = 'monograph'
-            break
-          case 'serial':
-            result.typeFromString = 'serial'
-            break
-          default:
-            /**
-            ERM-987: ... check for the existence of a coverage statement.
-            If a coverage statement exists then type == "serial", otherwise "monograph"
-            **/
-            if ( resource_coverage ) {
-              result.typeFromString = 'serial'
-            } else {
-              result.typeFromString = 'monograph'
-            }
-        }
-      }
-
       result.save(flush:true, failOnError:true)
 
       // Iterate over all idenifiers in the citation and add them to the title record. We manually create the identifier occurrence 
@@ -321,36 +296,16 @@ class TitleInstanceResolverService implements DataBinder{
     if (trustedSourceTI == true) {
       log.debug("Trusted source for TI enrichment--enriching")
 
-      if (title.publicationType.value != citation.instanceMedia) {
-        title.publicationTypeFromString = citation.instancePublicationMedia
-        switch(citation.instanceMedia) {
-          case 'book':
-            title.typeFromString = 'monograph'
-            break
-          case 'journal':
-            title.typeFromString = 'serial'
-            break
-          case 'monograph':
-            title.typeFromString = 'monograph'
-            break
-          case 'serial':
-            title.typeFromString = 'serial'
-            break
-          default:
-            /**
-            ERM-987: ... check for the existence of a coverage statement.
-            If a coverage statement exists then type == "serial", otherwise "monograph"
-            **/
-            if ( citation.coverage ) {
-              title.typeFromString = 'serial'
-            } else {
-              title.typeFromString = 'monograph'
-            }
-        }
-      }
-
       if (title.name != citation.title) {
         title.name = citation.title
+      }
+
+      if (title.publicationType.value != citation.instancePublicationMedia) {
+        title.publicationTypeFromString = citation.instancePublicationMedia
+      }
+
+      if (title.type.value != citation.instanceMedia) {
+        title.typeFromString = citation.instanceMedia
       }
 
       if (title.dateMonographPublished != citation.dateMonographPublished) {
