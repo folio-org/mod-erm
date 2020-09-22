@@ -280,6 +280,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
             "title": tipp_title,
             "instanceMedium": tipp_medium,
             "instanceMedia": tipp_media,
+            "instancePublicationMedia": "TEST",
             "sourceIdentifier": title_source_identifier,
             "instanceIdentifiers": tipp_instance_identifiers,
             "siblingInstanceIdentifiers": tipp_sibling_identifiers,

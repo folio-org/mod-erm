@@ -252,6 +252,7 @@ class TitleInstanceResolverService implements DataBinder{
         result.subTypeFromString = medium
       }
       
+      //TODO Remove this block (and same below)
       if ((resource_type?.length() ?: 0) > 0) {
         result.publicationTypeFromString = resource_type
         switch(resource_type) {
