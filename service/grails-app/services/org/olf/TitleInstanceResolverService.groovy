@@ -166,7 +166,8 @@ class TitleInstanceResolverService implements DataBinder{
         bindData (sibling_citation, [
           "title": citation.title,
           "instanceMedium": "print",
-          "instanceMedia": (id.namespace.toLowerCase() == 'issn') ? "journal" : "book",
+          "instanceMedia": (id.namespace.toLowerCase() == 'issn') ? "serial" : "monograph",
+          "instancePublicationMedia": citation.instancePublicationMedia,
           "instanceIdentifiers": [
             [
               "namespace": id.namespace.toLowerCase(),
@@ -235,6 +236,7 @@ class TitleInstanceResolverService implements DataBinder{
 
       // Journal or Book etc
       def resource_type = citation.instanceMedia?.trim()
+      def resource_pub_type = citation.instancePublicationMedia?.trim()
       def resource_coverage = citation?.coverage
       result = new TitleInstance(
         name: citation.title,
@@ -254,7 +256,7 @@ class TitleInstanceResolverService implements DataBinder{
       
       //TODO Remove this block (and same below)
       if ((resource_type?.length() ?: 0) > 0) {
-        result.publicationTypeFromString = resource_type
+        result.publicationTypeFromString = resource_pub_type
         switch(resource_type) {
           case 'book':
             result.typeFromString = 'monograph'
@@ -320,7 +322,7 @@ class TitleInstanceResolverService implements DataBinder{
       log.debug("Trusted source for TI enrichment--enriching")
 
       if (title.publicationType.value != citation.instanceMedia) {
-        title.publicationTypeFromString = citation.instanceMedia
+        title.publicationTypeFromString = citation.instancePublicationMedia
         switch(citation.instanceMedia) {
           case 'book':
             title.typeFromString = 'monograph'

@@ -211,9 +211,11 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           def tipp_media = null
 
           // It appears that tipp_entry?.title?.type?.value() can be a list
-          String title_type = tipp_entry?.title?.type?.text()
+          String title_pub_type = tipp_entry?.title?.type?.text()
+          // Turns JournalInstance into journal, BookInstance into book, DatabaseInstance into database
+          String tipp_pub_media = title_pub_type.toLowerCase().replace('Instance', '')
 
-          switch ( title_type ) {
+          switch ( title_pub_type ) {
             case 'JournalInstance':
               tipp_media = 'journal'
               break
@@ -306,7 +308,6 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
     if (binding?.hasErrors()) {
       binding.allErrors.each { log.debug "\t${it}" }
     }
-
     pkg
   }
 
