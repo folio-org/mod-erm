@@ -132,7 +132,7 @@ class TitleInstanceResolverService implements DataBinder{
     }
 
     return result;
-  }  
+  }
 
   /**
    * Return a list of the siblings for this instance. Sometimes vendors identify a title by citing the issn of the print edition.
@@ -225,7 +225,7 @@ class TitleInstanceResolverService implements DataBinder{
     // 
     Map title_is_valid = [
       titleExists: ( citation.title != null ) && ( citation.title.length() > 0 ),
-      typeMatchesInternal: (citation.instanceMedia.toLowerCase() == "monograph" || citation.instanceMedia.toLowerCase() == "serial")
+      typeMatchesInternal: validateCitationType(citation)
     ]
 
     // Validate
@@ -317,8 +317,12 @@ class TitleInstanceResolverService implements DataBinder{
         title.publicationTypeFromString = citation.instancePublicationMedia
       }
 
-      if (title.type.value != citation.instanceMedia) {
-        title.typeFromString = citation.instanceMedia
+      if (validateCitationType(citation)) {
+        if (title.type.value != citation.instanceMedia ) {
+          title.typeFromString = citation.instanceMedia
+        }
+      } else {
+        log.error("Type (${citation.instanceMedia}) does not match 'serial' or 'monograph' for title \"${citation.title}\", skipping field enrichment.")
       }
 
       if (title.dateMonographPublished != citation.dateMonographPublished) {
@@ -340,15 +344,21 @@ class TitleInstanceResolverService implements DataBinder{
       if (title.monographVolume != citation.monographVolume) {
         title.monographVolume = citation.monographVolume
       }
-        if(! title.save(flush: true) ) {
-          title.errors.fieldErrors.each {
-            log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
-          }
+      
+      if(! title.save(flush: true) ) {
+        title.errors.fieldErrors.each {
+          log.error("Error saving title. Field ${it.field} rejected value: \"${it.rejectedValue}\".")
         }
+      }
+
     } else {
       log.debug("Not a trusted source for TI enrichment--skipping")
     }
     return null;
+  }
+
+  private boolean validateCitationType(ContentItemSchema citation) {
+    return citation.instanceMedia.toLowerCase() == 'monograph' || citation.instanceMedia.toLowerCase() == 'serial'
   }
 
   /**
