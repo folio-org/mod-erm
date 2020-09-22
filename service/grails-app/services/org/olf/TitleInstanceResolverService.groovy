@@ -274,8 +274,8 @@ class TitleInstanceResolverService implements DataBinder{
         io_record.save(flush:true, failOnError:true)
       }
     }
-    else { 
-      log.debug("Create title failed validation checks - insufficient data to create a title record");
+    else {
+      log.error("Create title failed validation checks - insufficient data to create a title record");
       // We will return null, which means no title
       // throw new RuntimeException("Insufficient detail to create title instance record");
     }
