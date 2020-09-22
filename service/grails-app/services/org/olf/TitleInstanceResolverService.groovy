@@ -115,7 +115,9 @@ class TitleInstanceResolverService implements DataBinder{
         case(0):
           log.debug("No title match, create new title")
           result = createNewTitleInstance(citation)
-          createOrLinkSiblings(citation, result.work)
+          if (result != null) {
+            createOrLinkSiblings(citation, result.work)
+          }
           break;
         case(1):
           log.debug("Exact match. Enrich title.")
@@ -221,11 +223,13 @@ class TitleInstanceResolverService implements DataBinder{
     //
     // boolean title_is_valid =  ( ( citation.title?.length() > 0 ) && ( citation.instanceIdentifiers.size() > 0 ) )
     // 
-    boolean title_is_valid = ( ( citation.title != null ) &&
-                               ( citation.title.length() > 0 ) )
+    Map title_is_valid = [
+      titleExists: ( citation.title != null ) && ( citation.title.length() > 0 ),
+      typeMatchesInternal: (citation.instanceMedia.toLowerCase() == "monograph" || citation.instanceMedia.toLowerCase() == "serial")
+    ]
 
     // Validate
-    if ( title_is_valid == true ) {
+    if ( title_is_valid.count { k,v -> v == false} == 0 ) {
 
       if ( work == null ) {
         work = new Work(title:citation.title).save(flush:true, failOnError:true)
@@ -275,13 +279,22 @@ class TitleInstanceResolverService implements DataBinder{
       }
     }
     else {
-      log.error("Create title failed validation checks - insufficient data to create a title record");
+      // Run through the failed validation one by one and throw relavent errors
+      if (!title_is_valid.titleExists) {
+        log.error("Create title failed validation check - insufficient data to create a title record");
+      }
+      if (!title_is_valid.typeMatchesInternal) {
+        log.error("Create title \"${citation.title}\" failed validation check - type (${citation.instanceMedia.toLowerCase()}) does not match 'serial' or 'monograph'");
+      }
+      
       // We will return null, which means no title
       // throw new RuntimeException("Insufficient detail to create title instance record");
     }
-
-    // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
-    result.refresh()
+    
+    if (result != null) {
+      // Refresh the newly minted title so we have access to all the related objects (eg Identifiers)
+      result.refresh()
+    }
     result
   }
 

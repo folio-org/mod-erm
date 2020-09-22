@@ -242,7 +242,7 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           // It appears that tipp_entry?.title?.type?.value() can be a list
           String title_pub_type = tipp_entry?.title?.type?.text()
           // Turns JournalInstance into journal, BookInstance into book, DatabaseInstance into database
-          String tipp_pub_media = title_pub_type.replace('Instance', '').toLowerCase()
+          String tipp_pub_media = title_pub_type.replace('Instance', '')
 
           switch ( title_pub_type ) {
             case 'JournalInstance':
