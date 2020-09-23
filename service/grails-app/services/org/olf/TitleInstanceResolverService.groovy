@@ -313,13 +313,19 @@ class TitleInstanceResolverService implements DataBinder{
         title.name = citation.title
       }
 
+      /*
+       * For some reason whenever a title is updated with just refdata fields it fails to properly mark as dirty.
+       * The below solution of '.markDirty()' is not ideal, but it does solve the problem for now.
+      */
       if (title.publicationType.value != citation.instancePublicationMedia) {
         title.publicationTypeFromString = citation.instancePublicationMedia
+        title.markDirty()
       }
 
       if (validateCitationType(citation)) {
         if (title.type.value != citation.instanceMedia ) {
           title.typeFromString = citation.instanceMedia
+          title.markDirty()
         }
       } else {
         log.error("Type (${citation.instanceMedia}) does not match 'serial' or 'monograph' for title \"${citation.title}\", skipping field enrichment.")
