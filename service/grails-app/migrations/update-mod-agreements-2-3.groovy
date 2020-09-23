@@ -265,5 +265,14 @@ databaseChangeLog = {
     }
     addPrimaryKey(columnNames: "id", constraintName: "coverage_regeneration_jobPK", tableName: "coverage_regeneration_job")
   }
+
+  changeSet(author: "efreestone (manual)", id: "202009161424-001") {
+    createTable(tableName: "supplementary_documents_cleaning_job") {
+      column(name: "id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+    }
+    addPrimaryKey(columnNames: "id", constraintName: "supplementary_documents_cleaning_jobPK", tableName: "supplementary_documents_cleaning_job")
+  }
 }
 

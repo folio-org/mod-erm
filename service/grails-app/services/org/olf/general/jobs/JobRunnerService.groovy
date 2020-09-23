@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit
 
 import javax.annotation.PostConstruct
 import org.olf.CoverageService
+import org.olf.DocumentAttachmentService
 import org.olf.ImportService
 import org.olf.KbHarvestService
 import org.slf4j.MDC
@@ -32,6 +33,7 @@ class JobRunnerService implements EventPublisher {
   OkapiTenantAdminService okapiTenantAdminService
   KbHarvestService kbHarvestService
   CoverageService coverageService
+  DocumentAttachmentService documentAttachmentService
   ImportService importService
   
   private static final class JobContext {
