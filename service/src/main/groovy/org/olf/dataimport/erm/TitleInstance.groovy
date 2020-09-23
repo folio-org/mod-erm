@@ -11,7 +11,7 @@ import groovy.transform.ToString
 class TitleInstance implements Validateable {
   String name
   Set<Identifier> identifiers
-  String type = 'journal'
+  String type = 'serial'
   String publicationType = 'journal'
   String subType = 'electronic'
 
