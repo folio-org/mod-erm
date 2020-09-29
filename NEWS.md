@@ -1,3 +1,6 @@
+## 2.3.1 2020-09-29
+ * ERM-1114 Duplicating an Agreement with documents now duplicates the documents properly, manual event trigger `cleanSupplementaryDocs` available on tenant activation to clean up existing linked document data
+
 ## 2.3.1 2020-07-03
  * ERM-974 Change Organizations lookup URL from /organizations-storage/organizations to /organizations/organizations
 
