@@ -14,8 +14,9 @@ public class ErmHousekeepingService {
 
   public void triggerHousekeeping() {
     // An administrative process - attempt to coalesce any rogue coverage statements
-    coverageService.coalesceCoverageStatements();
-    entitlementLogService.triggerUpdate();
+    //TODO UNCOMMENT THIS
+    /* coverageService.coalesceCoverageStatements();
+    entitlementLogService.triggerUpdate(); */
 
     // A process to ensure the correct start/end date is stored per agreement
     subscriptionAgreementCleanupService.triggerDateCleanup();
