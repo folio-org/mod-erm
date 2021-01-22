@@ -9,6 +9,7 @@ import groovy.transform.CompileDynamic
 
 @CompileDynamic
 class SubscriptionAgreementCleanupService {
+  def periodService
 
   private List<List<String>> batchFetchAgreements(final int agreementBatchSize, int agreementBatchCount) {
     // Fetch the ids and localCodes for all platforms

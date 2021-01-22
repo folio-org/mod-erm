@@ -5,6 +5,7 @@ import java.time.LocalDate
 import java.time.ZonedDateTime
 
 import org.grails.web.servlet.mvc.GrailsWebRequest
+import org.olf.PeriodService
 import org.olf.general.DocumentAttachment
 import org.olf.general.Org
 import org.olf.kb.ErmTitleList
@@ -199,8 +200,8 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
 
   static constraints = {
                     name(nullable:false, blank:false, unique: true)
-               startDate(nullable:true, blank:false)
-                 endDate(nullable:true, blank:false)
+               startDate(nullable:true, blank:false, bindable: false)
+                 endDate(nullable:true, blank:false, bindable: false)
           localReference(nullable:true, blank:false)
          vendorReference(nullable:true, blank:false)
              renewalDate(nullable:true, blank:false)
@@ -238,35 +239,9 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
     }
   }
 
-  public LocalDate calculateStartDate (Set<Period> ps) {
-    LocalDate earliest = null
-    for (def p : ps) {
-      if (earliest == null || p.startDate < earliest) earliest = p.startDate
-    }
-    earliest
-  }
-
-  public LocalDate calculateEndDate (Set<Period> ps) {
-     LocalDate latest = null
-    // Use for loop to allow us to break out if we find open ended period
-    for (def p : ps) {
-      if(p.endDate == null) {
-        latest = null
-        break
-      } else if (latest == null || p.endDate > latest) {
-        latest = p.endDate
-      }
-    }
-    latest
-  }
-
   public void calculateDates () {
-    // Don't allow dates to be set explicitly -- unset any passed data here
-    startDate = null
-    endDate = null
-
-    startDate = calculateStartDate(periods)
-    endDate = calculateEndDate(periods)
+    startDate = PeriodService.calculateStartDate(periods)
+    endDate = PeriodService.calculateEndDate(periods)
   }
   
   /**
