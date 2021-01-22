@@ -42,24 +42,15 @@ class SubscriptionAgreementCleanupService {
       while (agreements && agreements.size() > 0) {
         agreementBatchCount++
         agreements.each { a ->
-          List<List<String>> periods = fetchPeriodsForAgreement(a[0])
-          LocalDate earliest = null
-          for (def p : periods) {
-            if (earliest == null || p[0] < earliest) earliest = p[0]
-          }
-          LocalDate latest = null
-          for (def p : periods) {
-            if(p[1] == null) {
-              latest = null
-              break
-            } else if (latest == null || p[1] > latest) {
-              latest = p[1]
-            }
-          }
-         
+          SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
+          LocalDate earliest = agg.calculateStartDate(agg.periods)
+          LocalDate latest = agg.calculateEndDate(agg.periods)
+          
          if (a[1] != earliest || a[2] != latest) {
-           print("LOGDEBUG MISMATCH! AGREEMENT START(${a[1]}), EARLIEST PERIOD START(${earliest})")
-           print("LOGDEBUG MISMATCH! AGREEMENT START(${a[2]}), EARLIEST PERIOD START(${latest})")
+           log.debug("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
+           agg.startDate = earliest
+           agg.endDate = latest
+           agg.save(failOnError: true)
          }
         }
         

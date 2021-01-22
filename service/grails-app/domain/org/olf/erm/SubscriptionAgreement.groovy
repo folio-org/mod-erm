@@ -238,21 +238,18 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
     }
   }
 
-  public void calculateDates () {
-    // Don't allow dates to be set explicitly -- unset any passed data here
-    startDate = null
-    endDate = null
-
-    // Now calculate start/end dates for agreement onSave
+  public LocalDate calculateStartDate (Set<Period> ps) {
     LocalDate earliest = null
-    periods.each { Period p ->
+    for (def p : ps) {
       if (earliest == null || p.startDate < earliest) earliest = p.startDate
     }
-    startDate = earliest
+    earliest
+  }
 
-    LocalDate latest = null
+  public LocalDate calculateEndDate (Set<Period> ps) {
+     LocalDate latest = null
     // Use for loop to allow us to break out if we find open ended period
-    for (def p : periods) {
+    for (def p : ps) {
       if(p.endDate == null) {
         latest = null
         break
@@ -260,7 +257,16 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
         latest = p.endDate
       }
     }
-    endDate = latest
+    latest
+  }
+
+  public void calculateDates () {
+    // Don't allow dates to be set explicitly -- unset any passed data here
+    startDate = null
+    endDate = null
+
+    startDate = calculateStartDate(periods)
+    endDate = calculateEndDate(periods)
   }
   
   /**
