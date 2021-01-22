@@ -46,6 +46,7 @@ class SubscriptionAgreementCleanupService {
           
           // Next page
           agreements = batchFetchAgreements(agreementBatchSize, agreementBatchCount)
+          session.flush()
           session.clear()
         }
       }
