@@ -26,27 +26,25 @@ class SubscriptionAgreementCleanupService {
   void triggerDateCleanup() {
     final int agreementBatchSize = 25
     int agreementBatchCount = 0
-    SubscriptionAgreement.withNewTransaction {
-      List<List<String>> agreements = batchFetchAgreements(agreementBatchSize, agreementBatchCount)
-      while (agreements && agreements.size() > 0) {
-        SubscriptionAgreement.withNewSession {
-          agreementBatchCount++
-          agreements.each { a ->
-            SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
-            LocalDate earliest = agg.calculateStartDate(agg.periods)
-            LocalDate latest = agg.calculateEndDate(agg.periods)
-            
+    List<List<String>> agreements = batchFetchAgreements(agreementBatchSize, agreementBatchCount)
+    while (agreements && agreements.size() > 0) {
+      SubscriptionAgreement.withNewSession {
+        agreementBatchCount++
+        agreements.each { a ->
+          SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
+          LocalDate earliest = agg.calculateStartDate(agg.periods)
+          LocalDate latest = agg.calculateEndDate(agg.periods)
+          
           if (a[1] != earliest || a[2] != latest) {
             log.warn("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
             agg.startDate = earliest
             agg.endDate = latest
             agg.save(failOnError: true)
           }
-          }
-          
-          // Next page
-          agreements = batchFetchAgreements(agreementBatchSize, agreementBatchCount)
         }
+        
+        // Next page
+        agreements = batchFetchAgreements(agreementBatchSize, agreementBatchCount)
       }
     }
   }
