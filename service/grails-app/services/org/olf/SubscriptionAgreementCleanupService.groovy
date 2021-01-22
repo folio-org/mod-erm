@@ -24,6 +24,16 @@ class SubscriptionAgreementCleanupService {
     return agreements
   }
 
+  private Set<Period> fetchPeriodsForAgreementId(String aggId) {
+    Set<Period> periods = Period.executeQuery("""
+      SELECT p FROM Period p
+      WHERE p.owner.id = :aggId
+      """,
+      [aggId: aggId]
+    )
+    return periods
+  }
+
   void triggerDateCleanup() {
     final int agreementBatchSize = 25
     int agreementBatchCount = 0
@@ -33,12 +43,14 @@ class SubscriptionAgreementCleanupService {
         SubscriptionAgreement.withNewSession { session ->
           agreementBatchCount++
           agreements.each { a ->
-            SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
-            LocalDate earliest = agg.calculateStartDate(agg.periods)
-            LocalDate latest = agg.calculateEndDate(agg.periods)
+            Set<Period> periods = fetchPeriodsForAgreementId(a[0])
+            LocalDate earliest = periodService.calculateStartDate(periods)
+            LocalDate latest = periodService.calculateEndDate(periods)
             
             if (a[1] != earliest || a[2] != latest) {
               log.warn("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
+              // Only actually fetch object if you have to
+              SubscriptionAgreement agg = SubscriptionAgreement.get(a[0])
               agg.startDate = earliest
               agg.endDate = latest
               agg.save(failOnError: true)
