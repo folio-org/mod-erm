@@ -23,17 +23,6 @@ class SubscriptionAgreementCleanupService {
     return agreements
   }
 
-  private List<List<String>> fetchPeriodsForAgreement(final String agreementId) {
-    List<List<String>> periods = Period.createCriteria().list() {
-      eq('owner.id', agreementId)
-      projections {
-        property('startDate')
-        property('endDate')
-      }
-    }
-    return periods
-  }
-
   void triggerDateCleanup() {
     final int agreementBatchSize = 100
     int agreementBatchCount = 0
@@ -47,7 +36,7 @@ class SubscriptionAgreementCleanupService {
           LocalDate latest = agg.calculateEndDate(agg.periods)
           
          if (a[1] != earliest || a[2] != latest) {
-           log.debug("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
+           log.warn("Agreement date mismatch for (${a[0]}), calculating new start and end dates")
            agg.startDate = earliest
            agg.endDate = latest
            agg.save(failOnError: true)
