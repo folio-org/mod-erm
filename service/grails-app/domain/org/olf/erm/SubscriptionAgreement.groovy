@@ -280,35 +280,56 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
 
   public String findCurrentPeriod() {
     log.debug "Find current period"
-    Period cp
+    String cpId
     LocalDate ld = getLocalDate()
-    cp = periods.find { Period p ->
-      p.startDate <= ld && (p.endDate == null || p.endDate >= ld)
-    }
+    cpId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate < :ld
+      AND (p.endDate > :ld OR p.endDate = NULL)
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
 
-    cp?.id
+    cpId
   }
 
   public String findPreviousPeriod() {
     log.debug "Find previous period"
-    Period pp
+    String ppId
     LocalDate ld = getLocalDate()
-    pp = periods.findAll { Period p ->
-      p.endDate < ld
-    }.max { it.startDate }
+    ppId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate = (
+        SELECT MAX(p1.startDate) FROM Period p1 
+        WHERE p1.endDate < :ld
+        AND p1.owner.id = :id
+      )
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
 
-    pp?.id
+    ppId
   }
 
   public String findNextPeriod() {
     log.debug "Find next period"
-    Period np
+    String npId
     LocalDate ld = getLocalDate()
-    np = periods.findAll { Period p ->
-      p.startDate > ld
-    }.min { it.startDate }
+    npId = Period.executeQuery("""
+      SELECT p.id FROM Period p
+      WHERE p.startDate = (
+        SELECT MIN(p1.startDate) FROM Period p1 
+        WHERE p1.startDate > :ld
+        AND p1.owner.id = :id
+      )
+      AND p.owner.id = :id
+      """,
+      [id: id, ld: ld]
+    )[0]
 
-    np?.id
+    npId
   }
 
   @Transient
