@@ -252,6 +252,65 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
     Clonable.super.clone()
   }
 
+  public LocalDate getLocalDate() {
+    LocalDate ld
+    // Use the request if possible
+    RequestAttributes attributes = RequestContextHolder.getRequestAttributes()
+    if(attributes && attributes instanceof GrailsWebRequest) {
+      
+      GrailsWebRequest gwr = attributes as GrailsWebRequest
+      
+      log.debug "Is within a request context"
+      TimeZone tz = RequestContextUtils.getTimeZone(gwr.currentRequest) ?: TimeZone.getDefault()
+      
+      log.debug "Using TZ ${tz}"
+      ZonedDateTime zdt = ZonedDateTime.ofInstant(Instant.now(), tz.toZoneId())
+      
+      log.debug "Now in ${tz} is ${zdt}"
+      ld = zdt.toLocalDate()
+      
+      log.debug "LocalDate of ${ld} extracted for query"
+    } else {
+      log.debug "Is not within a request context, using default TZ (${TimeZone.getDefault()})"
+      ld = LocalDate.now()
+    }
+
+    ld
+  }
+
+  public String findCurrentPeriod() {
+    log.debug "Find current period"
+    Period cp
+    LocalDate ld = getLocalDate()
+    cp = periods.find { Period p ->
+      p.startDate <= ld && (p.endDate == null || p.endDate >= ld)
+    }
+
+    cp?.id
+  }
+
+  public String findPreviousPeriod() {
+    log.debug "Find previous period"
+    Period pp
+    LocalDate ld = getLocalDate()
+    pp = periods.findAll { Period p ->
+      p.endDate < ld
+    }.max { it.startDate }
+
+    pp?.id
+  }
+
+  public String findNextPeriod() {
+    log.debug "Find next period"
+    Period np
+    LocalDate ld = getLocalDate()
+    np = periods.findAll { Period p ->
+      p.startDate > ld
+    }.min { it.startDate }
+
+    np?.id
+  }
+
   @Transient
   RemoteLicenseLink getControllingLicense() {
     RemoteLicenseLink result = null;
