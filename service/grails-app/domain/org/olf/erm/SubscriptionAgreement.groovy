@@ -30,8 +30,6 @@ import javax.persistence.Transient
 @Slf4j
 public class SubscriptionAgreement extends ErmTitleList implements CustomProperties,MultiTenant<SubscriptionAgreement>, Clonable<SubscriptionAgreement> {
    
-  static transients = ['cancellationDeadline']
-
   static cloneStaticValues = [
     periods: { [new Period('owner': delegate, 'startDate': LocalDate.now())] },
     name: { "Copy of: ${owner.name}" /* Owner is the current object. */ }
@@ -90,10 +88,6 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
   Set<AlternateName> alternateNames
   
   private Period currentPeriod
-  
-  LocalDate getCancellationDeadline() {
-    currentPeriod?.cancellationDeadline
-  }
   
   LocalDate startDate
   LocalDate endDate
