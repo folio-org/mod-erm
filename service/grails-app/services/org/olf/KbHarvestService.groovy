@@ -43,7 +43,12 @@ where rkb.type is not null
   public void onDataloadSample (final String tenantId, final String value, final String existing_tenant, final String upgrading, final String toVersion, final String fromVersion) {
     log.debug "Perform trigger sync for new tenant ${tenantId} via data load event"
     final String schemaName = OkapiTenantResolver.getTenantSchemaName(tenantId)
-    triggerUpdateForTenant(schemaName)
+    try {
+      triggerUpdateForTenant(schemaName)
+    }
+    catch ( Exception e ) {
+      log.error("Unexpected error when responding to okapi:dataload:sample event for tenant ${schemaName}", e);
+    }
   }
 
   @CompileStatic(SKIP)
@@ -72,7 +77,12 @@ where rkb.type is not null
     // ToDo: Don't think this will work for newly added tenants - need to investigate.
     okapiTenantAdminService.getAllTenantSchemaIds().each { tenant_schema_id ->
       log.debug "Perform trigger sync for tenant schema ${tenant_schema_id}"
-      triggerUpdateForTenant(tenant_schema_id as String)
+      try {
+        triggerUpdateForTenant(tenant_schema_id as String)
+      }
+      catch ( Exception e ) {
+        log.error("Unexpected error in triggerSync for tenant ${tenant_schema_id}", e);
+      }
     }
   }
 
