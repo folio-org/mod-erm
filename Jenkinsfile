@@ -101,6 +101,11 @@ pipeline {
         }
         // debug
         sh "cat $env.MD"
+        // more debug
+        echo "docker tag ${env.dockerRepo}/${env.name}:${env.version} ${env.dockerRepo}/${env.name}:latest"
+        echo "docker push ${env.dockerRepo}/${env.name}:${env.version}"
+        echo "docker push ${env.dockerRepo}/${env.name}:latest"
+
       }
     }
 
