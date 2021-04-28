@@ -46,7 +46,7 @@ pipeline {
             }
             else {
               env.dockerRepo = 'folioci'
-              env.version = "${gradleVersion}"
+              env.version = "${gradleVersion}.${env.BUILD_NUMBER}"
             }
           }
         }
@@ -132,7 +132,6 @@ pipeline {
       sh "docker rmi ${env.name}:${env.version} || exit 0"
       sh "docker rmi ${env.name}:latest || exit 0"
       sh "docker rmi ${env.dockerRepo}/${env.name}:${env.version} || exit 0"
-      sh "docker rmi ${env.dockerRepo}/${env.name}:${env.version}.${env.BUILD_NUMBER} || exit 0"
       sh "docker rmi ${env.dockerRepo}/${env.name}:latest || exit 0"
       sendNotifications currentBuild.result 
     }
