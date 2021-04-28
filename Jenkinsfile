@@ -1,4 +1,4 @@
-@Library ('folio_jenkins_shared_libs') _
+
 
 pipeline {
 
@@ -46,7 +46,7 @@ pipeline {
             }
             else {
               env.dockerRepo = 'folioci'
-              env.version = "${gradleVersion}-SNAPSHOT.${env.BUILD_NUMBER}"
+              env.version = "${gradleVersion}"
             }
           }
         }
@@ -65,7 +65,7 @@ pipeline {
     stage('Build Docker') {
       steps {
         dir(env.BUILD_DIR) {
-          sh "./gradlew $env.GRADLEW_OPTS -PappVersion=${env.version} -PdockerRepo=${env.dockerRepo} buildImage"
+          sh "./gradlew $env.GRADLEW_OPTS -PdockerRepo=${env.dockerRepo} buildImage"
         }
         // debug
         sh "cat $env.MD"
@@ -124,7 +124,11 @@ pipeline {
 
   post {
     always {
-      dockerCleanup()
+      sh "docker rmi ${env.name}:${env.version} || exit 0"
+      sh "docker rmi ${env.name}:latest || exit 0"
+      sh "docker rmi ${env.dockerRepo}/${env.name}:${env.version} || exit 0"
+      sh "docker rmi ${env.dockerRepo}/${env.name}:${env.version}.${env.BUILD_NUMBER} || exit 0"
+      sh "docker rmi ${env.dockerRepo}/${env.name}:latest || exit 0"
       sendNotifications currentBuild.result 
     }
   }
