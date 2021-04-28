@@ -46,7 +46,8 @@ pipeline {
             }
             else {
               env.dockerRepo = 'folioci'
-              env.version = "${gradleVersion}-SNAPSHOT.${env.BUILD_NUMBER}"
+              // if snapshot, gradle will append a build number for us
+              env.version = gradleVersion
             }
           }
         }
@@ -90,6 +91,17 @@ pipeline {
       }
     }
 
+    stage('Debug Module Descriptor') {
+      steps {
+        script {
+          def foliociLib = new org.folio.foliociCommands()
+          foliociLib.updateModDescriptor(env.MD) 
+        }
+        // debug
+        sh "cat $env.MD"
+      }
+    }
+
     stage('Publish Module Descriptor') {
       when {
         anyOf { 
@@ -105,23 +117,6 @@ pipeline {
         postModuleDescriptor(env.MD)
       }
     }
-
-    // disbale kubeDeploy temporarily --ian
-    //stage('Kubernetes Deploy'){
-    //  when {
-    //    branch 'master'
-    //    expression { return env.doKubeDeploy }  
-    //  }
-    //  steps {
-    //    echo "Deploying to kubernetes cluster"
-    //    kubeDeploy('folio-default',
-    //              "[{" +
-    //                "\"name\" : \"${env.name}\"," +
-    //                "\"version\" : \"${env.version}\"," +
-    //                "\"deploy\":true" +
-    //              "}]")
-    //  }
-    //}
 
   } // end stages
 
