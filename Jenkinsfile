@@ -46,8 +46,7 @@ pipeline {
             }
             else {
               env.dockerRepo = 'folioci'
-              // if snapshot, gradle will append a build number for us
-              env.version = gradleVersion
+              env.version = "${gradleVersion}-SNAPSHOT.${env.BUILD_NUMBER}"
             }
           }
         }
@@ -58,7 +57,7 @@ pipeline {
     stage('Gradle Build') { 
       steps {
         dir(env.BUILD_DIR) {
-          sh "./gradlew $env.GRADLEW_OPTS -PappVersion=${env.version} assemble"
+          sh "./gradlew $env.GRADLEW_OPTS assemble"
         }
       }
     }
