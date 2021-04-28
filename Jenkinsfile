@@ -99,8 +99,11 @@ pipeline {
       }
       steps {
         script {
-          def foliociLib = new org.folio.foliociCommands()
-          foliociLib.updateModDescriptor(env.MD) 
+          sh "mv $MD ${MD}.orig"
+          sh """
+          cat ${MD}.orig | jq '.launchDescriptor.dockerImage |= \"${env.dockerRepo}/${env.name}:${env.version}\" |
+              .launchDescriptor.dockerPull |= \"true\"' > $MD
+          """
         }
         postModuleDescriptor(env.MD)
       }
