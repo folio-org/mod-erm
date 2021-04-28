@@ -90,25 +90,6 @@ pipeline {
       }
     }
 
-    stage('Debug Module Descriptor') {
-      steps {
-        script {
-          sh "mv $MD ${MD}.orig"
-          sh """
-          cat ${MD}.orig | jq '.launchDescriptor.dockerImage |= \"${env.dockerRepo}/${env.name}:${env.version}\" |
-              .launchDescriptor.dockerPull |= \"true\"' > $MD
-          """
-        }
-        // debug
-        sh "cat $env.MD"
-        // more debug
-        echo "docker tag ${env.dockerRepo}/${env.name}:${env.version} ${env.dockerRepo}/${env.name}:latest"
-        echo "docker push ${env.dockerRepo}/${env.name}:${env.version}"
-        echo "docker push ${env.dockerRepo}/${env.name}:latest"
-
-      }
-    }
-
     stage('Publish Module Descriptor') {
       when {
         anyOf { 
@@ -129,10 +110,7 @@ pipeline {
 
   post {
     always {
-      sh "docker rmi ${env.name}:${env.version} || exit 0"
-      sh "docker rmi ${env.name}:latest || exit 0"
-      sh "docker rmi ${env.dockerRepo}/${env.name}:${env.version} || exit 0"
-      sh "docker rmi ${env.dockerRepo}/${env.name}:latest || exit 0"
+      dockerCleanup()
       sendNotifications currentBuild.result 
     }
   }
