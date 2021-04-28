@@ -96,7 +96,7 @@ pipeline {
         script {
           sh "mv $MD ${MD}.orig"
           sh """
-          cat ${MD}.orig | jq '.launchDescriptor.dockerImage |= \"${env.dockerRepo}/${env.name}:${env.dockerTagVersion}\" |
+          cat ${MD}.orig | jq '.launchDescriptor.dockerImage |= \"${env.dockerRepo}/${env.name}:${env.version}\" |
               .launchDescriptor.dockerPull |= \"true\"' > $MD
           """
         }
