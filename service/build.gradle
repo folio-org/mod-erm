@@ -14,8 +14,22 @@ buildscript {
   }
 }
 
-final String version_regex = /^(((\d+)\.\d+)\.\d+)(-([a-zA-Z]+\.\d+))?$/
-version "${appVersion}"
+
+final String version_regex = /^(((\d+)\.\d+)\.\d+)(-([a-zA-Z]+(\.\d+)?))?$/
+Map<String, String> env = System.getenv();
+String calculated_version = null;
+
+// If we are building in a Jenkins environment append the build number onto the snapshot tag
+if ( ( appVersion.contains('SNAPSHOT') ) && ( env.BUILD_NUMBER != null ) ) {
+  println("Detected snapshot version and build number - appending");
+  calculated_version = "${appVersion}.${env.BUILD_NUMBER}".toString()
+}
+else {
+  println("Release version");
+  calculated_version = "${appVersion}".toString()
+}
+
+version "${calculated_version}"
 group 'org.olf'
 
 apply plugin: 'eclipse'
@@ -145,8 +159,8 @@ dependencies {
   compile 'commons-io:commons-io:2.6'
 
   compile 'org.codehaus.groovy.modules.http-builder:http-builder:0.7.1'     // TODO: Migrate away from this resource.
-  compile 'com.k_int.grails:web-toolkit-ce:5.0.0'
-  compile 'com.k_int.okapi:grails-okapi:4.0.0-rc.1'
+  compile 'com.k_int.grails:web-toolkit-ce:5.1.0'
+  compile 'com.k_int.okapi:grails-okapi:4.0.0'
 
   compile 'uk.co.cacoethes:groovy-handlebars-engine:0.2'
   compile 'com.github.jknack:handlebars-helpers:2.0.0'
