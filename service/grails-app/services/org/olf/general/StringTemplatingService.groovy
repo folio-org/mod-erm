@@ -134,7 +134,7 @@ public class StringTemplatingService {
    */
   @CompileStatic(SKIP)
   void refreshUrls(String tenantId) {
-    log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
+    // log.debug "stringTemplatingService::refreshUrls called with tenantId (${tenantId})"
 
     // If running then just ignore
     synchronized ( this ) {
@@ -272,7 +272,7 @@ public class StringTemplatingService {
 
   // This method generates the templatedUrls for PTIs, given the stringTemplates and platformLocalCode
   public void generateTemplatedUrlsForPti(final List<String> pti, Map stringTemplates, String platformLocalCode='') {
-    log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
+    // log.debug "generateTemplatedUrlsForPti called for (${pti[0]})"
     try {
       String ptiId = pti[0]
       String ptiUrl = pti[1]
@@ -379,14 +379,14 @@ public class StringTemplatingService {
     } else {
       taskQueue.add(params)
     }
-    log.debug "Refresh task queue size: ${taskQueue.size()}"
+    // log.debug "Refresh task queue size: ${taskQueue.size()}"
   }
 
   /* IMPORTANT NOTE -- When calling this for PTI/Platforms, wrap in a new transaction. Left out of this block so that
    * many edits can happen in one transaction block if called for multiple.
    */
   public void generateTemplatedUrlsForErmResources(final String tenantId, Map<String, String> params = [context: 'stringTemplate']) {
-    log.debug "generateTemplatedUrlsForErmResources called"
+    // log.debug "generateTemplatedUrlsForErmResources called"
 
     // If running then just add to queue
     synchronized ( this ) {
@@ -398,7 +398,7 @@ public class StringTemplatingService {
       }
     }
 
-    log.debug "generateTemplatedUrlsForErmResources task start"
+    // log.debug "generateTemplatedUrlsForErmResources task start"
     Tenants.withId(tenantId) {
       switch (params.context) {
         case 'stringTemplate':
@@ -482,7 +482,7 @@ public class StringTemplatingService {
           break;
       }
     }
-    log.debug "generateTemplatedUrlsForErmResources task end"
+    // log.debug "generateTemplatedUrlsForErmResources task end"
 
     synchronized ( this ) {
       // Task finished, turn 'running' boolean off
