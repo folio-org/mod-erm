@@ -18,7 +18,7 @@ RemoteKB.findByName('GOKb_TEST') ?: (new RemoteKB(
 RemoteKB.findByName('GOKb') ?: (new RemoteKB(
     name:'GOKb',
     type:'org.olf.kb.adapters.GOKbOAIAdapter',
-    uri:'https://gokborg/gokb/oai/index',
+    uri:'https://gokb.org/gokb/oai/index',
     fullPrefix:'gokb',
     rectype: RemoteKB.RECTYPE_PACKAGE,
     active:Boolean.FALSE,
