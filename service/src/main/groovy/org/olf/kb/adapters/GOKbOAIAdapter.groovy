@@ -84,6 +84,16 @@ public class GOKbOAIAdapter implements KBCacheUpdater, DataBinder {
           else {
             found_records = false
           }
+
+          Runtime runtime = Runtime.getRuntime();
+          long maxMemory = runtime.maxMemory();
+          long allocatedMemory = runtime.totalMemory();
+          long freeMemory = runtime.freeMemory();
+          log.info("Memory: max:${maxMemory}/alloc:${allocatedMemory}/free:${freeMemory}");
+
+          synchronized(this) {
+            Thread.yield()
+          }
         }
 
         response.failure = { resp ->
