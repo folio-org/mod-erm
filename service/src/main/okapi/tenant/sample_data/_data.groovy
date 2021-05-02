@@ -7,7 +7,7 @@ import org.olf.kb.RemoteKB
 RemoteKB.findByName('GOKb_TEST') ?: (new RemoteKB(
     name:'GOKb_TEST',
     type:'org.olf.kb.adapters.GOKbOAIAdapter',
-    uri:'http://gokbt.gbv.de/gokb/oai/index',
+    uri:'https://gokbt.gbv.de/gokb/oai/index',
     fullPrefix:'gokb',
     rectype: RemoteKB.RECTYPE_PACKAGE,
     active:Boolean.FALSE,
