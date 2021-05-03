@@ -172,4 +172,51 @@ databaseChangeLog = {
       column(name: "sa_cancellation_deadline", type: "timestamp")
     }
   }
+
+  changeSet(author: "claudia (manual)", id: "20210503-001") {
+    createTable(tableName: "subscription_agreement_org_role") {
+      column(name: "saor_id", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "saor_version", type: "BIGINT") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "saor_role_fk", type: "VARCHAR(36)")
+
+      column(name: "saor_owner_fk", type: "VARCHAR(36)") {
+        constraints(nullable: "false")
+      }
+
+      column(name: "saor_note", type: "text")
+    }
+
+    addPrimaryKey(columnNames: "saor_id", constraintName: "subscription_agreement_org_rolePK", tableName: "subscription_agreement_org_role")
+
+    addForeignKeyConstraint(baseColumnNames: "saor_role_fk", baseTableName: "subscription_agreement_org_role", constraintName: "sa_org_role_refdata_valueFK", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "rdv_id", referencedTableName: "refdata_value")
+
+    addForeignKeyConstraint(baseColumnNames: "saor_owner_fk", baseTableName: "subscription_agreement_org_role", constraintName: "sa_org_role_sa_orgFK", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sao_id", referencedTableName: "subscription_agreement_org")
+  }
+
+  changeSet(author: "claudia (manual)", id: "20210510-001") {
+    addColumn(tableName: "subscription_agreement_org") {
+      column(name: "sao_primary_org", type: "boolean")
+    }
+  }
+
+  /* changeSet(author: "claudia (manual)", id: "202105031810-001") {
+    // Insert all roles from subscription_agreement_org in table subscription_agreement_org_role 
+    // and remove the role column from subscription_agreement_org
+    grailsChange {
+      change {
+        sql.execute("""
+          INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_owner_fk, saor_role_fk)
+          SELECT sao_id, sao_role FROM ${database.defaultSchemaName}.subscription_agreement_org;
+          """.toString())
+      }
+    }
+      
+    dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
+  } */
 }
