@@ -241,7 +241,8 @@ databaseChangeLog = {
         // the following is not doing what we want
         // we have now the situation that we can have one org several times for one sa in table subscription_agreement_org
         // want to make an entry in subscription_agreement_org_role for each of those but use only one sao_id (as a variable?) for saor_owner_fk
-        // and then only keep that entry in subscription_agreement_org and delete the other entries  
+        // and then only keep that entry in subscription_agreement_org and delete the other entries
+        // the following is making an entry in subscription_agreement_org_role for each entry in subscription_agreement_org
         sql.execute("""
           INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_id, saor_version, saor_owner_fk, saor_role_fk, saor_note)
           SELECT md5(random()::text || clock_timestamp()::text)::uuid as id, sao_version, sao_id, sao_role, sao_note FROM ${database.defaultSchemaName}.subscription_agreement_org;
