@@ -189,6 +189,14 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
             int controlling_count = ((license_links?.findAll({ RemoteLicenseLink license -> license.status?.value == 'controlling' })?.size()) ?: 0)
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
+
+          // Ethan or Steve, please help
+          // it should be validated that the same org is not attached twice to a subscription agreement
+          /* orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs ->
+            
+            int unique_count = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> ??? })?.size()) ?: 0)
+            // ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
+          }) */
   }
 
   def beforeValidate() {

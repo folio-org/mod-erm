@@ -17,12 +17,13 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   
   String id
   Org org
-  boolean primaryOrg = false 
+  boolean primaryOrg = false
 
   /* @CategoryId(defaultInternal=true)
   @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
   RefdataValue role
-  String note */
+  */
+  String note
   
   static hasMany = [
     roles: SubscriptionAgreementOrgRole,
@@ -51,6 +52,10 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
     org(nullable:true, blank:false);
     // role(nullable:true, blank:false);
     note(nullable:true, blank:false);
+    primaryOrg(nullable:false, blank:false);
+    // Ethan or Steve, please help
+    // it should be validated that primatyOrg is only set true for ONE organisation per subscriptionAgreement (owner)
+    /* primaryOrg(validator: { Collection<??????}) */
   }
   
   /**

@@ -199,24 +199,56 @@ databaseChangeLog = {
     addForeignKeyConstraint(baseColumnNames: "saor_owner_fk", baseTableName: "subscription_agreement_org_role", constraintName: "sa_org_role_sa_orgFK", deferrable: "false", initiallyDeferred: "false", referencedColumnNames: "sao_id", referencedTableName: "subscription_agreement_org")
   }
 
+  // add boolean flag to subscription_agreement_org to indicate if the org is primary
+  // default it to false if it's not set
   changeSet(author: "claudia (manual)", id: "20210510-001") {
     addColumn(tableName: "subscription_agreement_org") {
       column(name: "sao_primary_org", type: "boolean")
     }
   }
 
-  /* changeSet(author: "claudia (manual)", id: "202105031810-001") {
-    // Insert all roles from subscription_agreement_org in table subscription_agreement_org_role 
+  changeSet(author: "claudia (manual)", id: "20210510-002") {
+    grailsChange {
+      change {
+	      sql.execute("""
+	        UPDATE ${database.defaultSchemaName}.subscription_agreement_org SET sao_primary_org = FALSE
+            WHERE sao_primary_org is null
+	      """.toString())
+      }
+    }
+  }
+
+  changeSet(author: "claudia (manual)", id: "20210510-003") {
+    addNotNullConstraint(tableName: "subscription_agreement_org", columnName: "sao_primary_org", columnDataType: "boolean")
+  }
+
+  // in subscription_agreement_org set the primary_org to true if the org role is 'vendor'
+  changeSet(author: "claudia (manual)", id: "20210510-004") {
+    grailsChange {
+        change {
+          sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement_org SET sao_primary_org = TRUE WHERE sao_role=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString())
+        }
+      }
+  }
+
+  changeSet(author: "claudia (manual)", id: "202105031810-001") {
+    // Insert all roles from subscription_agreement_org for one sa org in table subscription_agreement_org_role 
+    // and leave only one entry (the primary_org, if there's one - and if it's not?)
     // and remove the role column from subscription_agreement_org
     grailsChange {
       change {
+        // Ethan or Steve, please help
+        // the following is not doing what we want
+        // we have now the situation that we can have one org several times for one sa in table subscription_agreement_org
+        // want to make an entry in subscription_agreement_org_role for each of those but use only one sao_id (as a variable?) for saor_owner_fk
+        // and then only keep that entry in subscription_agreement_org and delete the other entries  
         sql.execute("""
-          INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_owner_fk, saor_role_fk)
-          SELECT sao_id, sao_role FROM ${database.defaultSchemaName}.subscription_agreement_org;
+          INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_id, saor_version, saor_owner_fk, saor_role_fk, saor_note)
+          SELECT md5(random()::text || clock_timestamp()::text)::uuid as id, sao_version, sao_id, sao_role, sao_note FROM ${database.defaultSchemaName}.subscription_agreement_org;
           """.toString())
       }
     }
       
-    dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
-  } */
+    // dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
+  }
 }
