@@ -15,10 +15,10 @@ WHERE rkb_name LIKE 'LOCAL';
         log.debug("RemoteKbCleanupService: Check for RemoteKBs with name LOCAL")
         
         // #1 - Raw SQL
-        RemoteKB.executeQuery(PENDING_JOBS_HQL)
+        RemoteKB.executeQuery(LOCAL_KB_UPDATE)
         
         // #2 - ORM
-        RemoteKB kb = RemoteKB.findByName('LOCAL_KB_UPDATE')
+        RemoteKB kb = RemoteKB.findByName('LOCAL')
         if (kb) {
             if (!kb.readonly) {
                 kb.readonly = Boolean.TRUE
