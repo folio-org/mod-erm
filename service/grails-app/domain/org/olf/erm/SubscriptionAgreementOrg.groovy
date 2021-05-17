@@ -55,7 +55,7 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
     primaryOrg(nullable:false, blank:false);
     // Ethan or Steve, please help
     // it should be validated that primatyOrg is only set true for ONE organisation per subscriptionAgreement (owner)
-    /* primaryOrg(validator: { Collection<??????}) */
+    // this is done in SubscriptionAgreement
   }
   
   /**

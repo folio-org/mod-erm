@@ -192,11 +192,18 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
 
           // Ethan or Steve, please help
           // it should be validated that the same org is not attached twice to a subscription agreement
-          /* orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs ->
-            
-            int unique_count = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> ??? })?.size()) ?: 0)
-            // ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
-          }) */
+          orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs ->
+            int primaryCount = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> org.primaryOrg == true })?.size()) ?: 0)
+            boolean no_duplicate_orgs = sa_orgs?.unique().size != sa_orgs.size()
+            errors = []
+            if (primaryCount > 1) {
+              errors < 'only.one.primary.org'
+            }
+            if (no_duplicate_orgs) {
+              errors < 'no.duplicate.organisations'
+            }
+            return errors.size > 0 ? errors : true
+          })
   }
 
   def beforeValidate() {
