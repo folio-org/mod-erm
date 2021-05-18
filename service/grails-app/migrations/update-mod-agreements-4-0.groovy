@@ -276,7 +276,6 @@ databaseChangeLog = {
 
     changeSet(author: "claudia (manual)", id: "202105181720-003") {
       dropForeignKeyConstraint(baseTableName: "subscription_agreement_org", constraintName: "FKbg8mmpb05wmvjlh7b1uyw8e7a")
-      
     }
 
     changeSet(author: "claudia (manual)", id: "202105181733-001") {

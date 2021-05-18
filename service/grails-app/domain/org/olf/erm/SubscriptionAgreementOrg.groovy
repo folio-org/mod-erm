@@ -50,12 +50,8 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   static constraints = {
     owner(nullable:false, blank:false);
     org(nullable:true, blank:false);
-    // role(nullable:true, blank:false);
     note(nullable:true, blank:false);
     primaryOrg(nullable:false, blank:false);
-    // Ethan or Steve, please help
-    // it should be validated that primatyOrg is only set true for ONE organisation per subscriptionAgreement (owner)
-    // this is done in SubscriptionAgreement
   }
   
   /**
