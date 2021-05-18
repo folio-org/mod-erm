@@ -257,10 +257,6 @@ databaseChangeLog = {
           println("transferId.sao_id: ${transferId.sao_id}")
           def saoId = transferId.sao_id.join()  // make a string out of the ArrayList
           println("saoId: ${saoId}")
-          testQuery = sql.rows("""SELECT sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_id = :saoId and sao_owner_fk = :ownerId and sao_org_fk = :orgId""".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
-          println("testQuery output: ${testQuery}")
-          testQuery2 = sql.rows("""SELECT sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_id != :saoId and sao_owner_fk = :ownerId and sao_org_fk = :orgId""".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
-          println("testQuery2 output: ${testQuery2}")
           // transfer lines with transferId.sao_id to subscription_agreement_org_role
           sql.execute("""
           INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_id, saor_version, saor_owner_fk, saor_role_fk, saor_note)
@@ -273,13 +269,13 @@ databaseChangeLog = {
         }
       }
     }
+  }
 
-    changeSet(author: "claudia (manual)", id: "202105181720-003") {
-      dropForeignKeyConstraint(baseTableName: "subscription_agreement_org", constraintName: "FKbg8mmpb05wmvjlh7b1uyw8e7a")
-    }
+  changeSet(author: "claudia (manual)", id: "202105181720-003") {
+    dropForeignKeyConstraint(baseTableName: "subscription_agreement_org", constraintName: "FKbg8mmpb05wmvjlh7b1uyw8e7a")
+  }
 
-    changeSet(author: "claudia (manual)", id: "202105181733-001") {
-      dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
-    }
+  changeSet(author: "claudia (manual)", id: "202105181733-001") {
+    dropColumn(columnName: "sao_role", tableName: "subscription_agreement_org")
   }
 }
