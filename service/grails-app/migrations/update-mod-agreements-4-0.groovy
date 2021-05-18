@@ -173,6 +173,8 @@ databaseChangeLog = {
     }
   }
 
+// NEW STRUCTURE OF SA ORG ROLES
+// new table subscription_agreement_org_role
   changeSet(author: "claudia (manual)", id: "20210503-001") {
     createTable(tableName: "subscription_agreement_org_role") {
       column(name: "saor_id", type: "VARCHAR(36)") {
@@ -200,7 +202,7 @@ databaseChangeLog = {
   }
 
   // add boolean flag to subscription_agreement_org to indicate if the org is primary
-  // default it to false if it's not set
+  // default it to false
   changeSet(author: "claudia (manual)", id: "20210510-001") {
     addColumn(tableName: "subscription_agreement_org") {
       column(name: "sao_primary_org", type: "boolean")
@@ -231,25 +233,54 @@ databaseChangeLog = {
       }
   }
 
-  changeSet(author: "claudia (manual)", id: "202105031810-001") {
+  changeSet(author: "claudia (manual)", id: "20210518-009") {
     // Insert all roles from subscription_agreement_org for one sa org in table subscription_agreement_org_role 
-    // and leave only one entry (the primary_org, if there's one - and if it's not?)
+    // and leave only one entry
     // and remove the role column from subscription_agreement_org
     grailsChange {
       change {
-        // Ethan or Steve, please help
-        // the following is not doing what we want
-        // we have now the situation that we can have one org several times for one sa in table subscription_agreement_org
-        // want to make an entry in subscription_agreement_org_role for each of those but use only one sao_id (as a variable?) for saor_owner_fk
-        // and then only keep that entry in subscription_agreement_org and delete the other entries
-        // the following is making an entry in subscription_agreement_org_role for each entry in subscription_agreement_org
-        sql.execute("""
+        // Return the list of subscriptionAgreementIds and org Ids from subscription_agreement_org
+        List<List<String>> agreementAndOrgIds = sql.rows("SELECT distinct sao.sao_owner_fk, sao.sao_org_fk FROM ${database.defaultSchemaName}.subscription_agreement_org as sao ORDER BY sao.sao_owner_fk".toString())
+        agreementAndOrgIds.each {
+          println("agreement/org Id: ${it}")
+          // For each of those subscriptionAgreement and orgIds, find out if there is an organization with role vendor attached
+          def vendorId
+          def transferId
+          vendorId = sql.rows("SELECT sao.sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org as sao WHERE sao.sao_owner_fk = :ownerId and sao.sao_org_fk = :orgId and sao.sao_role=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk])
+          if (vendorId) {
+            transferId = vendorId
+          } else {
+            // find the first sao_id
+            transferId = sql.rows("SELECT sao.sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org as sao WHERE sao.sao_owner_fk = :ownerId and sao.sao_org_fk = :orgId limit 1".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk])
+          }
+          println("transferId: ${transferId}")
+          println("transferId.sao_id: ${transferId.sao_id}")
+          def saoId = transferId.sao_id.join()  // make a string out of the ArrayList
+          println("saoId: ${saoId}")
+          testQuery = sql.rows("""SELECT sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_id = :saoId and sao_owner_fk = :ownerId and sao_org_fk = :orgId""".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
+          println("testQuery output: ${testQuery}")
+          testQuery2 = sql.rows("""SELECT sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_id != :saoId and sao_owner_fk = :ownerId and sao_org_fk = :orgId""".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
+          println("testQuery2 output: ${testQuery2}")
+          // transfer lines with transferId.sao_id to subscription_agreement_org_role
+          sql.execute("""
           INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_id, saor_version, saor_owner_fk, saor_role_fk, saor_note)
-          SELECT md5(random()::text || clock_timestamp()::text)::uuid as id, sao_version, sao_id, sao_role, sao_note FROM ${database.defaultSchemaName}.subscription_agreement_org;
-          """.toString())
+          SELECT md5(random()::text || clock_timestamp()::text)::uuid as id, sao_version, :saoId, sao_role, sao_note FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_owner_fk = :ownerId and sao_org_fk = :orgId;
+          """.toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
+          // keep only the line with the transferId, delete others from subscription_agreement_org
+          sql.execute("""
+          DELETE FROM ${database.defaultSchemaName}.subscription_agreement_org WHERE sao_owner_fk = :ownerId and sao_org_fk = :orgId AND sao_id != :saoId;
+          """.toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk, saoId: saoId])
+        }
       }
     }
+
+    changeSet(author: "claudia (manual)", id: "202105181720-003") {
+      dropForeignKeyConstraint(baseTableName: "subscription_agreement_org", constraintName: "FKbg8mmpb05wmvjlh7b1uyw8e7a")
       
-    // dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
+    }
+
+    changeSet(author: "claudia (manual)", id: "202105181733-001") {
+      dropColumn(columnName: "sa_role", tableName: "subscription_agreement_org")
+    }
   }
 }
