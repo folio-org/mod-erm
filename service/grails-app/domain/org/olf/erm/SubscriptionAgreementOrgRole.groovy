@@ -16,7 +16,9 @@ import grails.gorm.MultiTenant
 public class SubscriptionAgreementOrgRole implements MultiTenant<SubscriptionAgreementOrgRole>, Clonable<SubscriptionAgreementOrgRole> {
   
   String id
-  
+
+  @CategoryId(value='SubscriptionAgreementOrg.Role', defaultInternal=false) // make an entry in refdata_category with the same description as it was before the restructuring of sa org roles
+  @Defaults(['Vendor']) // we need at least one default value as the category isn't created otherwise
   RefdataValue role
   String note
   

@@ -274,4 +274,17 @@ databaseChangeLog = {
   changeSet(author: "claudia (manual)", id: "202105181733-001") {
     dropColumn(columnName: "sao_role", tableName: "subscription_agreement_org")
   }
+
+  // Change category SubscriptionAgreementOrg.Role to 'not internal'
+  changeSet(author: "claudia (manual)", id: "202105191710-001") {
+    grailsChange {
+      change {
+        sql.execute("""
+          UPDATE ${database.defaultSchemaName}.refdata_category SET internal = false
+            WHERE rdc_description='SubscriptionAgreementOrg.Role'
+        """.toString())
+      }
+    }
+  }
+
 }
