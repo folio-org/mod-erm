@@ -228,7 +228,7 @@ databaseChangeLog = {
   changeSet(author: "claudia (manual)", id: "20210510-004") {
     grailsChange {
         change {
-          sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement_org SET sao_primary_org = TRUE WHERE sao_role=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString())
+          sql.execute("UPDATE ${database.defaultSchemaName}.subscription_agreement_org SET sao_primary_org = TRUE WHERE sao_role in (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString())
         }
       }
   }
@@ -246,7 +246,7 @@ databaseChangeLog = {
           // For each of those subscriptionAgreement and orgIds, find out if there is an organization with role vendor attached
           def vendorId
           def transferId
-          vendorId = sql.rows("SELECT sao.sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org as sao WHERE sao.sao_owner_fk = :ownerId and sao.sao_org_fk = :orgId and sao.sao_role=(SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk])
+          vendorId = sql.rows("SELECT sao.sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org as sao WHERE sao.sao_owner_fk = :ownerId and sao.sao_org_fk = :orgId and sao.sao_role in (SELECT rdv_id FROM ${database.defaultSchemaName}.refdata_value WHERE rdv_value='vendor')".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk])
           if (vendorId) {
             transferId = vendorId
           } else {

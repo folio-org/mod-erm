@@ -17,6 +17,7 @@ public class SubscriptionAgreementOrgRole implements MultiTenant<SubscriptionAgr
   
   String id
 
+  @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
   RefdataValue role
   String note
   
