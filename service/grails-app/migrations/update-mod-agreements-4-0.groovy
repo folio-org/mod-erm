@@ -242,7 +242,6 @@ databaseChangeLog = {
         // Return the list of subscriptionAgreementIds and org Ids from subscription_agreement_org
         List<List<String>> agreementAndOrgIds = sql.rows("SELECT distinct sao.sao_owner_fk, sao.sao_org_fk FROM ${database.defaultSchemaName}.subscription_agreement_org as sao ORDER BY sao.sao_owner_fk".toString())
         agreementAndOrgIds.each {
-          println("agreement/org Id: ${it}")
           // For each of those subscriptionAgreement and orgIds, find out if there is an organization with role vendor attached
           def vendorId
           def transferId
@@ -253,10 +252,7 @@ databaseChangeLog = {
             // find the first sao_id
             transferId = sql.rows("SELECT sao.sao_id FROM ${database.defaultSchemaName}.subscription_agreement_org as sao WHERE sao.sao_owner_fk = :ownerId and sao.sao_org_fk = :orgId limit 1".toString(), [ownerId: it.sao_owner_fk, orgId: it.sao_org_fk])
           }
-          println("transferId: ${transferId}")
-          println("transferId.sao_id: ${transferId.sao_id}")
           def saoId = transferId.sao_id.join()  // make a string out of the ArrayList
-          println("saoId: ${saoId}")
           // transfer lines with transferId.sao_id to subscription_agreement_org_role
           sql.execute("""
           INSERT INTO ${database.defaultSchemaName}.subscription_agreement_org_role(saor_id, saor_version, saor_owner_fk, saor_role_fk, saor_note)

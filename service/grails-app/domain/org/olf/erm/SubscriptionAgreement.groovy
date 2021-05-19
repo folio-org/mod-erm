@@ -194,15 +194,15 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
           // and that primaryOrg is true only for maximal org per subscription agreement
           orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs ->
             int primaryCount = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> org.primaryOrg == true })?.size()) ?: 0)
-            boolean no_duplicate_orgs = sa_orgs?.unique().size != sa_orgs.size()
+            boolean no_duplicate_orgs = sa_orgs?.unique().size() != sa_orgs.size()
             errors = []
             if (primaryCount > 1) {
-              errors < 'only.one.primary.org'
+              errors << 'only.one.primary.org'
             }
             if (no_duplicate_orgs) {
-              errors < 'no.duplicate.organisations'
+              errors << 'no.duplicate.organisations'
             }
-            return errors.size > 0 ? errors : true
+            return errors.size() > 0 ? errors : true
           })
   }
 

@@ -19,10 +19,6 @@ public class SubscriptionAgreementOrg implements MultiTenant<SubscriptionAgreeme
   Org org
   boolean primaryOrg = false
 
-  /* @CategoryId(defaultInternal=true)
-  @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
-  RefdataValue role
-  */
   String note
   
   static hasMany = [

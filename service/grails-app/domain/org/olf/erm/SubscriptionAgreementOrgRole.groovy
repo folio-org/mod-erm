@@ -16,8 +16,7 @@ import grails.gorm.MultiTenant
 public class SubscriptionAgreementOrgRole implements MultiTenant<SubscriptionAgreementOrgRole>, Clonable<SubscriptionAgreementOrgRole> {
   
   String id
-  // no more defaults for org role ERM-1542
-  // @Defaults(['Content Provider', 'Subscription Agent', 'Vendor'])
+  
   RefdataValue role
   String note
   
