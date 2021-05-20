@@ -6,23 +6,18 @@ import org.olf.kb.RemoteKB
  * is not set to TRUE. It sets readonly to TRUE for this RemoteKB.
  */
 public class RemoteKbCleanupService {
-//    private static final String LOCAL_KB_UPDATE = '''UPDATE remotekb
-//SET rkb_readonly=TRUE
-//WHERE rkb_name LIKE 'LOCAL'
-//    '''
     
     def checkLocal() {
-        log.debug("RemoteKbCleanupService: Check for RemoteKBs with name LOCAL")
+        log.debug("RemoteKbCleanupService: Check for RemoteKBs with name 'LOCAL'")
         
         RemoteKB kb = RemoteKB.findByName('LOCAL')
         if (kb) {
             if (!kb.readonly) {
+                log.debug("Found 'LOCAL' RemoteKB with readonly==false. Setting it to true...")
                 kb.readonly = Boolean.TRUE
                 kb.save(flush:true, failOnError:true)
-                log.info("RemoteKbCleanupService: Set readonly to TRUE for existing RemoteKB 'LOCAL'")
             }
         }
-        
     }
-
+    
 }
