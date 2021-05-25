@@ -31,7 +31,7 @@
         {
           "name":"agreementStatus",
           "label": "Status",
-          "accessPath":"agreementStatus.value",
+          "accessPath":"agreementStatus.label",
           "valueType": "String"
         },
         {
@@ -144,32 +144,38 @@
       "columns": [
         {
           "name":"id",
+          "label": "Id",
           "sortPath":"id",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"agreementName",
+          "label": "Name",
           "sortPath":"name",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"agreementStatus",
+          "label": "Status",
           "sortPath":"agreementStatus.label",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"startDate",
           "sortPath":"startDate",
+          "label": "Start date",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"endDate",
           "sortPath":"endDate",
+          "label": "End date",
           "sortTypes": ["asc", "desc"]
         },
         {
           "name":"cancellationDeadline",
           "sortPath":"cancellationDeadline",
+          "label": "Cancellation deadline",
           "sortTypes": ["asc", "desc"]
         }
       ]
