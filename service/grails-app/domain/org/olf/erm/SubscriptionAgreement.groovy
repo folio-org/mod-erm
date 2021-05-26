@@ -190,8 +190,7 @@ public class SubscriptionAgreement extends ErmTitleList implements CustomPropert
             ( controlling_count > 1 ? [ 'only.one.controlling.license' ] : true )
           })
 
-          // it should be validated that the same org is not attached twice to a subscription agreement
-          // and that primaryOrg is true only for maximal org per subscription agreement
+          // it should be validated that primaryOrg is true only for one org per subscription agreement
           orgs(validator: { Collection<SubscriptionAgreementOrg> sa_orgs, _obj, errors ->
             int primaryCount = ((sa_orgs?.findAll({ SubscriptionAgreementOrg org -> org.primaryOrg == true })?.size()) ?: 0)
             if (primaryCount > 1) {
