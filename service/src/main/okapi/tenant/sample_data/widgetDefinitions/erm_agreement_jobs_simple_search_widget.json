@@ -64,10 +64,6 @@
           "valueType": "Enum",
           "enumValues": [
             {
-              "value": "org.olf.general.jobs.ComparisonJob",
-              "label": "Comparison"
-            },
-            {
               "value": "org.olf.general.jobs.PackageIngestJob",
               "label": "Harvester"
             },
