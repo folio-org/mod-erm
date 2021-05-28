@@ -102,20 +102,28 @@
             {"value": "interrupted", "label": "Interrupted"}
           ],
           "comparators": ["==", "!="]
+        }
+      ]
+    },
+    "sort": {
+      "columns": [
+        {
+          "name":"id",
+          "label": "Id",
+          "sortPath":"id",
+          "sortTypes": ["asc", "desc"]
         },
         {
           "name":"startTime",
+          "sortPath":"started",
           "label": "Start time",
-          "filterPath":"started",
-          "valueType": "Date",
-          "comparators": [">=", "<="]
+          "sortTypes": ["asc", "desc"]
         },
         {
           "name":"endTime",
+          "sortPath":"ended",
           "label": "End time",
-          "filterPath":"ended",
-          "valueType": "Date",
-          "comparators": [">=", "<=", "isSet", "isNotSet"]
+          "sortTypes": ["asc", "desc"]
         }
       ]
     },
