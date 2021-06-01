@@ -32,7 +32,7 @@
           "name":"errorCount",
           "label": "Number of errors",
           "accessPath":"errorLogCount",
-          "valueType": "Date"
+          "valueType": "Integer"
         },
         {
           "name":"startTime",
