@@ -186,7 +186,7 @@
         "defValue": "/erm/agreements"
       },
       "numberOfRows": {
-        "configurable": false,
+        "configurable": true,
         "defValue": 10
       }
     }

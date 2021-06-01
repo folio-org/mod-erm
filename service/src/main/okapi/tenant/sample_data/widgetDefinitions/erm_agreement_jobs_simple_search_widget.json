@@ -129,7 +129,7 @@
         "defValue": "/local-kb-admin"
       },
       "numberOfRows": {
-        "configurable": false,
+        "configurable": true,
         "defValue": 10
       }
     }
