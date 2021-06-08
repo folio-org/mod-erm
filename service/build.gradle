@@ -8,6 +8,7 @@ buildscript {
     mavenCentral()
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://maven.k-int.com/content/repositories/public" }
+    maven { url "https://mvnrepository.com/repos/gradle-libs-releases-local" }
     // jcenter() - JCentre closed
   }
   dependencies {
@@ -51,6 +52,7 @@ repositories {
   maven { url 'https://repo.grails.org/grails/core' }
   maven { url 'https://maven.indexdata.com/' }
   maven { url "https://maven.k-int.com/content/repositories/public" }
+  maven { url "https://mvnrepository.com/repos/gradle-libs-releases-local" }
 }
 
 sourceSets {
