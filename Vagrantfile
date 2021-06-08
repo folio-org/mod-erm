@@ -14,7 +14,7 @@ Vagrant.configure(2) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "folio/snapshot-backend-core"
+  config.vm.box = "folio/testing-backend"
   
   # We don't specify this any more to make sure that developers can pull the latest version. be aware that
   # this exposes you to bugs that may be published and gives you a slightly less stable base to build on
@@ -27,8 +27,8 @@ Vagrant.configure(2) do |config|
   #config.vm.box_version  = "5.0.0-20200414.4050"
 
   config.vm.provider "virtualbox" do |v|
-    v.memory = 12288
-    v.cpus = 4
+    v.memory = 10240
+    v.cpus = 2
   end
 
   #config.vm.provision "docker" do |d|
