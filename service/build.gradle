@@ -9,6 +9,7 @@ buildscript {
     maven { url "https://repo.grails.org/grails/core" }
     maven { url "https://maven.k-int.com/content/repositories/public" }
     maven { url "https://repo.gradle.org/gradle/libs-releases-local" }
+    maven { url "https://repo.grails.org/artifactory/core" }
     // jcenter() - JCentre closed
   }
   dependencies {
