@@ -160,7 +160,6 @@
       ]
     },
     "matches": {
-      "defaultTerm": " UM%",
       "columns": [
         {
           "name": "agreementName",
