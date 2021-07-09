@@ -114,6 +114,7 @@ dependencies {
   compile "org.grails.plugins:views-json-templates"
   compile "org.grails.plugins:events"
   compile "org.grails.plugins:hibernate5"
+  compile 'org.apache.kafka:kafka-clients:2.8.0'
   compileOnly "io.micronaut:micronaut-inject-groovy"
 
   console ("org.grails:grails-console") {

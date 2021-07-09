@@ -59,7 +59,6 @@ class JobRunnerService implements EventPublisher {
       TimeUnit.MILLISECONDS, // Makes the above wait time in 'seconds'
       new LinkedBlockingQueue<Runnable>() // Blocking queue
     )
-//    executorSvc = Executors.newFixedThreadPool(1)
     
     // Get the list of jobs from all tenants that were interrupted by app termination and
     // set their states appropriately.
@@ -289,6 +288,10 @@ class JobRunnerService implements EventPublisher {
     pj.fail()
   }
 
+  /**
+   * This is a spring lifecycle hook - this method should be called by the framework when the
+   * pod is being shut down. See https://reflectoring.io/spring-bean-lifecycle/
+   */
   public void shutdown() {
     log.info("JobRunnerService::shutdown()");
   }
