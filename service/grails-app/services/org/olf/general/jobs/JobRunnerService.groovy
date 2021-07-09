@@ -288,4 +288,8 @@ class JobRunnerService implements EventPublisher {
     PersistentJob pj = PersistentJob.get(jid ?: JobContext.current.get().jobId)
     pj.fail()
   }
+
+  public void shutdown() {
+    log.info("JobRunnerService::shutdown()");
+  }
 }
